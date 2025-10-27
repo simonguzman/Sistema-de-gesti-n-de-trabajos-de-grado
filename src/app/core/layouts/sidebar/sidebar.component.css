@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+/* Color base del sidebar */
+.bg-unicauca-blue {
+  background-color: #000066; /* Azul institucional oscuro */
+}
+
+/* Estilo base de los enlaces */
+.menu-link {
+  color: #ffffff;
+  background-color: transparent;
+  border-left: 4px solid transparent;
+}
+
+/* Hover - tono medio */
+.menu-link:hover {
+  background-color: #828AE3; /* Azul medio */
+  border-left-color: #93c5fd; /* Celeste suave */
+}
+
+/* Activo (routerLinkActive) - tono más oscuro */
+.active-link {
+  background-color: #5056AC; /* Azul aún más oscuro */
+  border-left: 4px solid #ffffff;
+}
+
+/* Ajustes visuales */
+.menu-link i {
+  color: #ffffff;
+}
+
+.menu-link:hover i {
+  color: #bfdbfe; /* Azul claro para el ícono */
+}
+
+.active-link i {
+  color: #93c5fd; /* Azul intermedio activo */
+}

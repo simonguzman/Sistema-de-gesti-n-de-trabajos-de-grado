@@ -1,0 +1,45 @@
+<header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+  <div class="flex items-center justify-between">
+    <!-- Logo y Título -->
+    <div class="flex items-center gap-6">
+      <h1 class="text-xl font-semibold text-[#000066]">
+        Sistema de gestión de trabajo de grado
+      </h1>
+    </div>
+
+    <!-- Usuario -->
+    <div
+      class="flex items-center gap-3 cursor-pointer"
+      (click)="toggleMenu($event)"
+    >
+      <!-- Avatar -->
+      <p-avatar
+        [image]="userAvatar"
+        shape="circle"
+        size="large"
+        styleClass="border border-gray-300"
+      ></p-avatar>
+
+      <!-- Nombre y Rol -->
+      <div class="flex flex-col items-start leading-tight">
+        <p class="text-sm font-semibold text-[#000066]">{{ userName }}</p>
+        <p class="text-xs text-[#000066] opacity-70">{{ userRole }}</p>
+      </div>
+
+      <!-- Flecha -->
+      <img
+        [src]="isMenuOpen ? 'assets/icons/arrow_drop_down_24dp_000066_FILL0_wght400_GRAD0_opsz24.png' : 'assets/icons/arrow_right_24dp_000066_FILL0_wght400_GRAD0_opsz24.png'"
+        alt="Abrir menú"
+        class="w-3 h-3 ml-2"
+      />
+
+      <!-- Menú -->
+      <p-menu
+        #menu
+        [model]="menuItems"
+        [popup]="true"
+        (onHide)="isMenuOpen = false"
+      ></p-menu>
+    </div>
+  </div>
+</header>

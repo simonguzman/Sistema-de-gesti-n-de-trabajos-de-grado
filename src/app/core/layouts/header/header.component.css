@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.rotate-90 {
+  transform: rotate(90deg);
+}

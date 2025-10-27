@@ -1,0 +1,31 @@
+<div class="flex h-screen overflow-hidden m-0 p-0">
+      <!-- Sidebar -->
+      <app-sidebar />
+
+      <!-- Main Content -->
+      <div class="flex flex-col flex-1 overflow-hidden">
+        <!-- Header -->
+        <app-header />
+
+        <!-- Page Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 p-6 ml-8">
+          <!-- Breadcrumb -->
+          <nav class="text-sm text-[#A7A6B0] mb-4">
+            <span>Inicio</span>
+            <span class="mx-2 text-[#DB141C] font-bold">></span>
+            <span class="text-[#A7A6B0]">{{ currentPageName }}</span>
+          </nav>
+
+          <!-- Título de página -->
+          <h2 class="text-2xl font-bold text-unicauca-blue mb-6 border-b-4 border-[#DB141C] text-[#000066] pb-2 inline-block">
+            {{ currentPageName }}
+          </h2>
+
+          <!-- Contenido dinámico -->
+          <router-outlet />
+        </main>
+
+        <!-- Footer -->
+        <app-footer />
+      </div>
+    </div>
