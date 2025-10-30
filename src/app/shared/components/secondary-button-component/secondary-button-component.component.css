@@ -1,3 +1,17 @@
-:host {
-  display: block;
+.secondary-btn {
+  background-color: transparent;
+  border: 2px solid #0b006e;
+  border-radius: 2rem;
+  color: #0b006e;
+  font-weight: 500;
+  padding: 0.6rem 1.5rem;
+
+  &:hover {
+    background-color: #e8e8ff;
+  }
+
+  &.p-disabled {
+    border-color: #ccc;
+    color: #888;
+  }
 }
