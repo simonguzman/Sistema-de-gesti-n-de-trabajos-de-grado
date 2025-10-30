@@ -13,6 +13,7 @@ import { filter } from 'rxjs/operators';
 })
 export class MainLayoutComponent implements OnInit {
   currentPageName: string = 'Bandeja de entrada';
+  currentPageTitle: string = 'Bandeja de entrada';
 
   private pageNames: { [key: string]: string } = {
     '/notifications': 'Bandeja de entrada',
@@ -22,6 +23,15 @@ export class MainLayoutComponent implements OnInit {
     '/thesis-work': 'Trabajo de grado',
     '/statistics': 'Estadísticas'
   };
+
+  private pageTitles: { [key: string]: string }={
+    '/notifications': 'Bandeja de entrada',
+    '/users': 'Gestión de usuarios',
+    '/proposal': 'Propuestas de trabajo de grado',
+    '/preliminary-draft': 'Anteproyecto de trabajo de grado',
+    '/thesis-work': 'Trabajos de grado en desarrollo',
+    '/statistics': 'Estadísticas'
+  }
 
   constructor(private router: Router) {}
 
@@ -38,5 +48,6 @@ export class MainLayoutComponent implements OnInit {
   private updateCurrentPageName() {
     const currentUrl = this.router.url;
     this.currentPageName = this.pageNames[currentUrl] || 'Bandeja de entrada';
+    this.currentPageTitle = this.pageTitles[currentUrl] || this.currentPageName;
   }
 }

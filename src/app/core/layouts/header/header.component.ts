@@ -54,7 +54,12 @@ export class HeaderComponent {
     this.menu.toggle(event);
   }
 
-  /*logout() {
-    this.authService.logout();
-  }*/
+  closeMenu() {
+  this.isMenuOpen = false;
+}
+
+logout() {
+  console.log('Cerrar sesión');
+  this.isMenuOpen = false;
+}
 }
