@@ -4,5 +4,6 @@ export const routes: Routes = [
   {
     path:'',
     loadChildren: () => import('./core/layouts.routes')
+      .then(m => m.layoutsRoutes)
   },
 ]

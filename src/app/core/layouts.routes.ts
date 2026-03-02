@@ -13,6 +13,11 @@ export const layoutsRoutes: Routes = [
     component: MainLayoutComponent,
     children: [
       {
+        path: '',
+        redirectTo: 'notifications',  // ← ruta por defecto
+        pathMatch: 'full'
+      },
+      {
         path:'notifications',
         component: NotificationsPageComponent,
       },
