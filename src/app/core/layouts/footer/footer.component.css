@@ -1,17 +1,18 @@
-.footer {
-  background-color: #ffffff;
-  border-top: 2px solid #cbd5e1; /* línea más visible */
-  width: calc(100% - 250px); /* evita superponerse al sidebar */
-  margin-left: 100px; /* mismo ancho del sidebar */
-  text-align: center;
-  padding: 10px 16px;
-  font-size: 0.75rem;
-  color: #6b7280;
-  box-sizing: border-box;
+:host {
+  display: block;
+  width: 100%;
 }
 
-.footer-text {
-  line-height: 1.4;
+.footer {
+  background-color: #ffffff;
+  border-top: 2px solid #cbd5e1;
+}
+
+.footer-inner {
+  padding: 10px 24px; /* Alineado con p-6 del main */
+  text-align: center;
+  font-size: 0.75rem;
+  color: #6b7280;
 }
 
 .footer-link {
