@@ -1,0 +1,11 @@
+<p-button
+  [label]="label"
+  [icon]="icon"
+  [disabled]="disabled"
+  [ngClass]="{
+    'btn-primary': variant === 'primary',
+    'btn-secondary': variant === 'secondary',
+    'btn-icon': icon && !label
+  }"
+  (onClick)="onButtonClick()"
+></p-button>

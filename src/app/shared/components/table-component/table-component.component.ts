@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { TreeNode } from 'primeng/api';
 import { TreeTableModule } from 'primeng/treetable';
+import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-table-component',
-  imports: [TreeTableModule, ButtonModule, CommonModule],
+  imports: [TreeTableModule, ButtonModule, CommonModule, TableModule],
   templateUrl: './table-component.component.html',
   styleUrl: './table-component.component.css'
 })

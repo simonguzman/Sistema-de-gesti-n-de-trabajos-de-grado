@@ -1,0 +1,51 @@
+:host ::ng-deep .btn-primary .p-button {
+  background-color: #000066;
+  border-radius: 100px;
+  color: white;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 20px;
+  border: none;
+  height: 41px;
+}
+:host ::ng-deep .btn-primary .p-button:hover {
+  background-color: #828AE3;
+ }
+:host ::ng-deep .btn-primary .p-button:active {
+  background-color: #5056AC;
+ }
+:host ::ng-deep .btn-primary .p-button:disabled {
+  background-color: #C8C5D0;
+  color: #46464F;
+}
+
+:host ::ng-deep .btn-secondary .p-button {
+  background-color: #FFFFFF;
+  border-radius: 100px;
+  color: #000066;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 20px;
+  border: 2px solid #000066;
+  height: 41px;
+}
+:host ::ng-deep .btn-secondary .p-button:hover {
+  background-color: rgba(80, 86, 172, 0.2);
+ }
+:host ::ng-deep .btn-secondary .p-button:active {
+  background-color: rgba(130, 138, 227, 0.5);
+ }
+:host ::ng-deep .btn-secondary .p-button:disabled {
+  background-color: #C8C5D0;
+  color: #46464F;
+  border-color: #46464F;
+}
+
+:host ::ng-deep .btn-icon .p-button{
+  width: 41px;
+  height: 41px;
+  box-sizing: border-box;
+  padding: 0;
+}
