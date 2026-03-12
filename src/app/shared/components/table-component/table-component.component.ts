@@ -1,17 +1,31 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { TreeNode } from 'primeng/api';
 import { TreeTableModule } from 'primeng/treetable';
 import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
+
+interface Column{
+  field: string;
+  header: string;
+  type?: 'text' | 'state' | 'actions';
+}
 
 @Component({
   selector: 'app-table-component',
-  imports: [TreeTableModule, ButtonModule, CommonModule, TableModule],
+  imports: [TreeTableModule, CommonModule, TableModule],
   templateUrl: './table-component.component.html',
   styleUrl: './table-component.component.css'
 })
-export class TableComponentComponent {
+export class TableComponent {
+
+  @Input() value: any[] = [];
+  @Input() columns: Column[] = [];
+  @Input() rows: number = 10;
+  @Input() paginator : boolean = false;
+  @Input() showButton ?: boolean = false;
+  @Input() buttonLabel ?: string;
+  @Input() buttonIcon ?: string;
+
   files: TreeNode[] = [];
   cols: any[] = [];
 
