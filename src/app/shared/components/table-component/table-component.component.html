@@ -1,0 +1,73 @@
+<div>
+  <!-- botones de arriba -->
+   @for (btn of headerButtons; track btn) {
+     <app-button-component
+      [label]="btn.label"
+      [icon]="btn.icon"
+      [variant]="btn.variant"
+      (onClick)= "headerButtonClick.emit(btn)"
+     ></app-button-component>
+   }
+
+  <p-table
+    [value]="value"
+    [columns]="columns"
+    [rows]="rows"
+    [paginator]="paginator"
+    [tableStyle]="{'min-width': '50rem'}"
+  >
+
+    <!-- header -->
+     <ng-template #header let-columns>
+      <tr>
+        @for (col of columns; track col){
+         <th
+          [style.width]="col.width"
+          [style.textAlign]="col.type === 'state' || col.type === 'actions' ? 'center' : 'left'"
+          >
+           {{ col.header }}
+         </th>
+        }
+      </tr>
+     </ng-template>
+
+    <!-- body -->
+    <ng-template #body let-rowData let-columns="columns">
+      <tr>
+        @for (col of columns; track col) {
+          <td [style.textAlign]="col.type === 'state' || col.type === 'actions' ? 'center' : 'left'">
+            @if (col.type === 'text' || !col.type) {
+              {{ rowData[col.field] }}
+            }
+            @if (col.type === 'state') {
+              <app-state
+                [label] = "rowData[col.field]"
+                [state] = "rowData[col.field]"
+              ></app-state>
+            }
+            @if (col.type === 'actions') {
+              @for (btn of col.actions; track btn) {
+                <app-button-component
+                  [label]="btn.label"
+                  [icon]="btn.icon"
+                  (onClick)="actionClick.emit({action:btn.action, row: rowData})"
+                ></app-button-component>
+              }
+            }
+          </td>
+        }
+      </tr>
+    </ng-template>
+
+    <!-- empty state -->
+     <ng-template #emptymessage>
+      <tr>
+        <td [colSpan]="columns.length">
+          <app-empty-state [message]="emptyMessage"></app-empty-state>
+        </td>
+      </tr>
+     </ng-template>
+
+
+  </p-table>
+</div>
