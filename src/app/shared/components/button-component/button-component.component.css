@@ -1,52 +1,52 @@
 :host ::ng-deep .btn-primary .p-button {
-  background-color: #000066;
-  border-radius: 100px;
-  color: white;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 11px 20px;
+  background-color: var(--color-primary);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-white);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--padding-pill-y) var(--padding-pill-x);
   border: none;
-  height: 41px;
+  height: var(--height-btn);
 }
 :host ::ng-deep .btn-primary .p-button:hover {
-  background-color: #828AE3;
-  color: white;
+  background-color: var(--color-primary-hover);
+  color: var(--color-text-white);
  }
 :host ::ng-deep .btn-primary .p-button:active {
-  background-color: #5056AC;
-  color: white;
+  background-color: var(--color-primary-active);
+  color: var(--color-text-white);
  }
 :host ::ng-deep .btn-primary .p-button:disabled {
-  background-color: #C8C5D0;
-  color: #46464F;
+  background-color: var(--color-primary-disabled);
+  color: var(--color-text-disabled);
 }
 
 :host ::ng-deep .btn-secondary .p-button {
-  background-color: #FFFFFF;
-  border-radius: 100px;
-  color: #000066;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 11px 20px;
-  border: 2px solid #000066;
-  height: 41px;
+  background-color: var(--color-secondary);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-blue);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--padding-pill-y) var(--padding-pill-x);
+  border: var(--secondary-border-width) solid var(--color-secondary-border-color);
+  height: var(--height-btn);
 }
 :host ::ng-deep .btn-secondary .p-button:hover {
-  background-color: rgba(80, 86, 172, 0.2);
-  color:#000066;
-  border: 2px solid #000066;
+  background-color: var(--color-secondary-hover);
+  color:var(--color-text-blue);
+  border: var(--secondary-border-width) solid var(--color-secondary-border-color);
  }
 :host ::ng-deep .btn-secondary .p-button:active {
-  background-color: rgba(130, 138, 227, 0.5);
-  color: #000066;
-  border: 2px solid #000066;
+  background-color: var(--color-secondary-active);
+  color:var(--color-text-blue);
+  border: var(--secondary-border-width) solid var(--color-secondary-border-color);
  }
 :host ::ng-deep .btn-secondary .p-button:disabled {
-  background-color: #C8C5D0;
-  color: #46464F;
-  border-color: #46464F;
+  background-color: var(--color-secondary-disabled);
+  color:var(--color-text-disabled);
+  border: var(--secondary-border-width) solid var(--color-secondary-border-color-disabled);
 }
 
 :host ::ng-deep .btn-icon .p-button{

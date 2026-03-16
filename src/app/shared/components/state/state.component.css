@@ -1,34 +1,34 @@
 .state-aprobado{
   background-color: var(--color-state-approved);
-  color: var(--color-state-text);
+  color: var(--color-text-white);
 }
 
 .state-aprobado-con-observaciones{
   background-color: var(--color-state-approved-with-comments);
-  color: var(--color-state-text);
+  color: var(--color-text-white);
 }
 
 .state-no-aprobado{
   background-color: var(--color-state-rejected);
-  color: var(--color-state-text);
+  color: var(--color-text-white);
 }
 
 .state-en-revision{
   background-color: var(--color-state-under-review);
-  color: var(--color-state-text);
+  color: var(--color-text-white);
 }
 
 .state-evaluado{
   background-color: var(--color-state-evaluated);
-  color: var(--color-state-text);
+  color: var(--color-text-white);
 }
 
 .state-en-desarrollo{
   background-color: var(--color-state-in-development);
-  color: var(--color-state-text);
+  color: var(--color-text-white);
 }
 
 .state-aplazado{
   background-color: var(--color-state-postponed);
-  color: var(--color-state-text);
+  color: var(--color-text-white);
 }
