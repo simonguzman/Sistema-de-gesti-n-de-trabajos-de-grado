@@ -7,7 +7,7 @@
   font-weight: var(--font-weight-semibold);
   padding: var(--padding-pill-y) var(--padding-pill-x);
   border: none;
-  height: var(--height-btn);
+  height: var(--height-pill);
 }
 :host ::ng-deep .btn-primary .p-button:hover {
   background-color: var(--color-primary-hover);
@@ -31,7 +31,7 @@
   font-weight: var(--font-weight-semibold);
   padding: var(--padding-pill-y) var(--padding-pill-x);
   border: var(--secondary-border-width) solid var(--color-secondary-border-color);
-  height: var(--height-btn);
+  height: var(--height-pill);
 }
 :host ::ng-deep .btn-secondary .p-button:hover {
   background-color: var(--color-secondary-hover);
@@ -50,8 +50,8 @@
 }
 
 :host ::ng-deep .btn-icon .p-button{
-  width: 41px;
-  height: 41px;
+  width: var(--height-pill);
+  height: var(--height-pill);
   box-sizing: border-box;
   padding: 0;
 }
