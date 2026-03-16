@@ -1,45 +1,34 @@
-.state-base{
-  display: inline-flex;
-  align-items: center;
-  border-radius: 100px;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 11px 20px;
-  height: 41px;
-}
-
 .state-aprobado{
-  background-color: #249337;
-  color: white;
+  background-color: var(--color-state-approved);
+  color: var(--color-state-text);
 }
 
 .state-aprobado-con-observaciones{
-  background-color: #EC6C1F;
-  color: white;
+  background-color: var(--color-state-approved-with-comments);
+  color: var(--color-state-text);
 }
 
 .state-no-aprobado{
-  background-color: #E52724;
-  color: white;
+  background-color: var(--color-state-rejected);
+  color: var(--color-state-text);
 }
 
 .state-en-revision{
-  background-color: #F8AE15;
-  color: white;
+  background-color: var(--color-state-under-review);
+  color: var(--color-state-text);
 }
 
 .state-evaluado{
-  background-color: #8CBB22;
-  color: white;
+  background-color: var(--color-state-evaluated);
+  color: var(--color-state-text);
 }
 
 .state-en-desarrollo{
-  background-color: #0051C6;
-  color: white;
+  background-color: var(--color-state-in-development);
+  color: var(--color-state-text);
 }
 
 .state-aplazado{
-  background-color: #4C19AF;
-  color: white;
+  background-color: var(--color-state-postponed);
+  color: var(--color-state-text);
 }
