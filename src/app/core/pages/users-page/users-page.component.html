@@ -1,3 +1,10 @@
-<p style="color: black;">users-page works!</p>
-<app-table-component></app-table-component>
-<app-button-component label="Guardar" variant="secondary"></app-button-component>
+<app-table-component
+  [value]="testValue"
+  [columns]="testColumns"
+  emptyMessage="No han sido registrados usuarios en el sistema"
+></app-table-component>
+<app-button-component label="Guardar" variant="primary"></app-button-component>
+<app-state label="No aprobado" [state]="stateList.NO_APROBADO"></app-state>
+<div class="bg-primary text-white p-4">
+  Prueba de color primario
+</div>
