@@ -13,7 +13,7 @@
     [value]="value"
     [columns]="columns"
     [rows]="rows"
-    [paginator]="paginator"
+    [paginator]="true"
     [tableStyle]="{'min-width': '50rem'}"
   >
 
@@ -22,6 +22,7 @@
       <tr>
         @for (col of columns; track col){
          <th
+          scope="col"
           [style.width]="col.width"
           [style.textAlign]="col.type === 'state' || col.type === 'actions' ? 'center' : 'left'"
           >

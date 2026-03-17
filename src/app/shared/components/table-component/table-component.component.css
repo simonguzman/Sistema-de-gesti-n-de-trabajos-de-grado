@@ -3,3 +3,9 @@
   font-size: var(--font-size-section);
   font-weight: var(--font-weight-semibold);
 }
+
+.p-datatable td{
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+}
