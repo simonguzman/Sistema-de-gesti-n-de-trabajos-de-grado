@@ -49,12 +49,21 @@
   /* Spacing properties */
   --padding-pill-y: 11px;
   --padding-pill-x: 20px;
-}
 
+  --p-paginator-nav-button-selected-background: var(--color-primary);
+}
 
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  --p-paginator-nav-button-selected-background: #000066;
+  --p-paginator-nav-button-selected-color: #ffffff;
 }
 
+.p-paginator-page.p-paginator-page-selected:hover {
+  background: #828AE3;
+}
+.p-paginator-page.p-paginator-page-selected:active {
+  background: #5056AC;
+}

@@ -9,3 +9,8 @@
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-regular);
 }
+
+.p-paginator-page.p-paginator-page-selected {
+  background: var(--p-paginator-nav-button-selected-background);
+  color: var(--color-text-white)
+}
