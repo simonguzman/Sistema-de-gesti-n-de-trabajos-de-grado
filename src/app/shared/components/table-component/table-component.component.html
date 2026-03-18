@@ -1,14 +1,4 @@
-<div>
-  <!-- botones de arriba -->
-   @for (btn of headerButtons; track btn) {
-     <app-button-component
-      [label]="btn.label"
-      [icon]="btn.icon"
-      [variant]="btn.variant"
-      (onClick)= "headerButtonClick.emit(btn)"
-     ></app-button-component>
-   }
-
+<div class="overflow-x-auto">
   <p-table
     [value]="value"
     [columns]="columns"
@@ -17,20 +7,36 @@
     [tableStyle]="{'min-width': '50rem'}"
   >
 
+    <!-- botones de arriba -->
+    <ng-template #caption>
+    @if (headerButtons && headerButtons.length > 0) {
+      <div class="flex justify-end gap-2">
+        @for (btn of headerButtons; track btn) {
+          <app-button-component
+            [label]="btn.label"
+            [icon]="btn.icon"
+            [variant]="btn.variant"
+            (onClick)="headerButtonClick.emit(btn)"
+          ></app-button-component>
+        }
+      </div>
+    }
+  </ng-template>
+
     <!-- header -->
-     <ng-template #header let-columns>
+      <ng-template #header let-columns>
       <tr>
         @for (col of columns; track col){
-         <th
+          <th
           scope="col"
           [style.width]="col.width"
           [style.textAlign]="col.type === 'state' || col.type === 'actions' ? 'center' : 'left'"
           >
-           {{ col.header }}
-         </th>
+            {{ col.header }}
+          </th>
         }
       </tr>
-     </ng-template>
+      </ng-template>
 
     <!-- body -->
     <ng-template #body let-rowData let-columns="columns">
@@ -38,7 +44,9 @@
         @for (col of columns; track col) {
           <td [style.textAlign]="col.type === 'state' || col.type === 'actions' ? 'center' : 'left'">
             @if (col.type === 'text' || !col.type) {
-              {{ rowData[col.field] }}
+              <span class="block w-full overflow-hidden whitespace-nowrap text-ellipsis " [pTooltip]="rowData[col.field]" tooltipPosition="top">
+                {{ rowData[col.field] }}
+              </span>
             }
             @if (col.type === 'state') {
               <app-state
@@ -61,14 +69,15 @@
     </ng-template>
 
     <!-- empty state -->
-     <ng-template #emptymessage>
+      <ng-template #emptymessage>
       <tr>
         <td [colSpan]="columns.length">
           <app-empty-state [message]="emptyMessage"></app-empty-state>
         </td>
       </tr>
-     </ng-template>
+      </ng-template>
 
 
   </p-table>
+
 </div>

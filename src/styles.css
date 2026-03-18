@@ -59,6 +59,11 @@ html, body {
   height: 100%;
   --p-paginator-nav-button-selected-background: #000066;
   --p-paginator-nav-button-selected-color: #ffffff;
+  --p-tooltip-background: rgba(234, 240, 251, 0.9);
+  --p-tooltip-color: #000000;
+  --p-tooltip-border-radius: 10px;
+  --p-tooltip-padding: 0.5rem 0.75rem;
+  --p-tooltip-max-width: 20rem;
 }
 
 .p-paginator-page.p-paginator-page-selected:hover {
@@ -66,4 +71,8 @@ html, body {
 }
 .p-paginator-page.p-paginator-page-selected:active {
   background: #5056AC;
+}
+
+.p-tooltip .p-tooltip-text {
+  border: 1px solid rgba(101, 183, 65, 0.24);
 }

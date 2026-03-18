@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, Output, output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { StateComponent } from '../state/state.component';
 import { ButtonComponent } from '../button-component/button-component.component';
@@ -26,7 +27,7 @@ export interface Column{
 
 @Component({
   selector: 'app-table-component',
-  imports: [ CommonModule, TableModule, ButtonComponent, StateComponent, EmptyStateComponent],
+  imports: [ CommonModule, TableModule, ButtonComponent, StateComponent, EmptyStateComponent, TooltipModule],
   templateUrl: './table-component.component.html',
   styleUrl: './table-component.component.css'
 })
@@ -34,7 +35,7 @@ export class TableComponent {
 
   @Input() value: any[] = [];
   @Input() columns: Column[] = [];
-  @Input() rows: number = 10;
+  @Input() rows: number = 5;
   @Input() paginator : boolean = false;
   @Input() headerButtons?: TableButton[];
   @Input() emptyMessage: string = 'No hay datos registrados en el sistema';

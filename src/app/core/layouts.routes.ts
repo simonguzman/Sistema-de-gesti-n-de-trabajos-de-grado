@@ -1,11 +1,5 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
-import { NotificationsPageComponent } from './pages/notifications-page/notifications-page.component';
-import { UsersPageComponent } from './pages/users-page/users-page.component';
-import { ProposalPageComponent } from './pages/proposal-page/proposal-page.component';
-import { PreliminaryDraftPageComponent } from './pages/preliminary-draft-page/preliminary-draft-page.component';
-import { ThesisWorkPageComponent } from './pages/thesis-work-page/thesis-work-page.component';
-import { StatisticsPageComponent } from './pages/statistics-page/statistics-page.component';
 
 export const layoutsRoutes: Routes = [
   {
@@ -19,31 +13,37 @@ export const layoutsRoutes: Routes = [
       },
       {
         path:'notifications',
-        component: NotificationsPageComponent,
+        loadChildren: () => import('../modules/notifications/notifications.routes')
+          .then(m => m.notificationsRoutes)
       },
       {
         path:'users',
-        component: UsersPageComponent,
+        loadChildren: () => import('../modules/users/users.routes')
+          .then(m => m.usersRoutes),
       },
       {
         path:'proposal',
-        component: ProposalPageComponent,
+        loadChildren: () => import('../modules/proposal/proposal.routes')
+          .then(m => m.proposalRoutes)
       },
       {
         path:'preliminary-draft',
-        component: PreliminaryDraftPageComponent,
+        loadChildren: () => import('../modules/preliminary-draft/preliminary-draft.routes')
+          .then(m => m.preliminaryDraftRoutes)
       },
       {
         path:'thesis-work',
-        component: ThesisWorkPageComponent,
+        loadChildren: () => import('../modules/thesis-work/thesis-work.routes')
+          .then(m => m.thesisWorkRoutes)
       },
       {
         path:'statistics',
-        component: StatisticsPageComponent,
+        loadChildren: () => import('../modules/statistics/statistics.routes')
+          .then(m => m.statisticsRoutes)
       },
       {
         path:'**',
-        component: NotificationsPageComponent,
+        redirectTo: 'notifications',
       },
 
     ],

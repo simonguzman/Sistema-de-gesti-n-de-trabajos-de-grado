@@ -1,3 +1,7 @@
+:host ::ng-deep .p-datatable table {
+  table-layout: fixed;
+}
+
 .p-datatable th {
   font-family: var(--font-display);
   font-size: var(--font-size-section);
@@ -14,3 +18,5 @@
   background: var(--p-paginator-nav-button-selected-background);
   color: var(--color-text-white)
 }
+
+

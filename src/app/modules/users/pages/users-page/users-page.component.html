@@ -1,4 +1,9 @@
+
 <app-table-component
+  [headerButtons]="[
+    { label: 'Crear usuarios', variant: 'primary' },
+    { label: 'Crear asesores', variant: 'primary' }
+  ]"
   [value]="testValue"
   [columns]="testColumns"
   emptyMessage="No han sido registrados usuarios en el sistema"
