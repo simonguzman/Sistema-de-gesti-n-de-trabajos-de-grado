@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FooterComponent } from '../footer/footer.component';
-import { RouterModule, Router, NavigationEnd } from "@angular/router";
+import { RouterModule, Router, NavigationEnd, ActivatedRoute } from "@angular/router";
 import { HeaderComponent } from "../header/header.component";
 import { SidebarComponent } from "../sidebar/sidebar.component";
-import { filter } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-main-layout',
@@ -12,42 +12,28 @@ import { filter } from 'rxjs/operators';
   styleUrl: './main-layout.component.css',
 })
 export class MainLayoutComponent implements OnInit {
-  currentPageName: string = 'Bandeja de entrada';
-  currentPageTitle: string = 'Bandeja de entrada';
 
-  private pageNames: { [key: string]: string } = {
-    '/notifications': 'Bandeja de entrada',
-    '/users': 'Usuarios',
-    '/proposal': 'Propuesta',
-    '/preliminary-draft': 'Anteproyecto',
-    '/thesis-work': 'Trabajo de grado',
-    '/statistics': 'Estadísticas'
-  };
+  currentPageTitle: string = '';
+  currentPageBreadcrumb: string = '';
 
-  private pageTitles: { [key: string]: string }={
-    '/notifications': 'Bandeja de entrada',
-    '/users': 'Gestión de usuarios',
-    '/proposal': 'Propuestas de trabajo de grado',
-    '/preliminary-draft': 'Anteproyecto de trabajo de grado',
-    '/thesis-work': 'Trabajos de grado en desarrollo',
-    '/statistics': 'Estadísticas'
-  }
-
-  constructor(private router: Router) {}
+  constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
 
   ngOnInit() {
-    this.updateCurrentPageName();
-
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        this.updateCurrentPageName();
+      .pipe(
+          filter(event => event instanceof NavigationEnd),
+          map(() => {
+            let route = this.activatedRoute;
+            while(route.firstChild) route = route.firstChild;
+            return {
+               title: route.snapshot.title ?? 'Inicio',
+               breadcrumb: route.snapshot.data['breadcrumb'] ?? 'Inicio'
+            }
+          })
+        )
+      .subscribe(({title, breadcrumb}) => {
+        this.currentPageTitle = title;
+        this.currentPageBreadcrumb = breadcrumb;
       });
-  }
-
-  private updateCurrentPageName() {
-    const currentUrl = this.router.url;
-    this.currentPageName = this.pageNames[currentUrl] || 'Bandeja de entrada';
-    this.currentPageTitle = this.pageTitles[currentUrl] || this.currentPageName;
   }
 }

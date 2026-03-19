@@ -4,6 +4,8 @@ import { NotificationsPageComponent } from './pages/notifications-page/notificat
 export const notificationsRoutes: Routes = [
   {
     path: '',
-    component: NotificationsPageComponent
+    component: NotificationsPageComponent,
+    title: 'Notificaciones',
+    data: { breadcrumb: 'Notificaciones' }
   }
 ]

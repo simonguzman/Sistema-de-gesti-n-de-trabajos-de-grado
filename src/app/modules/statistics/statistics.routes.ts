@@ -4,6 +4,8 @@ import { StatisticsPageComponent } from './pages/statistics-page/statistics-page
 export const statisticsRoutes: Routes = [
   {
     path: '',
-    component: StatisticsPageComponent
+    component: StatisticsPageComponent,
+    title: 'Estadisticas',
+    data: { breadcrumb: 'Estadisticas' }
   }
 ]

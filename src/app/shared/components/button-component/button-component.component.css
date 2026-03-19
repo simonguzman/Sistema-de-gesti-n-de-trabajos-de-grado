@@ -3,7 +3,7 @@
   border-radius: var(--radius-pill);
   color: var(--color-text-white);
   font-family: var(--font-sans);
-  font-size: var(--font-size-base);
+  font-size: var(--text-size-body);
   font-weight: var(--font-weight-semibold);
   padding: var(--padding-pill-y) var(--padding-pill-x);
   border: none;
@@ -27,7 +27,7 @@
   border-radius: var(--radius-pill);
   color: var(--color-text-blue);
   font-family: var(--font-sans);
-  font-size: var(--font-size-base);
+  font-size: var(--text-size-body);
   font-weight: var(--font-weight-semibold);
   padding: var(--padding-pill-y) var(--padding-pill-x);
   border: var(--secondary-border-width) solid var(--color-secondary-border-color);

@@ -5,5 +5,7 @@ export const usersRoutes: Routes = [
   {
     path:'',
     component: UsersPageComponent,
+    title: 'Gestión de usuarios',
+    data: { breadcrumb: 'Usuarios' }
   },
 ]

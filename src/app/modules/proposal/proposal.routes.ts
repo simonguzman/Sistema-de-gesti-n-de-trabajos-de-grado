@@ -4,6 +4,8 @@ import { ProposalPageComponent } from './pages/proposal-page/proposal-page.compo
 export const proposalRoutes: Routes = [
   {
     path: '',
-    component: ProposalPageComponent
+    component: ProposalPageComponent,
+    title: 'Propuestas de trabajo de grado',
+    data: { breadcrumb: 'Propuestas'}
   },
 ]
