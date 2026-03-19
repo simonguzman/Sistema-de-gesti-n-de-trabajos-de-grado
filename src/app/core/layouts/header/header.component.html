@@ -2,16 +2,16 @@
   <div class="flex items-center justify-between">
     <!-- Logo y Título -->
     <div class="flex items-center gap-6">
-      <h1 class="text-xl font-semibold text-[#000066]">
+      <h1 class="text-xl font-semibold text-primary">
         Sistema de gestión de trabajo de grado
       </h1>
     </div>
 
     <!-- Usuario -->
-    <div class="relative">
+    <div >
       <div
-        class="flex items-center gap-3 cursor-pointer"
-        (click)="toggleMenu($event)"
+        class="relative flex items-center gap-3 cursor-pointer"
+        (click)="onMenuToggle($event)"
       >
         <!-- Avatar -->
         <p-avatar
@@ -23,43 +23,19 @@
 
         <!-- Nombre y Rol -->
         <div class="flex flex-col items-start leading-tight">
-          <p class="text-sm font-semibold text-[#000066]">{{ userName }}</p>
-          <p class="text-xs text-[#000066] opacity-70">{{ userRole }}</p>
+          <p class="text-sm font-semibold text-primary">{{ userName }}</p>
+          <p class="text-xs text-primary opacity-70">{{ userRole }}</p>
         </div>
 
-        <!-- Flecha -->
-        <img
-          [src]="
-            isMenuOpen
-              ? 'assets/icons/arrow_drop_down_24dp_000066_FILL0_wght400_GRAD0_opsz24.png'
-              : 'assets/icons/arrow_right_24dp_000066_FILL0_wght400_GRAD0_opsz24.png'
-          "
+         <img
+          [src]="isMenuOpen
+            ? 'assets/icons/arrow_drop_down_24dp_000066_FILL0_wght400_GRAD0_opsz24.png'
+            : 'assets/icons/arrow_right_24dp_000066_FILL0_wght400_GRAD0_opsz24.png'"
           alt="Abrir menú"
           class="w-4 h-4 ml-2 transition-transform duration-200"
         />
       </div>
-
-      <!-- Menú desplegable -->
-      <div
-        *ngIf="isMenuOpen"
-        class="absolute right-[-8px] mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
-        (mouseleave)="closeMenu()"
-      >
-        <button
-          class="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md"
-          (click)="logout()"
-        >
-          Cerrar sesión
-        </button>
-        <button
-          class="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md"
-          (click)="logout()"
-        >
-          Mi perfil
-        </button>
-      </div>
-
-
+      <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" (onHide)="isMenuOpen = false"></p-menu>
     </div>
   </div>
 </header>

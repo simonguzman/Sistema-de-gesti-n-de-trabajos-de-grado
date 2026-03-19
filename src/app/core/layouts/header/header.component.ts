@@ -21,25 +21,23 @@ export class HeaderComponent {
   userAvatar = 'assets/images/avatar-default.png';
 
   menuItems: MenuItem[] = [
-    {
-      label: 'Mi Perfil',
-      icon: 'pi pi-user',
-      command: () => this.goToProfile()
-    },
-    {
-      label: 'Configuración',
-      icon: 'pi pi-cog',
-      command: () => this.goToSettings()
-    },
-    {
-      separator: true
-    },
-    /*{
-      label: 'Cerrar Sesión',
-      icon: 'pi pi-sign-out',
-      command: () => this.logout()
-    }*/
-  ];
+  {
+    label: 'Mi Perfil',
+    icon: 'pi pi-user',
+    command: () => this.goToProfile()
+  },
+  { separator: true },
+  {
+    label: 'Cerrar Sesión',
+    icon: 'pi pi-sign-out',
+    command: () => this.logout()
+  }
+];
+
+  onMenuToggle(event: Event) {
+    this.isMenuOpen = !this.isMenuOpen;
+    this.menu.toggle(event);
+  }
 
   goToProfile() {
     // Navegar a perfil
@@ -48,12 +46,6 @@ export class HeaderComponent {
   goToSettings() {
     // Navegar a configuración
   }
-
-  toggleMenu(event: Event) {
-    this.isMenuOpen = !this.isMenuOpen;
-    this.menu.toggle(event);
-  }
-
   closeMenu() {
   this.isMenuOpen = false;
 }
