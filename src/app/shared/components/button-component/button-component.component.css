@@ -4,7 +4,7 @@
   color: var(--color-text-white);
   font-family: var(--font-sans);
   font-size: var(--text-size-body);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-semibold-weight);
   padding: var(--padding-pill-y) var(--padding-pill-x);
   border: none;
   height: var(--height-pill);
@@ -28,7 +28,7 @@
   color: var(--color-text-blue);
   font-family: var(--font-sans);
   font-size: var(--text-size-body);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-semibold-weight);
   padding: var(--padding-pill-y) var(--padding-pill-x);
   border: var(--secondary-border-width) solid var(--color-secondary-border-color);
   height: var(--height-pill);
