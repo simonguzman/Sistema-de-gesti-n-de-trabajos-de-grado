@@ -4,14 +4,14 @@
 }
 
 .footer {
-  background-color: #ffffff;
+  background-color: var(--color-white);
   border-top: 2px solid #cbd5e1;
 }
 
 .footer-inner {
   padding: 10px 24px; /* Alineado con p-6 del main */
   text-align: center;
-  font-size: 0.75rem;
+  font-size: var(--text-size-role-footer);
   color: #6b7280;
 }
 
