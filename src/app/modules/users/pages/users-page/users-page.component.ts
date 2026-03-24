@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { TableComponent, Column } from "../../../../shared/components/table-component/table-component.component";
 import { stateList } from '../../../../shared/components/state/state.component';
+import { FileUploadModalComponent } from "../../../../shared/components/file-upload-modal/file-upload-modal.component";
 
 @Component({
   selector: 'app-users-page',
-  imports: [TableComponent],
+  imports: [TableComponent, FileUploadModalComponent],
   templateUrl: './users-page.component.html',
   styleUrl: './users-page.component.css',
 })
@@ -45,6 +46,12 @@ export class UsersPageComponent {
     apellidos: 'Guzmán Anaya',
     estado: 'Activo'
   }];
+
+  isModalOpen = false;
+
+  handleFileUploaded(event: { fileName: string, file: File }) {
+    console.log('Archivo recibido:', event.fileName);
+  }
 }
 
 

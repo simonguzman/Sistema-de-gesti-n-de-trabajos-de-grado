@@ -1,1 +1,11 @@
 <p style="color: black;">statistics-page works!</p>
+<app-file-upload-modal
+  [isOpen]="isModalOpen"
+  [description]="'Subir documento de usuario'"
+  [uploadedBy]="'Cargado por el estudiante'"
+  (onFileUploaded)="handleFileUploaded($event)"
+  (onClose)="isModalOpen = false"
+></app-file-upload-modal>
+
+<!-- Botón para abrir el modal -->
+<button (click)="isModalOpen = true">Cargar archivo</button>
