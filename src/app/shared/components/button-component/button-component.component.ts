@@ -16,7 +16,16 @@ export class ButtonComponent {
 
   @Output() onClick = new EventEmitter<void>();
 
+  get buttonClass() : string {
+    const base = 'custom-btn';
+    const variantClass = this.variant === 'primary' ? 'btn-primary' : 'btn-secondary';
+    const iconClass = (this.icon && !this.label) ? 'btn-icon' : '';
+    return `${base} ${variantClass} ${iconClass}`
+  }
+
   onButtonClick() {
-    this.onClick.emit();
+    if(!this.disabled){
+      this.onClick.emit();
+    }
   }
  }

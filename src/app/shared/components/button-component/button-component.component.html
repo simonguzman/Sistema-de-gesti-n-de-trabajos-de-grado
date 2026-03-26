@@ -1,16 +1,12 @@
 <p-button
   [disabled]="disabled"
-  [ngClass]="{
-    'btn-primary': variant === 'primary',
-    'btn-secondary': variant === 'secondary',
-    'btn-icon': icon && !label
-  }"
+  [styleClass]="buttonClass"
   (onClick)="onButtonClick()"
 >
   @if (icon) {
     <span class="material-symbols-outlined">{{ icon }}</span>
   }
   @if (label) {
-    {{ label }}
+    <span class="p-button-label">{{ label }}</span>
   }
 </p-button>

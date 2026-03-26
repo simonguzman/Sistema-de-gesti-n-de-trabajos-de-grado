@@ -71,6 +71,63 @@ html, body {
   --p-tooltip-max-width: 20rem;
 }
 
+/* --- Botones del Sistema (Basados en PrimeNG) --- */
+
+/* 1. La Base: Lo que comparten todos los botones */
+.p-button.custom-btn{
+  border-radius: var(--radius-pill) !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--text-size-body) !important;
+  font-weight: var(--font-semibold-weight) !important;
+  height: var(--height-pill) !important;
+  border: none;
+}
+.btn-primary.p-button {
+  background-color: var(--color-primary);
+  color: var(--color-text-white);
+  padding: var(--padding-pill-y) var(--padding-pill-x);
+}
+/* 2. Variante Primaria */
+.btn-primary.p-button:hover {
+  background-color: var(--color-primary-hover) !important;
+ }
+ .btn-primary.p-button:active {
+  background-color: var(--color-primary-active) !important;
+ }
+.btn-primary.p-button:disabled {
+  background-color: var(--color-primary-disabled) !important;
+  color: var(--color-text-disabled) !important;
+}
+/* 3. Variante Secundaria */
+.btn-secondary.p-button {
+  background-color: var(--color-secondary);
+  color: var(--color-text-blue);
+  border: var(--secondary-border-width) solid var(--color-secondary-border-color) !important;
+  padding: var(--padding-pill-y) var(--padding-pill-x);
+}
+.btn-secondary.p-button:hover {
+  background-color: var(--color-secondary-hover)!important;
+  color:var(--color-text-blue)!important;
+ }
+.btn-secondary.p-button:active {
+  background-color: var(--color-secondary-active)!important;
+  color:var(--color-text-blue)!important;
+ }
+.btn-secondary.p-button:disabled {
+  background-color: var(--color-secondary-disabled)!important;
+  color:var(--color-text-disabled)!important;
+  border: var(--secondary-border-width) solid var(--color-secondary-border-color-disabled)!important;
+}
+/* 4. Variante Icono (Solo icono) */
+.btn-icon.p-button{
+  width: var(--height-pill);
+  height: var(--height-pill);
+  box-sizing: border-box;
+  padding: 0;
+}
+
+
+
 /* --- Estados del Sistema (Pills/Badges) --- */
 
 .badge-state {
