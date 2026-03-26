@@ -75,19 +75,21 @@ html, body {
 
 /* 1. La Base: Lo que comparten todos los botones */
 .p-button.custom-btn{
-  border-radius: var(--radius-pill) !important;
-  font-family: var(--font-sans) !important;
-  font-size: var(--text-size-body) !important;
-  font-weight: var(--font-semibold-weight) !important;
-  height: var(--height-pill) !important;
+  border-radius: var(--radius-pill) ;
+  font-family: var(--font-sans) ;
+  font-size: var(--text-size-body);
+  height: var(--height-pill) ;
   border: none;
 }
+.custom-btn .p-button-label {
+    font-weight: var(--font-semibold-weight);
+}
+/* 2. Variante Primaria */
 .btn-primary.p-button {
   background-color: var(--color-primary);
   color: var(--color-text-white);
   padding: var(--padding-pill-y) var(--padding-pill-x);
 }
-/* 2. Variante Primaria */
 .btn-primary.p-button:hover {
   background-color: var(--color-primary-hover) !important;
  }
@@ -126,8 +128,6 @@ html, body {
   padding: 0;
 }
 
-
-
 /* --- Estados del Sistema (Pills/Badges) --- */
 
 .badge-state {
@@ -156,6 +156,23 @@ html, body {
 .state-evaluado { background-color: var(--color-state-evaluated); }
 .state-desarrollo { background-color: var(--color-state-in-development); }
 .state-aplazado { background-color: var(--color-state-postponed); }
+
+/* --- Contenedores Especiales (Glassmorphism) --- */
+
+.empty-state-card.p-card {
+  background-color: rgba(250, 250, 250, 0.71) !important;
+  border: 1px solid rgba(101, 183, 65, 0.24) !important;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
+  /* El backdrop-blur lo manejamos mejor desde la clase global para consistencia */
+  backdrop-filter: blur(4px);
+}
+
+/* Estilo para el texto dentro del empty state */
+.empty-state-message {
+  font-weight: var(--font-semibold-weight);
+  font-size: var(--text-size-body);
+  color: var(--color-primary);
+}
 
 .p-datatable .p-datatable-table {
   table-layout: fixed !important; /* El !important aquí se justifica porque estamos sobreescribiendo una librería */
