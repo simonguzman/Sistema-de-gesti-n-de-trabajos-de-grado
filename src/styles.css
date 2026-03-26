@@ -174,35 +174,90 @@ html, body {
   color: var(--color-primary);
 }
 
+/* ==========================================================================
+   COMPONENTES DE TABLA (PrimeNG Overrides)
+   Propósito: Estandarizar la apariencia de las tablas en todo el sistema
+   según la identidad visual de la Universidad.
+   ========================================================================== */
+
+/**
+ * 1. Estructura de la Tabla
+ * Forzamos 'table-layout: fixed' para que el ancho de las columnas definido
+ * en el JSON de configuración se respete estrictamente, evitando que el
+ * contenido largo (como títulos) deforme la tabla.
+ */
 .p-datatable .p-datatable-table {
-  table-layout: fixed !important; /* El !important aquí se justifica porque estamos sobreescribiendo una librería */
+  table-layout: fixed !important;
 }
 
+/**
+ * 2. Encabezados (Headers)
+ * Aplicamos la tipografía 'Display' (Fira Sans) para jerarquía visual.
+ */
 .p-datatable th {
   font-family: var(--font-display);
   font-size: var(--text-size-section);
   font-weight: var(--font-semibold-weight);
 }
 
-.p-datatable td{
+/**
+ * 3. Celdas de Datos (Body)
+ * Usamos la fuente 'Sans' (Open Sans) para máxima legibilidad en datos densos.
+ */
+.p-datatable td {
   font-family: var(--font-sans);
   font-size: var(--text-size-body);
   font-weight: var(--font-regular-weight);
 }
 
+/**
+ * 4. Paginador Personalizado
+ * Sobreescribimos los colores de PrimeNG para alinearlos con la paleta primaria.
+ */
 .p-paginator-page.p-paginator-page-selected {
-  background: var(--p-paginator-nav-button-selected-background);
-  color: var(--color-text-white)
+  background: var(--p-paginator-nav-button-selected-background) !important;
+  color: var(--color-text-white);
 }
 
 .p-paginator-page.p-paginator-page-selected:hover {
-  background: #828AE3;
-}
-.p-paginator-page.p-paginator-page-selected:active {
-  background: #5056AC;
+  background: #828AE3 !important; /* Variante más clara para feedback visual */
 }
 
+.p-paginator-page.p-paginator-page-selected:active {
+  background: #5056AC !important; /* Variante más oscura para estado de clic */
+}
+
+/**
+ * 5. Tooltips de Ayuda
+ * Añadimos un borde sutil que combine con el sistema de diseño para
+ * mejorar el contraste sobre fondos con desenfoque (glassmorphism).
+ */
 .p-tooltip .p-tooltip-text {
   border: 1px solid rgba(101, 183, 65, 0.24);
 }
 
+/* ==========================================================================
+   SISTEMA DE MODALES (PrimeNG Overrides)
+   ========================================================================== */
+
+/* Contenedor principal del modal */
+.custom-modal.p-dialog {
+  background-color: rgba(250, 250, 250, 0.9) !important;
+  border: 1px solid rgba(101, 183, 65, 0.24) !important;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(4px); /* Le da un toque moderno al fondo translúcido */
+}
+
+/* PrimeNG le pone fondo blanco por defecto al contenido y al header,
+   debemos hacerlos transparentes para que se vea tu color de fondo */
+.custom-modal .p-dialog-header,
+.custom-modal .p-dialog-content,
+.custom-modal .p-dialog-footer {
+  background: transparent !important;
+  color: var(--color-text-body, #777680) !important;
+}
+
+/* Opacamos un poco el fondo oscuro que sale detrás del modal */
+.p-dialog-mask {
+  background-color: rgba(0, 0, 0, 0.4) !important;
+}

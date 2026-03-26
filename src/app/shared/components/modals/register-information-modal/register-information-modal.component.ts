@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { stateList } from '../state/state.component';
+import { stateList } from '../../state/state.component';
 
 @Component({
   selector: 'app-register-information-modal',

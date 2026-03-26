@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { TableComponent, Column } from "../../../../shared/components/table-component/table-component.component";
 import { stateList } from '../../../../shared/components/state/state.component';
-import { FileUploadModalComponent } from "../../../../shared/components/file-upload-modal/file-upload-modal.component";
+import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
 import { ButtonComponent } from '../../../../shared/components/button-component/button-component.component';
-import { EvaluationModalComponent } from '../../../../shared/components/evaluation-modal/evaluation-modal.component';
+import { EvaluationModalComponent } from '../../../../shared/components/modals/evaluation-modal/evaluation-modal.component';
 
 @Component({
   selector: 'app-users-page',
@@ -25,7 +25,7 @@ export class UsersPageComponent {
       header: 'Descripción',
       type: 'actions',
       actions: [
-        {action:'ver roles asignados', label: 'Ver roles asignados'}
+        {action:'ver roles asignados', label: 'Ver roles asignados', variant:'primary'}
       ],
       width: '20%'
     },
@@ -34,9 +34,9 @@ export class UsersPageComponent {
     header: 'Acciones',
     type: 'actions',
     actions: [
-      { action: 'ver',     icon: 'visibility' },
-      { action: 'editar',  icon: 'edit' },
-      { action: 'eliminar',icon: 'delete' }
+      { action: 'ver',     icon: 'visibility', variant: 'primary' },
+      { action: 'editar',  icon: 'edit', variant: 'primary' },
+      { action: 'eliminar',icon: 'delete', variant: 'primary' }
     ],
     width: '20%'
     },

@@ -8,13 +8,14 @@ import { EmptyStateComponent } from '../empty-state/empty-state.component';
 export interface TableButton{
   label?: string;
   icon?: string;
-  variant: 'primary' | 'secondary'
+  variant: 'primary' | 'secondary';
 }
 
 export interface ActionButton{
   action: string;
   label?: string;
   icon?: string;
+  variant: 'primary' | 'secondary'
 }
 export interface Column{
   field: string;

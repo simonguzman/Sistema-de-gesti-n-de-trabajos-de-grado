@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
-import { stateList } from '../state/state.component';
+import { stateList } from '../../state/state.component';
 
 @Component({
   selector: 'app-evaluation-modal',

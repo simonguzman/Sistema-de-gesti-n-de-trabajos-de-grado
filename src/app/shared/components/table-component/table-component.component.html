@@ -55,13 +55,16 @@
               ></app-state>
             }
             @if (col.type === 'actions') {
-              @for (btn of col.actions; track btn) {
-                <app-button-component
-                  [label]="btn.label"
-                  [icon]="btn.icon"
-                  (onClick)="actionClick.emit({action:btn.action, row: rowData})"
-                ></app-button-component>
-              }
+              <div class="flex justify-center items-center gap-0.5">
+                @for (btn of col.actions; track btn) {
+                  <app-button-component
+                    [label]="btn.label"
+                    [icon]="btn.icon"
+                    [variant]="btn.variant || 'primary'"
+                    (onClick)="actionClick.emit({action:btn.action, row: rowData})"
+                  ></app-button-component>
+                }
+              </div>
             }
           </td>
         }
