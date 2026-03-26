@@ -15,7 +15,7 @@ export class ProposalPageComponent {
 
     testColumns: Column[] = [
       { field: 'titulo', header: 'Titulo', type: 'text', width: '30%' },
-      { field: 'modalidad', header: 'Modalidad', type: 'text', width: '15%'},
+      { field: 'modalidad', header: 'Modalidad', type: 'text', width: 'auto'},
       {
         field: 'descripción',
         header: 'Descripción',
@@ -23,9 +23,9 @@ export class ProposalPageComponent {
         actions: [
           {action:'ver descripción', label: 'Ver descripción'}
         ],
-        width: '20%'
+        width: 'auto'
       },
-      { field: 'estado', header: 'Estado', type: 'state', width: '15%' },
+      { field: 'estado', header: 'Estado', type: 'state', width: 'auto' },
       {
       field: 'acciones',
       header: 'Acciones',
@@ -35,7 +35,7 @@ export class ProposalPageComponent {
         { action: 'editar',  icon: 'edit' },
         { action: 'eliminar',icon: 'delete' }
       ],
-      width: '20%'
+      width: 'auto'
       },
     ];
 

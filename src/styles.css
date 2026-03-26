@@ -71,6 +71,56 @@ html, body {
   --p-tooltip-max-width: 20rem;
 }
 
+/* --- Estados del Sistema (Pills/Badges) --- */
+
+.badge-state {
+  /* Estilos base para todos los estados */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  height: var(--height-pill);
+  padding: var(--padding-pill-y) var(--padding-pill-x);
+  font-weight: var(--font-semibold-weight);
+  font-size: var(--text-size-body);
+  color: var(--color-text-white);
+  text-align: center;
+  white-space: normal;      /* Permite que el texto salte */
+  max-width: 140px;         /* Limita el ancho máximo del Pill */
+  line-height: 1.2;         /* Ajusta el espacio entre líneas para que se vea compacto */
+  word-wrap: break-word;    /* Rompe palabras si es necesario */
+}
+
+/* Variantes de color usando tus variables @theme */
+.state-aprobado { background-color: var(--color-state-approved); }
+.state-aprobado-observaciones { background-color: var(--color-state-approved-with-comments); }
+.state-no-aprobado { background-color: var(--color-state-rejected); }
+.state-revision { background-color: var(--color-state-under-review); }
+.state-evaluado { background-color: var(--color-state-evaluated); }
+.state-desarrollo { background-color: var(--color-state-in-development); }
+.state-aplazado { background-color: var(--color-state-postponed); }
+
+.p-datatable .p-datatable-table {
+  table-layout: fixed !important; /* El !important aquí se justifica porque estamos sobreescribiendo una librería */
+}
+
+.p-datatable th {
+  font-family: var(--font-display);
+  font-size: var(--text-size-section);
+  font-weight: var(--font-semibold-weight);
+}
+
+.p-datatable td{
+  font-family: var(--font-sans);
+  font-size: var(--text-size-body);
+  font-weight: var(--font-regular-weight);
+}
+
+.p-paginator-page.p-paginator-page-selected {
+  background: var(--p-paginator-nav-button-selected-background);
+  color: var(--color-text-white)
+}
+
 .p-paginator-page.p-paginator-page-selected:hover {
   background: #828AE3;
 }
@@ -81,3 +131,4 @@ html, body {
 .p-tooltip .p-tooltip-text {
   border: 1px solid rgba(101, 183, 65, 0.24);
 }
+

@@ -2,10 +2,12 @@ import { Component } from '@angular/core';
 import { TableComponent, Column } from "../../../../shared/components/table-component/table-component.component";
 import { stateList } from '../../../../shared/components/state/state.component';
 import { FileUploadModalComponent } from "../../../../shared/components/file-upload-modal/file-upload-modal.component";
+import { ButtonComponent } from '../../../../shared/components/button-component/button-component.component';
+import { EvaluationModalComponent } from '../../../../shared/components/evaluation-modal/evaluation-modal.component';
 
 @Component({
   selector: 'app-users-page',
-  imports: [TableComponent, FileUploadModalComponent],
+  imports: [TableComponent, FileUploadModalComponent, ButtonComponent, EvaluationModalComponent],
   templateUrl: './users-page.component.html',
   styleUrl: './users-page.component.css',
 })

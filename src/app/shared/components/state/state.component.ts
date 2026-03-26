@@ -24,17 +24,18 @@ export class StateComponent {
   @Input() label?: string;
   @Input() state?: stateList;
 
+  private readonly STATE_MAP: Record<string, string> = {
+    [stateList.APROBADO]: 'state-aprobado',
+    [stateList.APROBADO_CON_OBSERVACIONES]: 'state-aprobado-observaciones',
+    [stateList.NO_APROBADO]: 'state-no-aprobado',
+    [stateList.EN_REVISION]: 'state-revision',
+    [stateList.EVALUADO]: 'state-evaluado',
+    [stateList.EN_DESARROLLO]: 'state-desarrollo',
+    [stateList.APLAZADO]: 'state-aplazado'
+  }
+
   getState(): string {
-    switch(this.state){
-      case this.stateList.APROBADO: return 'state-aprobado'
-      case this.stateList.APROBADO_CON_OBSERVACIONES: return 'state-aprobado-con-observaciones'
-      case this.stateList.NO_APROBADO: return 'state-no-aprobado'
-      case this.stateList.APLAZADO: return 'state-aplazado'
-      case this.stateList.EN_DESARROLLO: return 'state-en-desarrollo'
-      case this.stateList.EN_REVISION: return 'state-en-revision'
-      case this.stateList.EVALUADO: return 'state-evaluado'
-      default: return ''
-    }
+    return this.state ? (this.STATE_MAP[this.state] || '') : '';
   }
 
 }
