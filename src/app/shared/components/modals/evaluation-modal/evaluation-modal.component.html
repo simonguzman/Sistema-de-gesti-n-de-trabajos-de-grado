@@ -47,11 +47,32 @@
       Archivos adjuntos
     </h3>
     @if (documents && documents.length > 0) {
-      <ul class="list-disc pl-5 font-sans text-sm text-gray-700 m-0">
-        @for (doc of documents; track doc) {
-          <li>{{ doc }}</li>
+      <div class="flex flex-col gap-3"> @for (doc of documents; track doc) {
+
+          <div class="flex items-center justify-between bg-white p-2.5 rounded-lg border border-gray-100 shadow-sm transition-hover hover:bg-gray-50/50">
+
+            <div class="flex items-center gap-3 pr-4 overflow-hidden">
+              <span class="material-symbols-outlined text-[#DB141C] text-3xl flex-shrink-0">
+                picture_as_pdf </span>
+
+              <div class="flex-grow overflow-hidden">
+                <p class="font-sans text-sm text-gray-700 m-0 truncate" [pTooltip]="doc">
+                  {{ doc }}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex-shrink-0">
+              <app-button-component
+                [label]="'Descargar'"
+                [variant]="'primary'"
+                (onClick)="downloadFile(doc)"
+              ></app-button-component>
+            </div>
+
+          </div>
         }
-      </ul>
+      </div>
     } @else {
       <p class="font-sans text-sm text-gray-700 m-0">
         No han sido cargados archivos a la evaluación.

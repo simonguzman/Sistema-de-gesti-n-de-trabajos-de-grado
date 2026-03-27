@@ -25,14 +25,14 @@
   @if (uploadedFile) {
     <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 mt-2">
       <div class="flex items-center gap-3">
-        <span class="material-symbols-outlined text-red-500">picture_as_pdf</span>
+        <span class="material-symbols-outlined text-[#DB141C]">picture_as_pdf</span>
         <div>
           <p class="font-semibold text-sm">{{ uploadedFile.name }}</p>
           <p class="text-xs opacity-70">Subido por: {{ uploadedBy }}</p>
         </div>
       </div>
 
-      <button (click)="removeFile()" class="text-gray-400 hover:text-red-500 transition-colors">
+      <button (click)="removeFile()" class="text-gray-400 hover:text-[#DB141C] transition-colors">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>

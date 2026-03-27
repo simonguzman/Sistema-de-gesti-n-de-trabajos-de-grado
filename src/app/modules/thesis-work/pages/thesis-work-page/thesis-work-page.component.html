@@ -19,3 +19,21 @@
   (onClose)="cerrarModal()"
 ></app-evaluation-modal>
 <app-button-component label="Cargar archivos" variant="secondary" (click)="mostrarModalEvaluacion = true"></app-button-component>
+
+<app-register-information-modal
+  [isOpen]="mostrarModalRegistro"
+  [modalHeader]="mockRegistro.header"
+  [subTitle]="mockRegistro.sub"
+  [title]="mockRegistro.titulo"
+  [modality]="mockRegistro.modalidad"
+  [student]="mockRegistro.estudiante"
+  [director]="mockRegistro.director"
+  [codirector]="mockRegistro.codirector"
+  [adviser]="mockRegistro.asesor"
+  [chargeDate]="mockRegistro.fecha"
+  [state]="mockRegistro.estado"
+  [documents]="mockRegistro.docs"
+  (onClose)="cerrarRegistro()"
+  (onDownloadFile)="descargarDesdeRegistro($event)"
+></app-register-information-modal>
+<app-button-component label="Cargar archivos" variant="secondary" (click)="mostrarModalRegistro = true"></app-button-component>
