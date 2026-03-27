@@ -37,3 +37,10 @@
   (onDownloadFile)="descargarDesdeRegistro($event)"
 ></app-register-information-modal>
 <app-button-component label="Cargar archivos" variant="secondary" (click)="mostrarModalRegistro = true"></app-button-component>
+<app-confirmation-action-modal
+  [isOpen]="mostrarConfirmacion"
+  [description]="'Usted a seleccionado la opción de guardar la evaluación de los avances registrados, esto notificara a los actores involucrados sobre la evaluación para realizar las acciones pertinentes ¿Desea guardar la evaluación?'"
+  (onClose)="mostrarConfirmacion = false"
+  (onConfirm)="miFuncionDeGuardado()"
+></app-confirmation-action-modal>
+<app-button-component label="confirmar accion" variant="primary" (onClick)="mostrarConfirmacion = true"></app-button-component>

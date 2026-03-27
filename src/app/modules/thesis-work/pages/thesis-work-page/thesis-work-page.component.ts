@@ -4,10 +4,11 @@ import { Column, TableComponent } from '../../../../shared/components/table-comp
 import { EvaluationModalComponent } from '../../../../shared/components/modals/evaluation-modal/evaluation-modal.component';
 import { ButtonComponent } from '../../../../shared/components/button-component/button-component.component';
 import { RegisterInformationModalComponent } from '../../../../shared/components/modals/register-information-modal/register-information-modal.component';
+import { ConfirmationActionModalComponent } from '../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component';
 
 @Component({
   selector: 'app-thesis-work-page',
-  imports: [TableComponent, EvaluationModalComponent, ButtonComponent, RegisterInformationModalComponent],
+  imports: [TableComponent, EvaluationModalComponent, ButtonComponent, RegisterInformationModalComponent, ConfirmationActionModalComponent],
   templateUrl: './thesis-work-page.component.html',
   styleUrl: './thesis-work-page.component.css',
 })
@@ -101,4 +102,8 @@ cerrarRegistro() { this.mostrarModalRegistro = false; }
 descargarDesdeRegistro(file: string) {
   console.log('Descargando desde Registro:', file);
 }
+
+  mostrarConfirmacion: boolean = false;
+
+  miFuncionDeGuardado() { this.mostrarConfirmacion = true}
 }
