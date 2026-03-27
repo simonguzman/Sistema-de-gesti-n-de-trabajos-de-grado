@@ -106,4 +106,6 @@ descargarDesdeRegistro(file: string) {
   mostrarConfirmacion: boolean = false;
 
   miFuncionDeGuardado() { this.mostrarConfirmacion = true}
+  // En el padre
+
 }
