@@ -8,3 +8,14 @@
 <div class="bg-primary text-white p-4">
   Prueba de color primario
 </div> -->
+<app-evaluation-modal
+  [isOpen]="mostrarModalEvaluacion"
+  [name]="mockName"
+  [role]="mockRole"
+  [evaluationDate]="mockDate"
+  [state]="mockState"
+  [comments]="mockComments"
+  [documents]="mockDocs"
+  (onClose)="cerrarModal()"
+></app-evaluation-modal>
+<app-button-component label="Cargar archivos" variant="secondary" (click)="mostrarModalEvaluacion = true"></app-button-component>

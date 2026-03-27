@@ -1,10 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
-import { stateList } from '../../state/state.component';
+import { StateComponent, stateList } from '../../state/state.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-evaluation-modal',
-  imports: [DialogModule],
+  imports: [DialogModule, CommonModule, StateComponent],
   templateUrl: './evaluation-modal.component.html',
   styleUrls: ['./evaluation-modal.component.css']
 })
@@ -14,6 +15,7 @@ export class EvaluationModalComponent{
 
   @Input() isOpen: boolean = false;
   @Input() name: string = '';
+  @Input() role: string = '';
   @Input() evaluationDate: Date = new Date;
   @Input() state?:stateList;
   @Input() comments: string = '';

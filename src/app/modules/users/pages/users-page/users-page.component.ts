@@ -54,6 +54,7 @@ export class UsersPageComponent {
   handleFileUploaded(event: { fileName: string, file: File }) {
     console.log('Archivo recibido:', event.fileName);
   }
+
 }
 
 
