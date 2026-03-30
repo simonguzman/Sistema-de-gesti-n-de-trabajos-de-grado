@@ -3,11 +3,9 @@ import { TableComponent, Column } from "../../../../shared/components/table-comp
 import { stateList } from '../../../../shared/components/state/state.component';
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
 import { ButtonComponent } from '../../../../shared/components/button-component/button-component.component';
-import { EvaluationModalComponent } from '../../../../shared/components/modals/evaluation-modal/evaluation-modal.component';
-
 @Component({
   selector: 'app-users-page',
-  imports: [TableComponent, FileUploadModalComponent, ButtonComponent, EvaluationModalComponent],
+  imports: [TableComponent, FileUploadModalComponent, ButtonComponent],
   templateUrl: './users-page.component.html',
   styleUrl: './users-page.component.css',
 })

@@ -1,6 +1,7 @@
 <app-table-component
   [value]="testValue"
   [columns]="testColumns"
+  (actionClick)="handleTableAction($event)"
   emptyMessage="No han sido registrados propuestas de trabajo de grado en el sistema"
 ></app-table-component>
 <!--  <app-button-component label="Guardar" variant="primary"></app-button-component>
@@ -8,3 +9,9 @@
 <div class="bg-primary text-white p-4">
   Prueba de color primario
 </div> -->
+<app-description-modal
+  [isOpen]="mostrarModalDesc"
+  [titleDescription]="tituloParaModal"
+  [description]="textoParaModal"
+  (onClose)="mostrarModalDesc = false"
+></app-description-modal>

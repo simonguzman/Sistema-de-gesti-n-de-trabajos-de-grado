@@ -1,17 +1,23 @@
 import { Component } from '@angular/core';
 import { Column, TableComponent } from '../../../../shared/components/table-component/table-component.component';
 import { stateList } from '../../../../shared/components/state/state.component';
+import { DescriptionModalComponent } from '../../../../shared/components/modals/description-modal/description-modal.component';
 
 
 @Component({
   selector: 'app-proposal-page',
-  imports: [TableComponent],
+  imports: [TableComponent, DescriptionModalComponent],
   templateUrl: './proposal-page.component.html',
   styleUrl: './proposal-page.component.css',
 })
 export class ProposalPageComponent {
 
    protected stateList = stateList;
+
+   // 3. Variables para controlar el modal
+   mostrarModalDesc: boolean = false;
+   tituloParaModal: string = '';
+   textoParaModal: string = '';
 
     testColumns: Column[] = [
       { field: 'titulo', header: 'Titulo', type: 'text', width: '30%' },
@@ -43,6 +49,7 @@ export class ProposalPageComponent {
       {
         titulo: 'Frontend de las funcionalidades asociadas a la aplicación web para la Facultad de Ingeniería Electrónica y Telecomunicaciones, dedicada a los módulos de Gestión de Trabajos de Grado de los programas de pregrado, Gestión de Estadísticas y Gestión de Notificaciones',
         modalidad: 'Practica profesional',
+        descripcion: 'Desarrollar un prototipo del FrontEnd de una aplicación web para apoyar la gestión de los procesos académicos y administrativos asociados a los trabajos de grado, las estadísticas y las notificaciones de la FIET, facilitando la organización, el seguimiento y la comunicación de la información, con el fin de contribuir al mejoramiento de la eficiencia del proceso y a la satisfacción de los usuarios involucrados. ',
         estado: 'Aprobado',
       },
       {
@@ -71,4 +78,14 @@ export class ProposalPageComponent {
         estado: 'Aprobado',
       },
     ];
+
+    // 4. Función para capturar el evento de la tabla
+  handleTableAction(event: { action: string, row: any }) {
+    if (event.action === 'ver descripción') {
+      this.tituloParaModal = 'Descripción de la propuesta';
+      // Asignamos el contenido de la columna 'titulo' o una propiedad 'descripcion' si existiera
+      this.textoParaModal = event.row.descripcion;
+      this.mostrarModalDesc = true;
+    }
+  }
 }
