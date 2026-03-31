@@ -7,6 +7,7 @@
   [value]="testValue"
   [columns]="testColumns"
   emptyMessage="No han sido registrados usuarios en el sistema"
+  (actionClick)="handleTableAction($event)"
 ></app-table-component>
 <!--  <app-button-component label="Guardar" variant="primary"></app-button-component>
 <app-state label="No aprobado" [state]="stateList.NO_APROBADO"></app-state>
@@ -20,7 +21,18 @@
   (onFileUploaded)="handleFileUploaded($event)"
   (onClose)="isModalOpen = false"
 ></app-file-upload-modal>
-
+<app-roles-modal
+  [(isOpen)]="mostrarModalRoles"
+  [username]="usuarioSeleccionado"
+  [roles]="rolesUsuario"
+  (onSave)="handleSaveRoles($event)"
+></app-roles-modal>
+<app-confirmation-action-modal
+  [isOpen]="mostrarConfirmacion"
+  [description]="'¿Desea guardar los cambios realizados en los roles del usuario? Esta acción notificará a los actores involucrados.'"
+  (onClose)="mostrarConfirmacion = false"
+  (onConfirm)="confirmarCambios()"
+></app-confirmation-action-modal>
 
 
 <!-- Botón para abrir el modal -->
