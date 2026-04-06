@@ -1,19 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { stateList } from '../../../../shared/components/state/state.component';
 import { Column, TableComponent } from '../../../../shared/components/table-component/table-component.component';
 import { EvaluationModalComponent } from '../../../../shared/components/modals/evaluation-modal/evaluation-modal.component';
 import { ButtonComponent } from '../../../../shared/components/button-component/button-component.component';
 import { RegisterInformationModalComponent } from '../../../../shared/components/modals/register-information-modal/register-information-modal.component';
 import { ConfirmationActionModalComponent } from '../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component';
+import { NotificationContainerComponent } from '../../../../shared/components/notifications/components/notification-container/notification-container.component';
+import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 
 @Component({
   selector: 'app-thesis-work-page',
-  imports: [TableComponent, EvaluationModalComponent, ButtonComponent, RegisterInformationModalComponent, ConfirmationActionModalComponent],
+  imports: [TableComponent, EvaluationModalComponent, ButtonComponent, RegisterInformationModalComponent, ConfirmationActionModalComponent, NotificationContainerComponent],
   templateUrl: './thesis-work-page.component.html',
   styleUrl: './thesis-work-page.component.css',
 })
 export class ThesisWorkPageComponent {
 
+  protected notifService = inject(NotificationService);
   protected stateList = stateList;
 
       testColumns: Column[] = [
@@ -71,6 +74,11 @@ export class ThesisWorkPageComponent {
 
   cerrarModal() {
     this.mostrarModalEvaluacion = false;
+    // Ejemplo: confirmación al cerrar una evaluación
+    this.notifService.success(
+      'Evaluación registrada',
+      'La evaluación fue guardada correctamente.'
+    );
   }
   // En ThesisWorkPageComponent
 
@@ -100,12 +108,41 @@ abrirRegistro() { this.mostrarModalRegistro = true; }
 cerrarRegistro() { this.mostrarModalRegistro = false; }
 
 descargarDesdeRegistro(file: string) {
-  console.log('Descargando desde Registro:', file);
-}
+    console.log('Descargando:', file);
+    this.notifService.info(
+      'Descarga iniciada',
+      `El archivo "${file}" se está descargando.`
+    );
+  }
 
   mostrarConfirmacion: boolean = false;
 
   miFuncionDeGuardado() { this.mostrarConfirmacion = true}
-  // En el padre
 
+  // Simular confirmación aceptada desde el modal de confirmación
+  onConfirmacionAceptada() {
+    this.mostrarConfirmacion = false;
+    this.notifService.success(
+      'Acción confirmada',
+      'El registro fue procesado con éxito.'
+    );
+  }
+
+  // Simular error (por ejemplo, fallo en una llamada HTTP)
+  onConfirmacionRechazada() {
+    this.mostrarConfirmacion = false;
+    this.notifService.error(
+      'Solicitud no guardada',
+      'Error en el Sistema. Por favor, intente más tarde.'
+    );
+  }
+
+  // Simular alerta de seguridad
+  onAlertaSeguridad() {
+    this.notifService.security(
+      'Alerta de seguridad',
+      'Por su seguridad, cambie la contraseña de su cuenta.'
+    );
+  }
 }
+

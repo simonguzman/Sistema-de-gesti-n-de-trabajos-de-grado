@@ -44,3 +44,37 @@
   (onConfirm)="miFuncionDeGuardado()"
 ></app-confirmation-action-modal>
 <app-button-component label="confirmar accion" variant="primary" (onClick)="mostrarConfirmacion = true"></app-button-component>
+<!-- Al final del div principal, antes del cierre -->
+<app-notification-container />
+<!-- BLOQUE DE PRUEBA — eliminar cuando termines -->
+<div class="flex flex-wrap gap-3 mb-6 p-4 bg-gray-100 rounded-lg border border-dashed border-gray-300">
+  <span class="text-xs text-gray-500 w-full font-medium">Prueba de notificaciones:</span>
+
+  <button
+    class="px-3 py-1.5 text-xs rounded bg-green-100 text-green-800 border border-green-300 hover:bg-green-200"
+    (click)="notifService.success('Registro exitoso', 'Sus datos se guardaron con éxito.')"
+  >
+    ✓ Confirmación
+  </button>
+
+  <button
+    class="px-3 py-1.5 text-xs rounded bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200"
+    (click)="notifService.info('Texto informativo', 'Comunicar un evento dentro del Sistema.')"
+  >
+    ℹ Info
+  </button>
+
+  <button
+    class="px-3 py-1.5 text-xs rounded bg-red-100 text-red-800 border border-red-300 hover:bg-red-200"
+    (click)="notifService.error('Solicitud no guardada', 'Error en el Sistema. Por favor, intente más tarde.')"
+  >
+    ✕ Error
+  </button>
+
+  <button
+    class="px-3 py-1.5 text-xs rounded bg-orange-100 text-orange-800 border border-orange-300 hover:bg-orange-200"
+    (click)="onAlertaSeguridad()"
+  >
+    ⚠ Seguridad
+  </button>
+</div>

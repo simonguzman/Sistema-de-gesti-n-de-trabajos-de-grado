@@ -1,178 +1,251 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   CONFIGURACIÓN GLOBAL
+   Propósito: Forzar el esquema de color claro en toda la aplicación para
+   garantizar consistencia visual independientemente del sistema operativo.
+   ========================================================================== */
+
 :root {
   color-scheme: light;
 }
 
+/* ==========================================================================
+   SISTEMA DE DISEÑO — TOKENS (@theme)
+   Propósito: Centralizar todas las variables de diseño del sistema.
+   Estas variables son la fuente única de verdad para colores, tipografía,
+   espaciado y dimensiones. Cualquier cambio aquí se propaga a toda la app.
+   ========================================================================== */
+
 @theme {
 
-  /* Primary button properties */
-  --color-primary: #000066;
-  --color-primary-hover: #828AE3;
-  --color-primary-active: #5056AC;
-  --color-primary-disabled: #C8C5D0;
+  /* ── Botón Primario ───────────────────────────────────────────────────────
+     Paleta de color para el botón de acción principal del sistema.
+     Basado en el azul institucional de la Universidad del Cauca.          */
+  --color-primary:          #000066; /* Estado normal   */
+  --color-primary-hover:    #828AE3; /* Estado hover    */
+  --color-primary-active:   #5056AC; /* Estado activo   */
+  --color-primary-disabled: #C8C5D0; /* Estado disabled */
 
-  /* Secondary button properties */
-  --color-secondary: #FFFFFF;
-  --color-secondary-hover: #5056ac33;
-  --color-secondary-active: #828ae380;
-  --color-secondary-disabled: #C8C5D0;
-  --color-secondary-border-color:#000066;
-  --color-secondary-border-color-disabled:#46464F;
-  --secondary-border-width: 2px;
+  /* ── Botón Secundario ─────────────────────────────────────────────────────
+     Paleta de color para el botón de acción secundaria del sistema.
+     Usa fondo blanco con borde azul institucional.                        */
+  --color-secondary:                  #FFFFFF;
+  --color-secondary-hover:            #5056ac33;
+  --color-secondary-active:           #828ae380;
+  --color-secondary-disabled:         #C8C5D0;
+  --color-secondary-border-color:     #000066;
+  --color-secondary-border-color-disabled: #46464F;
+  --secondary-border-width:           2px;
 
-  /* State properties */
-  --color-state-approved: #249337;
-  --color-state-approved-with-comments: #EC6C1F;
-  --color-state-rejected: #D32F2F;
-  --color-state-under-review: #F8AE15;
-  --color-state-evaluated: #8CBB22;
-  --color-state-in-development: #0051C6;
-  --color-state-postponed: #4C19AF;
+  /* ── Estados del Sistema ──────────────────────────────────────────────────
+     Colores semánticos para representar el estado de un trabajo de grado
+     a lo largo de su ciclo de vida dentro del sistema.                    */
+  --color-state-approved:              #249337; /* Aprobado              */
+  --color-state-approved-with-comments:#EC6C1F; /* Aprobado con observ. */
+  --color-state-rejected:              #D32F2F; /* No aprobado          */
+  --color-state-under-review:          #F8AE15; /* En revisión          */
+  --color-state-evaluated:             #8CBB22; /* Evaluado             */
+  --color-state-in-development:        #0051C6; /* En desarrollo        */
+  --color-state-postponed:             #4C19AF; /* Aplazado             */
 
-  /* pill properties */
-  --radius-pill: 100px;
-  --height-pill: 41px;
+  /* ── Pill / Badge ─────────────────────────────────────────────────────────
+     Dimensiones estándar para los componentes de tipo pill (botones y
+     badges de estado). Garantizan altura y bordes consistentes.           */
+  --radius-pill:   100px;
+  --height-pill:   41px;
 
-  /* Font properties */
-  --font-sans:   'Open Sans', sans-serif;
-  --font-display: 'Fira Sans', sans-serif;
-  --text-size-role-footer: 12px;
-  --text-size-body: 14px;
-  --text-size-section: 16px;
-  --text-size-sidebar-title: 18px;
-  --text-size-header-title: 20px;
-  --text-size-modal-title: 24px;
-  --text-title-section: 28px;
-  --font-bold-weight: 700;
-  --font-semibold-weight: 600;
-  --font-regular-weight: 400;
-  --font-light-weight: 300;
-  --color-text-white: #ffffff;
-  --color-text-blue: #000066;
-  --color-text-disabled: #46464F;
+  /* ── Tipografía ───────────────────────────────────────────────────────────
+     Dos familias tipográficas:
+     - 'Open Sans'  (--font-sans):    texto de cuerpo y datos.
+     - 'Fira Sans'  (--font-display): títulos y encabezados de tabla.
+     La escala de tamaños sigue la jerarquía visual del sistema.           */
+  --font-sans:               'Open Sans', sans-serif;
+  --font-display:            'Fira Sans', sans-serif;
+  --text-size-role-footer:   12px; /* Texto de roles y pie de página       */
+  --text-size-body:          14px; /* Texto general, celdas de tabla       */
+  --text-size-section:       16px; /* Encabezados de sección y tabla       */
+  --text-size-sidebar-title: 18px; /* Títulos del menú lateral             */
+  --text-size-header-title:  20px; /* Título principal del header          */
+  --text-size-modal-title:   24px; /* Títulos dentro de modales            */
+  --text-title-section:      28px; /* Título de página (H1/H2)             */
+  --font-bold-weight:        700;
+  --font-semibold-weight:    600;
+  --font-regular-weight:     400;
+  --font-light-weight:       300;
+  --color-text-white:        #ffffff;
+  --color-text-blue:         #000066; /* Color de texto sobre fondos claros */
+  --color-text-disabled:     #46464F; /* Color de texto en estado disabled  */
 
-  /* Spacing properties */
+  /* ── Espaciado Pill ───────────────────────────────────────────────────────
+     Padding interno estandarizado para botones y badges de tipo pill.     */
   --padding-pill-y: 11px;
   --padding-pill-x: 20px;
 
+  /* ── PrimeNG: Paginador ───────────────────────────────────────────────────
+     Override del token interno de PrimeNG para la página seleccionada.    */
   --p-paginator-nav-button-selected-background: var(--color-primary);
 }
+
+/* ==========================================================================
+   VARIABLES GLOBALES DE PRIMENG
+   Propósito: Sobreescribir los tokens CSS de PrimeNG a nivel de documento
+   para componentes que no se pueden controlar desde @theme (tooltip,
+   paginador). Se declaran en html/body para máxima especificidad.
+   ========================================================================== */
 
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+
+  /* Paginador */
   --p-paginator-nav-button-selected-background: #000066;
-  --p-paginator-nav-button-selected-color: #ffffff;
-  --p-tooltip-background: rgba(234, 240, 251, 0.9);
-  --p-tooltip-color: #000000;
+  --p-paginator-nav-button-selected-color:      #ffffff;
+
+  /* Tooltip */
+  --p-tooltip-background:    rgba(234, 240, 251, 0.9);
+  --p-tooltip-color:         #000000;
   --p-tooltip-border-radius: 10px;
-  --p-tooltip-padding: 0.5rem 0.75rem;
-  --p-tooltip-max-width: 20rem;
+  --p-tooltip-padding:       0.5rem 0.75rem;
+  --p-tooltip-max-width:     20rem;
 }
 
-/* --- Botones del Sistema (Basados en PrimeNG) --- */
+/* ==========================================================================
+   SISTEMA DE BOTONES (PrimeNG Overrides)
+   Propósito: Estandarizar la apariencia de todos los botones del sistema
+   sobre los componentes p-button de PrimeNG.
+   Estructura BEM aplicada: .custom-btn (base) + .btn-{variante} (modificador)
+   ========================================================================== */
 
-/* 1. La Base: Lo que comparten todos los botones */
-.p-button.custom-btn{
-  border-radius: var(--radius-pill) ;
-  font-family: var(--font-sans) ;
-  font-size: var(--text-size-body);
-  height: var(--height-pill) ;
-  border: none;
+/**
+ * 1. Base compartida
+ * Aplica la forma pill, tipografía y altura estándar a todos los botones
+ * que usen la clase .custom-btn independientemente de su variante.
+ */
+.p-button.custom-btn {
+  border-radius: var(--radius-pill);
+  font-family:   var(--font-sans);
+  font-size:     var(--text-size-body);
+  height:        var(--height-pill);
+  border:        none;
 }
 .custom-btn .p-button-label {
-    font-weight: var(--font-semibold-weight);
+  font-weight: var(--font-semibold-weight);
 }
-/* 2. Variante Primaria */
+
+/**
+ * 2. Variante Primaria (.btn-primary)
+ * Fondo azul institucional. Se usa para acciones principales
+ * como "Guardar", "Enviar" o "Confirmar".
+ */
 .btn-primary.p-button {
   background-color: var(--color-primary);
-  color: var(--color-text-white);
-  padding: var(--padding-pill-y) var(--padding-pill-x);
+  color:            var(--color-text-white);
+  padding:          var(--padding-pill-y) var(--padding-pill-x);
 }
-.btn-primary.p-button:hover {
-  background-color: var(--color-primary-hover) !important;
- }
- .btn-primary.p-button:active {
-  background-color: var(--color-primary-active) !important;
- }
+.btn-primary.p-button:hover    { background-color: var(--color-primary-hover)    !important; }
+.btn-primary.p-button:active   { background-color: var(--color-primary-active)   !important; }
 .btn-primary.p-button:disabled {
   background-color: var(--color-primary-disabled) !important;
-  color: var(--color-text-disabled) !important;
+  color:            var(--color-text-disabled)    !important;
 }
-/* 3. Variante Secundaria */
+
+/**
+ * 3. Variante Secundaria (.btn-secondary)
+ * Fondo blanco con borde azul. Se usa para acciones secundarias
+ * como "Cancelar", "Volver" o "Ver detalle".
+ */
 .btn-secondary.p-button {
   background-color: var(--color-secondary);
-  color: var(--color-text-blue);
-  border: var(--secondary-border-width) solid var(--color-secondary-border-color) !important;
-  padding: var(--padding-pill-y) var(--padding-pill-x);
+  color:            var(--color-text-blue);
+  border:           var(--secondary-border-width) solid var(--color-secondary-border-color) !important;
+  padding:          var(--padding-pill-y) var(--padding-pill-x);
 }
 .btn-secondary.p-button:hover {
-  background-color: var(--color-secondary-hover)!important;
-  color:var(--color-text-blue)!important;
- }
+  background-color: var(--color-secondary-hover)  !important;
+  color:            var(--color-text-blue)         !important;
+}
 .btn-secondary.p-button:active {
-  background-color: var(--color-secondary-active)!important;
-  color:var(--color-text-blue)!important;
- }
+  background-color: var(--color-secondary-active) !important;
+  color:            var(--color-text-blue)         !important;
+}
 .btn-secondary.p-button:disabled {
-  background-color: var(--color-secondary-disabled)!important;
-  color:var(--color-text-disabled)!important;
-  border: var(--secondary-border-width) solid var(--color-secondary-border-color-disabled)!important;
+  background-color: var(--color-secondary-disabled)            !important;
+  color:            var(--color-text-disabled)                 !important;
+  border:           var(--secondary-border-width) solid var(--color-secondary-border-color-disabled) !important;
 }
-/* 4. Variante Icono (Solo icono) */
-.btn-icon.p-button{
-  width: var(--height-pill);
-  height: var(--height-pill);
+
+/**
+ * 4. Variante Icono (.btn-icon)
+ * Botón cuadrado que solo muestra un ícono. Se usa en las columnas
+ * de acciones de las tablas (ver, editar, eliminar).
+ * El ancho igual al --height-pill garantiza una forma cuadrada perfecta.
+ */
+.btn-icon.p-button {
+  width:      var(--height-pill);
+  height:     var(--height-pill);
   box-sizing: border-box;
-  padding: 0;
+  padding:    0;
 }
 
-/* --- Estados del Sistema (Pills/Badges) --- */
+/* ==========================================================================
+   SISTEMA DE ESTADOS (Pills / Badges)
+   Propósito: Representar visualmente el estado de un trabajo de grado
+   mediante pills de color. Cada estado tiene un color semántico definido
+   en los tokens de @theme.
+   ========================================================================== */
 
+/**
+ * Base compartida para todos los badges de estado.
+ * Permite que el texto haga salto de línea si el estado es largo
+ * (ej: "Aprobado con observaciones") sin desbordar el contenedor.
+ */
 .badge-state {
-  /* Estilos base para todos los estados */
-  display: inline-flex;
-  align-items: center;
+  display:         inline-flex;
+  align-items:     center;
   justify-content: center;
-  border-radius: var(--radius-pill);
-  height: var(--height-pill);
-  padding: var(--padding-pill-y) var(--padding-pill-x);
-  font-weight: var(--font-semibold-weight);
-  font-size: var(--text-size-body);
-  color: var(--color-text-white);
-  text-align: center;
-  white-space: normal;      /* Permite que el texto salte */
-  max-width: 140px;         /* Limita el ancho máximo del Pill */
-  line-height: 1.2;         /* Ajusta el espacio entre líneas para que se vea compacto */
-  word-wrap: break-word;    /* Rompe palabras si es necesario */
+  border-radius:   var(--radius-pill);
+  height:          var(--height-pill);
+  padding:         var(--padding-pill-y) var(--padding-pill-x);
+  font-weight:     var(--font-semibold-weight);
+  font-size:       var(--text-size-body);
+  color:           var(--color-text-white);
+  text-align:      center;
+  white-space:     normal;
+  max-width:       140px;
+  line-height:     1.2;
+  word-wrap:       break-word;
 }
 
-/* Variantes de color usando tus variables @theme */
-.state-aprobado { background-color: var(--color-state-approved); }
-.state-aprobado-observaciones { background-color: var(--color-state-approved-with-comments); }
-.state-no-aprobado { background-color: var(--color-state-rejected); }
-.state-revision { background-color: var(--color-state-under-review); }
-.state-evaluado { background-color: var(--color-state-evaluated); }
-.state-desarrollo { background-color: var(--color-state-in-development); }
-.state-aplazado { background-color: var(--color-state-postponed); }
+/* Modificadores de color por estado */
+.state-aprobado              { background-color: var(--color-state-approved); }
+.state-aprobado-observaciones{ background-color: var(--color-state-approved-with-comments); }
+.state-no-aprobado           { background-color: var(--color-state-rejected); }
+.state-revision              { background-color: var(--color-state-under-review); }
+.state-evaluado              { background-color: var(--color-state-evaluated); }
+.state-desarrollo            { background-color: var(--color-state-in-development); }
+.state-aplazado              { background-color: var(--color-state-postponed); }
 
-/* --- Contenedores Especiales (Glassmorphism) --- */
+/* ==========================================================================
+   CONTENEDORES ESPECIALES (Glassmorphism)
+   Propósito: Estilo de tarjeta translúcida con desenfoque de fondo para
+   componentes de estado vacío (empty state). Transmite ligereza visual
+   y mantiene coherencia con los modales del sistema.
+   ========================================================================== */
 
 .empty-state-card.p-card {
   background-color: rgba(250, 250, 250, 0.71) !important;
-  border: 1px solid rgba(101, 183, 65, 0.24) !important;
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
-  /* El backdrop-blur lo manejamos mejor desde la clase global para consistencia */
-  backdrop-filter: blur(4px);
+  border:           1px solid rgba(101, 183, 65, 0.24) !important;
+  box-shadow:       0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter:  blur(4px);
 }
 
-/* Estilo para el texto dentro del empty state */
+/* Texto informativo dentro del empty state */
 .empty-state-message {
   font-weight: var(--font-semibold-weight);
-  font-size: var(--text-size-body);
-  color: var(--color-primary);
+  font-size:   var(--text-size-body);
+  color:       var(--color-primary);
 }
 
 /* ==========================================================================
@@ -182,56 +255,52 @@ html, body {
    ========================================================================== */
 
 /**
- * 1. Estructura de la Tabla
- * Forzamos 'table-layout: fixed' para que el ancho de las columnas definido
- * en el JSON de configuración se respete estrictamente, evitando que el
- * contenido largo (como títulos) deforme la tabla.
+ * 1. Estructura de la tabla
+ * 'table-layout: fixed' hace que el ancho definido en la configuración
+ * de columnas (JSON) se respete estrictamente, evitando que contenidos
+ * largos (ej: títulos de trabajos) deformen el layout de la tabla.
  */
 .p-datatable .p-datatable-table {
   table-layout: fixed !important;
 }
 
 /**
- * 2. Encabezados (Headers)
- * Aplicamos la tipografía 'Display' (Fira Sans) para jerarquía visual.
+ * 2. Encabezados (th)
+ * Fuente Display (Fira Sans) para jerarquía visual y diferenciación
+ * clara entre encabezado y datos de la tabla.
  */
 .p-datatable th {
-  font-family: var(--font-display);
-  font-size: var(--text-size-section);
-  font-weight: var(--font-semibold-weight);
+  font-family:  var(--font-display);
+  font-size:    var(--text-size-section);
+  font-weight:  var(--font-semibold-weight);
 }
 
 /**
- * 3. Celdas de Datos (Body)
- * Usamos la fuente 'Sans' (Open Sans) para máxima legibilidad en datos densos.
+ * 3. Celdas de datos (td)
+ * Fuente Sans (Open Sans) para máxima legibilidad en contenido denso.
  */
 .p-datatable td {
-  font-family: var(--font-sans);
-  font-size: var(--text-size-body);
-  font-weight: var(--font-regular-weight);
+  font-family:  var(--font-sans);
+  font-size:    var(--text-size-body);
+  font-weight:  var(--font-regular-weight);
 }
 
 /**
- * 4. Paginador Personalizado
- * Sobreescribimos los colores de PrimeNG para alinearlos con la paleta primaria.
+ * 4. Paginador
+ * Sobreescritura de los colores del botón de página seleccionada
+ * para alinearlo con la paleta primaria del sistema.
  */
 .p-paginator-page.p-paginator-page-selected {
   background: var(--p-paginator-nav-button-selected-background) !important;
-  color: var(--color-text-white);
+  color:      var(--color-text-white);
 }
-
-.p-paginator-page.p-paginator-page-selected:hover {
-  background: #828AE3 !important; /* Variante más clara para feedback visual */
-}
-
-.p-paginator-page.p-paginator-page-selected:active {
-  background: #5056AC !important; /* Variante más oscura para estado de clic */
-}
+.p-paginator-page.p-paginator-page-selected:hover  { background: #828AE3 !important; }
+.p-paginator-page.p-paginator-page-selected:active { background: #5056AC !important; }
 
 /**
- * 5. Tooltips de Ayuda
- * Añadimos un borde sutil que combine con el sistema de diseño para
- * mejorar el contraste sobre fondos con desenfoque (glassmorphism).
+ * 5. Tooltips
+ * Borde sutil verde institucional para mejorar el contraste del tooltip
+ * cuando aparece sobre fondos con efecto glassmorphism.
  */
 .p-tooltip .p-tooltip-text {
   border: 1px solid rgba(101, 183, 65, 0.24);
@@ -239,26 +308,215 @@ html, body {
 
 /* ==========================================================================
    SISTEMA DE MODALES (PrimeNG Overrides)
+   Propósito: Aplicar el estilo glassmorphism institucional a los diálogos
+   de PrimeNG, haciendo transparentes las secciones internas para que
+   el color de fondo del .p-dialog sea visible.
    ========================================================================== */
 
-/* Contenedor principal del modal */
+/**
+ * Contenedor principal del modal.
+ * El backdrop-filter genera el efecto de vidrio esmerilado sobre
+ * el contenido que queda detrás del modal.
+ */
 .custom-modal.p-dialog {
   background-color: rgba(250, 250, 250, 0.9) !important;
-  border: 1px solid rgba(101, 183, 65, 0.24) !important;
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
-  backdrop-filter: blur(4px); /* Le da un toque moderno al fondo translúcido */
+  border:           1px solid rgba(101, 183, 65, 0.24) !important;
+  box-shadow:       0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter:  blur(4px);
 }
 
-/* PrimeNG le pone fondo blanco por defecto al contenido y al header,
-   debemos hacerlos transparentes para que se vea tu color de fondo */
+/**
+ * Secciones internas del modal (header, content, footer).
+ * PrimeNG les asigna fondo blanco por defecto. Se anulan a transparent
+ * para que el color del contenedor padre sea el visible.
+ */
 .custom-modal .p-dialog-header,
 .custom-modal .p-dialog-content,
 .custom-modal .p-dialog-footer {
   background: transparent !important;
-  color: var(--color-text-body, #777680) !important;
+  color:      var(--color-text-body, #777680) !important;
 }
 
-/* Opacamos un poco el fondo oscuro que sale detrás del modal */
+/**
+ * Overlay del modal.
+ * Fondo semitransparente oscuro que aparece detrás del diálogo
+ * para enfocar la atención del usuario en el contenido del modal.
+ */
 .p-dialog-mask {
   background-color: rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ==========================================================================
+   SISTEMA DE NOTIFICACIONES
+   Propósito: Definir los estilos de los 4 tipos de notificación del sistema
+   según los lineamientos técnicos establecidos. Se declaran de forma global
+   para evitar conflictos con la encapsulación de estilos de Angular y
+   garantizar consistencia en cualquier módulo que las use.
+
+   Tipos disponibles:
+     - confirmation  → Procesos exitosos
+     - info          → Eventos informativos
+     - error         → Errores o fallos del sistema
+     - security      → Alertas de seguridad al usuario
+
+   Arquitectura BEM:
+     .notification                    (bloque base)
+     .notification--{tipo}            (modificador de tipo)
+     .notification__icon              (elemento: ícono)
+     .notification__icon--{tipo}      (modificador de color del ícono)
+     .notification__body              (elemento: contenedor de texto)
+     .notification__title             (elemento: título)
+     .notification__title--{tipo}     (modificador de color del título)
+     .notification__message           (elemento: mensaje)
+     .notification__message--{tipo}   (modificador de color del mensaje)
+     .notification__close             (elemento: botón cerrar)
+     .notification__close--{tipo}     (modificador de color del botón)
+   ========================================================================== */
+
+/**
+ * Bloque base.
+ * Layout flex horizontal con el ícono a la izquierda, el cuerpo de texto
+ * al centro ocupando el espacio disponible, y el botón cerrar posicionado
+ * en la esquina superior derecha mediante position: absolute.
+ */
+.notification {
+  display:       flex;
+  align-items:   flex-start;
+  gap:           10px;
+  border-radius: 6px;
+  padding:       12px 14px;
+  border-left:   4px solid;
+  font-size:     13px;
+  width:         100%;
+  position:      relative; /* Necesario para anclar .notification__close */
+}
+
+/**
+ * Modificadores de tipo.
+ * Cada tipo define su color de fondo, borde izquierdo y sombra.
+ * Los colores siguen los lineamientos técnicos del sistema.
+ */
+.notification--confirmation {
+  background-color: rgba(216, 239, 209, 1);
+  border-color:     rgba(36, 147, 55, 1);
+  box-shadow:       4px 4px 4px 0px rgba(119, 118, 128, 0.15);
+}
+.notification--info {
+  background-color: rgba(214, 226, 255, 1);
+  border-color:     rgba(0, 83, 160, 1);
+  box-shadow:       4px 4px 4px 0px rgba(119, 118, 128, 0.15);
+}
+.notification--error {
+  background-color: rgba(255, 219, 204, 1);
+  border-color:     rgba(141, 56, 0, 1);
+  box-shadow:       4px 4px 4px 0px rgba(119, 118, 128, 0.15);
+}
+.notification--security {
+  background-color: rgba(224, 224, 255, 1);
+  border-color:     rgba(55, 61, 146, 1);
+  box-shadow:       4px 4px 4px 0px rgba(119, 118, 128, 0.15);
+}
+
+/* Ícono decorativo a la izquierda del contenido */
+.notification__icon {
+  font-size:   16px;
+  margin-top:  1px;
+  flex-shrink: 0; /* Evita que el ícono se comprima si el texto es largo */
+}
+
+/* Contenedor del título y mensaje */
+.notification__body {
+  display:        flex;
+  flex-direction: column;
+  gap:            2px;
+  flex:           1;
+}
+
+/**
+ * Título de la notificación.
+ * El color varía por tipo para reforzar el significado semántico
+ * usando el mismo tono del borde izquierdo.
+ */
+.notification__title{
+  font: var(--font-display);
+  font-weight: var(--font-semibold-weight);
+  font-size: var(--text-size-body);
+}
+.notification__title--confirmation    { color: rgba(36, 147, 55, 1); }
+.notification__title--info            { color: rgba(0, 83, 160, 1); }
+.notification__title--error           { color: rgba(141, 56, 0, 1); }
+.notification__title--security        { color: rgba(55, 61, 146, 1); }
+
+/**
+ * Mensaje descriptivo de la notificación.
+ * Usa un tono más oscuro que el título para reforzar la jerarquía visual
+ * dentro del mismo tipo de notificación.
+ */
+.notification__message{
+  font: var(--font-sans);
+  font-size: var(--text-size-role-footer);
+  font-weight: var(--font-regular-weight);
+  line-height: 21px;
+}
+.notification__message--confirmation  { color: rgba(16, 55, 23, 1); }
+.notification__message--info          { color: rgba(0, 48, 98, 1); }
+.notification__message--error         { color: rgba(54, 16, 0, 1); }
+.notification__message--security      { color: rgba(30, 37, 123, 1); }
+
+/**
+ * Botón de cierre (×).
+ * Posicionado en la esquina superior derecha del bloque mediante
+ * position: absolute. El color base y su hover siguen la misma
+ * paleta del tipo de notificación para coherencia visual.
+ */
+.notification__close {
+  background:  none;
+  border:      none;
+  cursor:      pointer;
+  opacity:     0.45;
+  padding:     0;
+  line-height: 1;
+  font-size:   12px;
+  color:       inherit;
+  flex-shrink: 0;
+  transition:  opacity 0.15s;
+  position:    absolute;
+  top:         8px;
+  right:       10px;
+}
+
+/* Color normal del botón cerrar por tipo */
+.notification__close--confirmation { color: rgba(36, 147, 55, 1); }
+.notification__close--info         { color: rgba(0, 83, 160, 1); }
+.notification__close--error        { color: rgba(141, 56, 0, 1); }
+.notification__close--security     { color: rgba(55, 61, 146, 1); }
+
+/* Color hover del botón cerrar — tono más oscuro para feedback visual */
+.notification__close--confirmation:hover { color: rgba(16, 55, 23, 1); }
+.notification__close--info:hover         { color: rgba(0, 48, 98, 1); }
+.notification__close--error:hover        { color: rgba(54, 16, 0, 1); }
+.notification__close--security:hover     { color: rgba(30, 37, 123, 1); }
+
+/**
+ * Contenedor flotante de notificaciones.
+ * Posicionado en la esquina superior derecha de la pantalla, por encima
+ * de todos los demás elementos (z-index: 9999). El uso de pointer-events:none
+ * en el contenedor y pointer-events:auto en los hijos evita que el área
+ * vacía entre notificaciones bloquee los clics del usuario.
+ */
+.notification-container {
+  position:       fixed;
+  top:            80px;
+  right:          24px;
+  z-index:        9999;
+  display:        flex;
+  flex-direction: column;
+  gap:            10px;
+  width:          360px;
+  max-width:      calc(100vw - 48px);
+  pointer-events: none;
+}
+
+.notification-container > * {
+  pointer-events: auto;
 }

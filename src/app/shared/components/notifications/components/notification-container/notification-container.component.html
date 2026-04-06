@@ -1,0 +1,8 @@
+<div class="notification-container" aria-live="polite" aria-atomic="false">
+  @for (notif of notificationService.notifications(); track notif.id) {
+    <app-notification-item
+      [notification]="notif"
+      (dismissed)="notificationService.dismiss($event)"
+    />
+  }
+</div>
