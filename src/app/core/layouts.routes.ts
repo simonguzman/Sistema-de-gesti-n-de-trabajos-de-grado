@@ -42,8 +42,9 @@ export const layoutsRoutes: Routes = [
           .then(m => m.statisticsRoutes)
       },
       {
-        path:'**',
-        redirectTo: 'notifications',
+        path:'auth',
+        loadChildren: () => import('../modules/auth/auth.routes')
+          .then(m => m.authRoutes)
       },
 
     ],
@@ -51,7 +52,7 @@ export const layoutsRoutes: Routes = [
 
   {
     path:'**',
-    redirectTo:'',
+    redirectTo:'notifications',
   },
 ];
 
