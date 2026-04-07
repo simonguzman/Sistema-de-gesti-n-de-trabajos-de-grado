@@ -4,12 +4,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "rootDir": "./src",
     "types": [
       "jest"
     ]
   },
+  "files": ["setup-jest.ts"],
   "include": [
-    "src/**/*.ts"
+    "src/**/*.spec.ts", "src/**/*.d.ts"
   ]
 }
