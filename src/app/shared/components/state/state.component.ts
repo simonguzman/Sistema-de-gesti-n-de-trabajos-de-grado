@@ -24,7 +24,7 @@ export class StateComponent {
   @Input() label?: string;
   @Input() state?: stateList;
 
-  private readonly STATE_MAP: Record<string, string> = {
+  private readonly STATE_MAP: Record<stateList, string> = {
     [stateList.APROBADO]: 'state-aprobado',
     [stateList.APROBADO_CON_OBSERVACIONES]: 'state-aprobado-observaciones',
     [stateList.NO_APROBADO]: 'state-no-aprobado',
