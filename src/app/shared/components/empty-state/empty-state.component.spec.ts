@@ -1,28 +1,23 @@
-/* tslint:disable:no-unused-variable */
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
-
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EmptyStateComponent } from './empty-state.component';
 
 describe('EmptyStateComponent', () => {
   let component: EmptyStateComponent;
   let fixture: ComponentFixture<EmptyStateComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(async() => {
     TestBed.configureTestingModule({
-      declarations: [ EmptyStateComponent ]
+      imports: [ EmptyStateComponent ]
     })
     .compileComponents();
-  }));
 
-  beforeEach(() => {
     fixture = TestBed.createComponent(EmptyStateComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('Debe mostrarse el mensaje correcto', () => {
+    component.message = 'No hay datos';
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('No hay datos');
   });
 });

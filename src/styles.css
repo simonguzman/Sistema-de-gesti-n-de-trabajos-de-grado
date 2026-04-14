@@ -347,6 +347,20 @@ html, body {
 }
 
 /* ==========================================================================
+   SISTEMA DE ESTADO VACIO (PrimeNG Overrides)
+   Propósito: Aplicar el estilo glassmorphism institucional a los diálogos
+   de PrimeNG, haciendo transparentes las secciones internas para que
+   el color de fondo del .p-dialog sea visible.
+   ========================================================================== */
+
+
+.p-card{
+  background-color: rgba(250, 250, 250, 0.71);
+  border: 1px solid rgba(101, 183, 65, 0.24);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+
+/* ==========================================================================
    SISTEMA DE NOTIFICACIONES
    Propósito: Definir los estilos de los 4 tipos de notificación del sistema
    según los lineamientos técnicos establecidos. Se declaran de forma global
