@@ -57,7 +57,8 @@ export class NotificationItemComponent {
   notification = input.required<Notification>();
   dismissed = output<string>();
 
-  config = computed<NotificationConfig>(
-    () => NOTIFICATION_CONFIG[this.notification().type]
-  )
+  config = computed<NotificationConfig>(() => {
+    const type = this.notification().type;
+    return NOTIFICATION_CONFIG[type] ?? NOTIFICATION_CONFIG[NotificationType.INFO];
+  });
 }

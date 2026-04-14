@@ -1,23 +1,33 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 import { App } from './app';
+import { provideRouter } from '@angular/router';
 
 describe('App', () => {
-  beforeEach(waitForAsync () => {
-    await TestBed.configureTestingModule({
+  beforeEach(waitForAsync( () => {
+    TestBed.configureTestingModule({
       imports: [App],
+      providers: [
+        provideRouter([])
+      ]
     }).compileComponents();
-  });
+  }));
 
-  it('should create the app', () => {
+  it('deberia crear el componente raiz', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
     expect(app).toBeTruthy();
   });
 
-  it('should render title', () => {
+  it('debe contener un router-outlet como punto de entrada', () =>{
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, sgtg-prueba');
+    expect(compiled.querySelector('router-outlet')).not.toBeNull();
+  })
+
+  it('El titulo interno debe ser el nombre del sistema', () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+    expect(app['title']()).toBe('sgtg-prueba');
   });
 });
