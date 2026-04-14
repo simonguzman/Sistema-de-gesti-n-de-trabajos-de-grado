@@ -1,7 +1,7 @@
 /* tslint:disable:no-unused-variable */
 import {ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { DebugElement, signal, WritableSignal } from '@angular/core';
+import { signal, WritableSignal } from '@angular/core';
 import { NotificationContainerComponent } from './notification-container.component';
 import { Notification, NotificationType } from '../../models/notification.model';
 import { NotificationService } from '../../services/notification.service';
@@ -36,7 +36,6 @@ describe('NotificationContainerComponent', () => {
     .compileComponents();
 
     fixture = TestBed.createComponent(NotificationContainerComponent);
-    component = fixture.componentInstance;
   });
 
   it('debe mostrar la lista de notificaciones que han sido notificadas', () =>{
