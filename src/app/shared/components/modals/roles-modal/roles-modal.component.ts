@@ -14,7 +14,6 @@ export enum UserRoleType {
   CONSEJO = 'Consejo de facultad',
   JURADO = 'Jurado'
 }
-
 export interface UserRole {
   type: UserRoleType;
   assigned: boolean;
@@ -26,66 +25,65 @@ export interface UserRole {
   templateUrl: './roles-modal.component.html',
   styleUrls: ['./roles-modal.component.css']
 })
-export class RolesModalComponent implements OnChanges {
+export class RolesModalComponent {
+
+  protected readonly RoleType = UserRoleType;
 
   @Input() isOpen: boolean = false;
   @Input() username: string = '';
   @Input() roles: UserRole[] = [];
 
   @Output() onClose = new EventEmitter<void>();
+  @Output() isOpenChange = new EventEmitter<boolean>();
   @Output() onSave = new EventEmitter<UserRole[]>();
 
-  isEditing = false;
-  draftRoles: UserRole[] = [];
+  isEditing: boolean = false
+  editableRoles: UserRole[] = [];
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isOpen'] && this.isOpen) {
-      this.resetDraft();
+  ngOnChanges(changes: SimpleChanges ): void{
+    if(changes['isOpen'] && this.isOpen){
       this.isEditing = false;
+      this.initializeRoles();
     }
   }
 
-  // 🔹 COPIA LIMPIA SIEMPRE
-  private resetDraft() {
-    this.draftRoles = this.roles.map(r => ({ ...r }));
+  initializeRoles(){
+    if(!this.roles || this.roles.length === 0){
+      this.editableRoles = Object.values(UserRoleType).map(role => ({
+        type: role,
+        assigned: false
+      }));
+    } else {
+      this.editableRoles = this.roles.map(role => ({...role}));
+    }
+  }
+
+  toggleRole(role: UserRole){
+    role.assigned = !role.assigned
+  }
+
+  closeModal(){
+    this.isEditing = false; // Resetear SIEMPRE al cerrar
+    this.isOpen = false;
+    this.initializeRoles();
+    this.isOpenChange.emit(false); // Avisar que se cerró
+    this.onClose.emit();
   }
 
   toggleMode() {
-    if (!this.isEditing) {
-      this.resetDraft();
-    } else {
-      this.resetDraft(); // cancelar = descartar cambios
+    if(this.isEditing){
+      this.initializeRoles();
     }
-
     this.isEditing = !this.isEditing;
   }
 
-  // 🔹 ENTRAR EN EDICIÓN
-  startEdit() {
-    this.resetDraft();
-    this.isEditing = true;
-  }
-
-  // 🔹 CANCELAR (NO GUARDA NADA)
-  cancelEdit() {
-    this.resetDraft();
+  saveRoles(){
+    const rolesToSave = this.editableRoles.map(role => ({...role}));
+    this.onSave.emit(rolesToSave);
     this.isEditing = false;
   }
 
-  // 🔹 TOGGLE SOLO EN DRAFT
-  toggleRole(role: UserRole) {
-    role.assigned = !role.assigned;
-  }
-
-  // 🔹 GUARDAR (ÚNICO PUNTO DE MUTACIÓN REAL)
-  saveRoles() {
-    this.onSave.emit(this.draftRoles.map(r => ({ ...r })));
-    this.roles = this.draftRoles.map(r => ({ ...r }));
-    this.isEditing = false;
-  }
-
-  closeModal() {
-    this.isEditing = false;
-    this.onClose.emit();
+  discargChanges(){
+    this.initializeRoles();
   }
 }
