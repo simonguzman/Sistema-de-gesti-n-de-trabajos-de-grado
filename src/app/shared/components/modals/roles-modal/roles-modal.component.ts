@@ -50,6 +50,16 @@ export class RolesModalComponent implements OnChanges {
     this.draftRoles = this.roles.map(r => ({ ...r }));
   }
 
+  toggleMode() {
+    if (!this.isEditing) {
+      this.resetDraft();
+    } else {
+      this.resetDraft(); // cancelar = descartar cambios
+    }
+
+    this.isEditing = !this.isEditing;
+  }
+
   // 🔹 ENTRAR EN EDICIÓN
   startEdit() {
     this.resetDraft();
@@ -68,12 +78,13 @@ export class RolesModalComponent implements OnChanges {
   }
 
   // 🔹 GUARDAR (ÚNICO PUNTO DE MUTACIÓN REAL)
-  save() {
+  saveRoles() {
     this.onSave.emit(this.draftRoles.map(r => ({ ...r })));
+    this.roles = this.draftRoles.map(r => ({ ...r }));
     this.isEditing = false;
   }
 
-  close() {
+  closeModal() {
     this.isEditing = false;
     this.onClose.emit();
   }
