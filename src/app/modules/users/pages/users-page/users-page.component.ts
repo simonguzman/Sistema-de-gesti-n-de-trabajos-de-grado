@@ -72,6 +72,9 @@ export class UsersPageComponent {
     assigned: role === UserRoleType.DIRECTOR // Ejemplo: Solo Director activo inicialmente
   }));
 
+  // NUEVA VARIABLE: Para guardar los cambios antes de la confirmación final
+  private rolesPendientes: UserRole[] = [];
+
   // 4. Variables para otros modales
   isModalOpen = false;
 
@@ -92,6 +95,7 @@ export class UsersPageComponent {
   handleSaveRoles(updatedRoles: UserRole[]) {
     console.log(`Guardando roles para ${this.usuarioSeleccionado}:`, updatedRoles);
 
+    this.rolesPendientes = updatedRoles;
     // Aquí es donde dispararías el modal de confirmación que ya tienes configurado
     // Ejemplo: this.mostrarModalConfirmacion = true;
     this.mostrarModalRoles = false;
@@ -99,7 +103,13 @@ export class UsersPageComponent {
   }
 
   confirmarCambios(){
-    console.log('Cambios aplicados con exito')
+    // 3. AHORA SÍ: Aplicamos los cambios pendientes a la fuente de verdad
+    this.rolesUsuario = [...this.rolesPendientes];
+
+    console.log('Cambios aplicados con éxito en el padre:', this.rolesUsuario);
+
+    // 4. Limpiamos y cerramos
+    this.rolesPendientes = [];
     this.mostrarConfirmacion = false;
   }
 
