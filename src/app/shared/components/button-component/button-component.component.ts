@@ -10,6 +10,7 @@ import { ButtonModule } from 'primeng/button';
 export class ButtonComponent {
   @Input() label?: string;
   @Input() icon?: string;
+  @Input() type: 'button' | 'submit' = 'button';
   @Input() disabled: boolean = false;
   @Input() variant: 'primary' | 'secondary' = 'primary';
 

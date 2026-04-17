@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { TableComponent, Column, TableButton } from "../../../../shared/components/table-component/table-component.component";
 import { stateList } from '../../../../shared/components/state/state.component';
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
@@ -9,6 +9,7 @@ import { ConfirmationActionModalComponent } from '../../../../shared/components/
 import { UserRole, UserRoleType } from '../../../../core/models/user-role';
 import { Router } from '@angular/router';
 import { RolesModalComponent } from '../../../../shared/components/modals/roles/roles-modal/roles-modal.component';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-users-page',
@@ -25,6 +26,7 @@ import { RolesModalComponent } from '../../../../shared/components/modals/roles/
 })
 export class UsersPageComponent {
   // Exponemos los Enums y tipos protegidos para el template
+  userService = inject(UserService);
   protected stateList = stateList;
   private router = inject(Router);
 
@@ -35,7 +37,7 @@ export class UsersPageComponent {
     { field: 'apellidos', header: 'Apellidos', type: 'text', width: '15%'},
     { field: 'estado', header: 'Estado', type: 'text', width: '15%'},
     {
-      field: 'descripción',
+      field: 'roles',
       header: 'Descripción',
       type: 'actions',
       actions: [
@@ -61,8 +63,26 @@ export class UsersPageComponent {
     identificacion: '1002819781',
     nombre: 'Simón',
     apellidos: 'Guzmán Anaya',
-    estado: 'Activo'
+    estado: 'Activo',
+    originalData: {
+      roles: [UserRoleType.DIRECTOR]
+    }
   }];
+
+  usersTableData = computed(() => {
+    return this.userService.users().map(user => ({
+      identificacion: user.idNumber?.toString() || '',
+      nombre: user.firstName,
+      apellidos: `${user.lastName} ${user.secondLastName || ''}`,
+      estado: 'Activo', // Valor por defecto
+      // Guardamos el objeto original por si necesitas editar o ver roles luego
+      originalData: user
+    }));
+  });
+
+  get displayValue() {
+    return [...this.testValue, ...this.usersTableData()];
+  }
 
   // 3. Variables de control para el Modal de Roles
   mostrarModalRoles = false;
@@ -70,10 +90,7 @@ export class UsersPageComponent {
   usuarioSeleccionado = '';
 
   // Inicializamos los roles usando el Enum centralizado
-  rolesUsuario: UserRole[] = Object.values(UserRoleType).map(role => ({
-    type: role,
-    assigned: role === UserRoleType.DIRECTOR // Ejemplo: Solo Director activo inicialmente
-  }));
+  rolesUsuario: UserRole[] = [];
 
   // NUEVA VARIABLE: Para guardar los cambios antes de la confirmación final
   private rolesPendientes: UserRole[] = [];
@@ -87,6 +104,13 @@ export class UsersPageComponent {
   handleTableAction(event: { action: string, row: any }) {
     if (event.action === 'ver roles asignados') {
       this.usuarioSeleccionado = `${event.row.nombre} ${event.row.apellidos}`;
+      if(event.row.originalData){
+        const userRolesTypes = event.row.originalData.roles as UserRoleType[];
+        this.rolesUsuario = Object.values(UserRoleType).map(type => ({
+          type: type,
+          assigned: userRolesTypes.includes(type)
+        }));
+      }
       this.mostrarModalRoles = true;
     }
     // Aquí puedes añadir lógica para 'ver', 'editar' o 'eliminar'

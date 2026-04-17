@@ -4,7 +4,6 @@ import { By } from '@angular/platform-browser';
 
 import { RolesModalComponent } from './roles-modal.component';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { ButtonComponent } from '../../../button-component/button-component.component';
 import { UserRoleType } from '../../../../../core/models/user-role';
 import { RolesSelectionModalComponent } from '../roles-selection-modal/roles-selection-modal.component';
 import { RolesViewModalComponent } from '../roles-view-modal/roles-view-modal.component';

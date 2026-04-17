@@ -3,6 +3,9 @@ import { UserFormComponent } from '../../components/user-form/user-form.componen
 import { Router } from '@angular/router';
 import { User } from '../../interfaces/user.interface';
 import { Location } from '@angular/common'
+import { UserService } from '../../services/user.service';
+import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
+import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 
 @Component({
   selector: 'app-user-create-page',
@@ -11,11 +14,36 @@ import { Location } from '@angular/common'
   styleUrls: ['./user-create-page.component.css']
 })
 export class UserCreatePageComponent {
+  private UserService = inject(UserService);
+  private notificationService = inject(NotificationService);
   private router = inject(Router);
   private location = inject(Location);
   handleCreateUser(userData : User){
-    console.log('Enviando a la api: ', userData);
-    this.router.navigate(['/usuarios']);
+    this.notificationService.show({
+      title: 'Procesando registro',
+      message: 'Estamos procesando la información del usuario...',
+      type: NotificationType.INFO
+    });
+
+    this.UserService.createUserMock(userData).subscribe({
+      next: (response) => {
+        this.notificationService.show({
+          title: 'Usuario registrado',
+          message: 'El usuario ha sido registrado correctamente.',
+          type: NotificationType.CONFIRMATION,
+        })
+
+        this.router.navigate(['/users'])
+      },
+      error: (err) => {
+        console.log('Error en la creación ',err)
+        this.notificationService.show({
+          title: 'Error de servidor',
+          message: 'No se pudo guardar el usuario. Intente nuevamente.',
+          type: NotificationType.ERROR,
+        })
+      }
+    });
   }
 
   goBack (){

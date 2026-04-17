@@ -3,23 +3,20 @@ import { Notification, NotificationType } from '../models/notification.model';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-
   private _notifications = signal<Notification[]>([]);
   readonly notifications = this._notifications.asReadonly();
 
+  private readonly DEFAULT_DURATION = 5000;
+
   show(notification: Omit<Notification, 'id'>): void {
     const id = crypto.randomUUID();
-    const newNotif: Notification = {
-      dismissible: true,
-      autoDismiss: false,
-      autoDismissDelay: 5000,
-      ...notification,
-      id
+    const newNotification: Notification = {
+      ...notification, id
     }
-    this._notifications.update(list => [...list, newNotif]);
-
-    if(newNotif.autoDismiss){
-      setTimeout(() => this.dismiss(id), newNotif.autoDismissDelay);
+    this._notifications.update(prev => [newNotification, ...prev]);
+    const duration = newNotification.type === NotificationType.ERROR ? 10000 : 5000
+    if(newNotification.type){
+      setTimeout(() => this.dismiss(id), duration);
     }
   }
 
@@ -32,15 +29,15 @@ export class NotificationService {
   }
 
   info(title: string, message: string) : void{
-    this.show({ type: NotificationType.INFO, title, message})
+    this.show({ type: NotificationType.INFO, title, message, autoDismiss: true})
   }
 
   error(title: string, message: string): void{
-    this.show({ type: NotificationType.ERROR, title, message })
+    this.show({ type: NotificationType.ERROR, title, message, autoDismiss: true })
   }
 
   security(title: string, message: string){
-    this.show({ type: NotificationType.SECURITY, title, message })
+    this.show({ type: NotificationType.SECURITY, title, message, autoDismiss: true })
   }
 
 }

@@ -555,7 +555,7 @@ html, body {
 .return-arrow-option {
   color: var(--color-primary);
   font: var(--font-display);
-  font-size: var(--text-size-sidebar-title);
+  font-size: var(--text-size-section);
   font-weight: var(--font-semibold-weight);
 }
 

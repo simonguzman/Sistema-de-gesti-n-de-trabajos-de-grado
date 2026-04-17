@@ -4,6 +4,8 @@ import { IdentificationType, User } from '../../interfaces/user.interface';
 import { UserRole, UserRoleType } from '../../../../core/models/user-role';
 import { ButtonComponent } from "../../../../shared/components/button-component/button-component.component";
 import { RolesSelectionModalComponent } from '../../../../shared/components/modals/roles/roles-selection-modal/roles-selection-modal.component';
+import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
+import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 
 @Component({
   selector: 'app-user-form',
@@ -13,6 +15,7 @@ import { RolesSelectionModalComponent } from '../../../../shared/components/moda
 })
 export class UserFormComponent  {
   fb = inject(FormBuilder);
+  protected notificationService = inject(NotificationService);
 
   isRolesModalOpen = false;
   currentRolesForModal: UserRole[] = [];
@@ -56,6 +59,11 @@ export class UserFormComponent  {
   submit() {
     if(this.userForm.invalid){
       this.userForm.markAllAsTouched();
+      this.notificationService.show({
+        title: 'Formulario incorrecto',
+        message: 'Por favor, diligencie correctamente todos los campos obligatorios.',
+        type: NotificationType.ERROR
+      });
       return;
     }
     this.onSubmit.emit(this.userForm.getRawValue() as User);
