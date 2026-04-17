@@ -551,3 +551,36 @@ html, body {
 .notification-container > * {
   pointer-events: auto;
 }
+
+.return-arrow-option {
+  color: var(--color-primary);
+  font: var(--font-display);
+  font-size: var(--text-size-sidebar-title);
+  font-weight: var(--font-semibold-weight);
+}
+
+.title-textbox {
+  color: var(--color-primary);
+  font: var(--font-display);
+  font-size: var(--text-size-section);
+  font-weight: var(--font-semibold-weight);
+}
+
+.text-textbox{
+  color: #777680;
+  font: var(--font-sans);
+  font-size: var(--text-size-body);
+  font-weight: var(--font-regular-weight);
+}
+
+/* Cuando el campo es inválido Y el usuario ya interactuó con él */
+.text-textbox.ng-invalid.ng-touched {
+  border-color: #ED7D31 !important; /* Rojo (equivalente a red-500) */      /* Un fondo rojo muy sutil (opcional) */
+}
+
+.text-textbox-alert{
+  color: #ED7D31;
+  font: var(--font-sans);
+  font-size: var(--text-size-role-footer);
+  font-weight: var(--font-regular-weight);
+}

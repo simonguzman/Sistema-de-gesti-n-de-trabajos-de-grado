@@ -8,6 +8,7 @@
   [columns]="testColumns"
   emptyMessage="No han sido registrados usuarios en el sistema"
   (actionClick)="handleTableAction($event)"
+  (headerButtonClick)="handleHeaderButton($event)"
 ></app-table-component>
 <!--  <app-button-component label="Guardar" variant="primary"></app-button-component>
 <app-state label="No aprobado" [state]="stateList.NO_APROBADO"></app-state>

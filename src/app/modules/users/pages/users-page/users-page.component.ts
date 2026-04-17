@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
-import { TableComponent, Column } from "../../../../shared/components/table-component/table-component.component";
+import { Component, inject } from '@angular/core';
+import { TableComponent, Column, TableButton } from "../../../../shared/components/table-component/table-component.component";
 import { stateList } from '../../../../shared/components/state/state.component';
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
 import { ButtonComponent } from '../../../../shared/components/button-component/button-component.component';
 
 // Importación del nuevo modal y sus modelos de roles
-import { RolesModalComponent, UserRole, UserRoleType } from '../../../../shared/components/modals/roles-modal/roles-modal.component';
 import { ConfirmationActionModalComponent } from '../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component';
+import { UserRole, UserRoleType } from '../../../../core/models/user-role';
+import { Router } from '@angular/router';
+import { RolesModalComponent } from '../../../../shared/components/modals/roles/roles-modal/roles-modal.component';
 
 @Component({
   selector: 'app-users-page',
@@ -24,6 +26,7 @@ import { ConfirmationActionModalComponent } from '../../../../shared/components/
 export class UsersPageComponent {
   // Exponemos los Enums y tipos protegidos para el template
   protected stateList = stateList;
+  private router = inject(Router);
 
   // 1. Columnas de la tabla
   testColumns: Column[] = [
@@ -115,5 +118,11 @@ export class UsersPageComponent {
 
   handleFileUploaded(event: { fileName: string, file: File }) {
     console.log('Archivo recibido:', event.fileName);
+  }
+
+  handleHeaderButton(button: TableButton) {
+    if (button.label === 'Crear usuarios') {
+      this.router.navigate(['/users/crear']); // Navega a la ruta que creamos
+    }
   }
 }

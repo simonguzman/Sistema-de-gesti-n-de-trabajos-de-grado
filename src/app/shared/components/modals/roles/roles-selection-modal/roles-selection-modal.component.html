@@ -1,0 +1,25 @@
+<p-dialog [(visible)]="isOpen" (onHide)="close()" [modal]="true" [style]="{ width: '450px' }">
+  <ng-template pTemplate="header">
+    <div class="w-full text-center">
+      <h2 class="text-primary font-bold text-lg m-0">Asignar roles</h2>
+    </div>
+  </ng-template>
+
+  <div class="flex flex-col gap-3 py-4">
+    @for (role of editableRoles; track role.type) {
+      <div class="flex justify-between items-center py-1">
+        <span class="text-gray-700">• {{ role.type }}</span>
+        <app-button-component
+          [label]="role.assigned ? 'Deshabilitar rol' : 'Asignar rol'"
+          [variant]="role.assigned ? 'secondary' : 'primary'"
+          (onClick)="toggleRole(role)"
+        ></app-button-component>
+      </div>
+    }
+
+    <div class="flex justify-center gap-4 mt-6">
+      <app-button-component label="Salir" variant="secondary" (onClick)="close()"></app-button-component>
+      <app-button-component label="Guardar" variant="primary" (onClick)="save()"></app-button-component>
+    </div>
+  </div>
+</p-dialog>
