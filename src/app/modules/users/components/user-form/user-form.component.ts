@@ -45,15 +45,12 @@ export class UserFormComponent  {
   })
 
   constructor() {
-    const user = this.user();
-    if (user) {
-      this.userForm.patchValue(user);
-
-      this.currentRolesForModal = Object.values(UserRoleType).map(type => ({
-        type,
-        assigned: user.roles.includes(type)
-      }));
-    }
+    effect(() => {
+      const user = this.user();
+      if(user){
+        this.userForm.patchValue(user);
+      }
+    })
   }
 
   submit() {

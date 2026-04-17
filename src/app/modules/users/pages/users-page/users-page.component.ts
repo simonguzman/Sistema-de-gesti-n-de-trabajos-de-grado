@@ -79,7 +79,7 @@ export class UsersPageComponent {
       originalData: user
     }));
   });
-
+  //EL this.testValue se tiene que eliminar ya que es codigo hardcordeado
   get displayValue() {
     return [...this.testValue, ...this.usersTableData()];
   }

@@ -26,8 +26,4 @@ export class UserService {
     return this.http.post<User>(this.apiUrl, user);
   }
 
-  getUsers(): User[] {
-    return this.users();
-  }
-
 }
