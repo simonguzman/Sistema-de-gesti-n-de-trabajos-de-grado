@@ -6,10 +6,11 @@ import { Location } from '@angular/common'
 import { UserService } from '../../services/user.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { ConfirmationActionModalComponent } from '../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component';
 
 @Component({
   selector: 'app-user-create-page',
-  imports: [UserFormComponent],
+  imports: [UserFormComponent, ConfirmationActionModalComponent],
   templateUrl: './user-create-page.component.html',
   styleUrls: ['./user-create-page.component.css']
 })
@@ -18,14 +19,29 @@ export class UserCreatePageComponent {
   private notificationService = inject(NotificationService);
   private router = inject(Router);
   private location = inject(Location);
+
+  isConfirmModalOpen = false;
+  pendingUserData: User | null = null;
   handleCreateUser(userData : User){
+    this.pendingUserData = userData;
+    this.isConfirmModalOpen = true;
+  }
+
+  cancelCreation() {
+    this.isConfirmModalOpen = false;
+    this.pendingUserData = null;
+  }
+
+  confirmCreation(){
+    if(!this.pendingUserData) return;
+    this.isConfirmModalOpen = false;
     this.notificationService.show({
       title: 'Procesando registro',
       message: 'Estamos procesando la información del usuario...',
       type: NotificationType.INFO
     });
 
-    this.UserService.createUserMock(userData).subscribe({
+    this.UserService.createUserMock(this.pendingUserData).subscribe({
       next: (response) => {
         this.notificationService.show({
           title: 'Usuario registrado',
