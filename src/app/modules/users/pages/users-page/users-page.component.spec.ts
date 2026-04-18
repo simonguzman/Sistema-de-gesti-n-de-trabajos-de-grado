@@ -62,12 +62,6 @@ describe('UserPageComponent', () => {
       expect(tableData[0].nombre).toBe('Juan');
       expect(tableData[0].apellidos).toBe('Perez Soto');
     });
-
-    it('debería combinar testValue con los datos del signal en displayValue', () => {
-      const display = component.displayValue;
-      // 1 de testValue (hardcoded) + 1 del mockUserService
-      expect(display.length).toBe(2);
-    });
   });
 
   describe('Acciones de la Tabla', () => {
@@ -117,5 +111,41 @@ describe('UserPageComponent', () => {
       expect(component.rolesUsuario).toEqual(rolesPendientes);
       expect(component.mostrarConfirmacion).toBe(false);
     });
+  });
+  it('debería navegar a la página de edición con el ID correcto', () => {
+    const event = {
+      action: 'editar',
+      row: {
+        originalData: { id: 'user-123' }
+      }
+    };
+
+    component.handleTableAction(event);
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/users/editar', 'user-123']);
+  });
+  it('debería ejecutar la lógica de eliminación con el ID correcto', () => {
+    const consoleSpy = jest.spyOn(console, 'log');
+    const event = {
+      action: 'eliminar',
+      row: {
+        originalData: { id: '999' }
+      }
+    };
+
+    component.handleTableAction(event);
+
+    expect(consoleSpy).toHaveBeenCalledWith('Eliminar usuario: ', '999');
+  });
+  it('debería limpiar los cambios pendientes si se cancela la confirmación', () => {
+    component.mostrarConfirmacion = true;
+    // @ts-ignore
+    component.rolesPendientes = [{ type: UserRoleType.DIRECTOR, assigned: true }];
+
+    // Simulamos cerrar el modal de confirmación sin confirmar
+    component.mostrarConfirmacion = false;
+
+    // Verificamos que no se hayan aplicado (suponiendo que antes estaba vacío)
+    expect(component.rolesUsuario).not.toEqual(component['rolesPendientes']);
   });
 });

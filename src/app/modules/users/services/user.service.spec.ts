@@ -22,7 +22,7 @@ describe('Service: User', () => {
     codeNumber: 101
   };
 
-  beforeEach(async() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
         UserService,
@@ -36,7 +36,7 @@ describe('Service: User', () => {
 
   afterEach(() => {
     httpMock.verify();
-  })
+  });
 
   it('debería crearse correctamente', () => {
     expect(service).toBeTruthy();
@@ -48,36 +48,40 @@ describe('Service: User', () => {
         expect(user).toEqual(mockUser);
       });
 
-      // Validamos la URL y el método
       const req = httpMock.expectOne('https://api-sgtg-placeholder.com/api/users');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(mockUser);
-
-      // Respondemos con el mock para cerrar el observable
       req.flush(mockUser);
     });
   });
 
   describe('Métodos Mock (Signals & Logic)', () => {
     it('debería agregar el usuario al signal usersList al usar createUserMock', (done) => {
-      // Al ser un observable con delay, usamos done() para manejar la asincronía
       service.createUserMock(mockUser).subscribe(() => {
         const currentUsers = service.users();
-        expect(currentUsers).toContain(mockUser);
+
+        // CAMBIO: No usamos toContain(mockUser) porque el ID será diferente.
+        // Verificamos propiedades que sabemos que no cambian.
         expect(currentUsers.length).toBe(1);
+        expect(currentUsers[0].email).toBe(mockUser.email);
+        expect(currentUsers[0].id).toBeDefined();
+        expect(currentUsers[0].id).not.toBe(mockUser.id); // Validamos que se generó uno nuevo
         done();
       });
     });
 
     it('debería mantener la inmutabilidad al actualizar el signal', (done) => {
-      const secondUser = { ...mockUser, id: '456', firstName: 'Otro' };
+      // CAMBIO: Quitamos el ID de aquí para ser consistentes con la lógica de generación
+      const secondUserData = { ...mockUser, email: 'otro@user.com', firstName: 'Otro' };
 
       service.createUserMock(mockUser).subscribe(() => {
-        service.createUserMock(secondUser).subscribe(() => {
+        service.createUserMock(secondUserData).subscribe(() => {
           const list = service.users();
           expect(list.length).toBe(2);
-          expect(list[0]).toEqual(mockUser);
-          expect(list[1]).toEqual(secondUser);
+
+          // CAMBIO: Comparamos por propiedades estáticas (email), no el objeto completo
+          expect(list[0].email).toBe(mockUser.email);
+          expect(list[1].email).toBe(secondUserData.email);
           done();
         });
       });

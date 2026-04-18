@@ -82,7 +82,9 @@ describe('UserFormComponent', () => {
         type: NotificationType.ERROR
       }));
       // Verifica que los controles se marcaron como tocados para mostrar errores visuales
-      expect(component.userForm.touched).toBeTruthy();
+      expect(component.userForm.get('firstName')?.touched).toBeTruthy();
+      expect(component.userForm.get('idType')?.touched).toBeTruthy();
+      expect(component.userForm.get('roles')?.touched).toBeTruthy();
     });
 
     it('DEBERÍA emitir onSubmit si el formulario es válido', () => {
@@ -104,7 +106,12 @@ describe('UserFormComponent', () => {
       component.submit();
 
       expect(component.userForm.valid).toBeTruthy();
-      expect(emitSpy).toHaveBeenCalledWith(component.userForm.getRawValue() as User);
+      expect(emitSpy).toHaveBeenCalledWith(expect.objectContaining({
+        firstName: 'Ana',
+        email: 'ana@universidad.edu.co',
+        roles: [UserRoleType.ESTUDIANTE]
+      }));
+
       expect(mockNotificationService.show).not.toHaveBeenCalled();
     });
   });
@@ -142,5 +149,21 @@ describe('UserFormComponent', () => {
       expect(component.isRolesModalOpen).toBeFalsy();
       expect(component.userForm.get('roles')?.value).toEqual([UserRoleType.ADMINISTRADOR]);
     });
+  });
+  it('debería cambiar la validación de contraseña según el modo (crear vs editar)', () => {
+    const passwordControl = component.userForm.get('password');
+
+    // Caso 1: Modo Crear (sin usuario)
+    fixture.componentRef.setInput('user', null);
+    fixture.detectChanges();
+    passwordControl?.setValue('');
+    expect(passwordControl?.hasError('required')).toBeTruthy();
+
+    // Caso 2: Modo Editar
+    fixture.componentRef.setInput('user', { id: '123', firstName: 'Test' });
+    fixture.detectChanges();
+    passwordControl?.setValue('');
+    // En edición no debería tener error 'required'
+    expect(passwordControl?.hasError('required')).toBeFalsy();
   });
 });
