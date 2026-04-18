@@ -30,6 +30,20 @@ export class UsersPageComponent {
   protected stateList = stateList;
   private router = inject(Router);
 
+  // 3. Variables de control para el Modal de Roles
+  mostrarModalRoles = false;
+  mostrarConfirmacion = false;
+  usuarioSeleccionado = '';
+
+  // Inicializamos los roles usando el Enum centralizado
+  rolesUsuario: UserRole[] = [];
+
+  // NUEVA VARIABLE: Para guardar los cambios antes de la confirmación final
+  private rolesPendientes: UserRole[] = [];
+
+  // 4. Variables para otros modales
+  isModalOpen = false;
+
   // 1. Columnas de la tabla
   testColumns: Column[] = [
     { field: 'identificacion', header: 'Identificación', type: 'text', width: '15%' },
@@ -83,20 +97,6 @@ export class UsersPageComponent {
   get displayValue() {
     return [...this.testValue, ...this.usersTableData()];
   }
-
-  // 3. Variables de control para el Modal de Roles
-  mostrarModalRoles = false;
-  mostrarConfirmacion = false;
-  usuarioSeleccionado = '';
-
-  // Inicializamos los roles usando el Enum centralizado
-  rolesUsuario: UserRole[] = [];
-
-  // NUEVA VARIABLE: Para guardar los cambios antes de la confirmación final
-  private rolesPendientes: UserRole[] = [];
-
-  // 4. Variables para otros modales
-  isModalOpen = false;
 
   /**
    * Maneja las acciones emitidas por la tabla

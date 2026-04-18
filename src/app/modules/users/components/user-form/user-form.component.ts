@@ -20,6 +20,7 @@ export class UserFormComponent  {
   isRolesModalOpen = false;
   currentRolesForModal: UserRole[] = [];
   user = input<User | null>(null);
+  selectOpen = false;
 
   @Output() onSubmit = new EventEmitter <User>();
 

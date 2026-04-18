@@ -584,3 +584,55 @@ html, body {
   font-size: var(--text-size-role-footer);
   font-weight: var(--font-regular-weight);
 }
+
+.add-circle{
+  color: #777680;
+  font-size: var(--text-size-section);
+}
+
+/* Clase para el icono de éxito */
+/* 1. Limpiar el select nativo */
+.custom-select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  cursor: pointer;
+}
+
+/* 2. Estilo de la flecha personalizada */
+.select-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.3s ease;
+  pointer-events: none; /* Permite que el clic pase al select */
+  color: #6b7280;
+  font-size: 12px !important;
+}
+
+/* 3. Rotación: cuando el select tiene foco, la flecha gira 90 grados hacia abajo */
+.custom-select:focus ~ .select-arrow {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+/* 4. Icono de éxito (Check azul) */
+.success-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  /* Color del círculo (el azul que prefieras) */
+  color: var(--color-primary);
+  /* Tamaño reducido (antes solía ser 24px por defecto) */
+  font-size: 16px !important;
+  /* ESTO ES LO MÁS IMPORTANTE PARA EL RELLENO */
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  pointer-events: none;
+}
+
+/* 5. Ajuste visual para el input cuando es válido */
+.input-success {
+  border-color: var(--color-primary) !important;
+  padding-right: 40px !important; /* Espacio para que el texto no pise el icono */
+}
