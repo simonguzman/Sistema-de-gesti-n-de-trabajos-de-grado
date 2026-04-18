@@ -19,9 +19,9 @@ export class UserFormComponent  {
 
   isRolesModalOpen = false;
   currentRolesForModal: UserRole[] = [];
-  user = input<User | null>(null);
   selectOpen = false;
 
+  user = input<User | null>(null);
   @Output() onSubmit = new EventEmitter <User>();
 
   roles = Object.values(UserRoleType).map(role => ({
@@ -42,16 +42,26 @@ export class UserFormComponent  {
       validators: [Validators.required, Validators.minLength(1)]
     }),
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]]
+    password: ['', [Validators.minLength(6)]]
   })
 
   constructor() {
     effect(() => {
-      const user = this.user();
-      if(user){
-        this.userForm.patchValue(user);
+      const userData = this.user();
+      const passwordControl = this.userForm.get('password');
+      if(userData){
+        this.userForm.patchValue(userData);
+        passwordControl?.setValidators([Validators.minLength(6)]);
+      } else {
+        this.userForm.reset();
+        passwordControl?.setValidators([Validators.required, Validators.minLength(6)]);
       }
-    })
+      passwordControl?.updateValueAndValidity();
+    });
+  }
+
+  get IsEditMode(): boolean {
+    return !!this.user();
   }
 
   submit() {
@@ -64,7 +74,8 @@ export class UserFormComponent  {
       });
       return;
     }
-    this.onSubmit.emit(this.userForm.getRawValue() as User);
+    const formData = this.userForm.getRawValue() as User;
+    this.onSubmit.emit(formData);
   }
   // Calculamos el nombre completo para el título del modal
   get fullName(): string {

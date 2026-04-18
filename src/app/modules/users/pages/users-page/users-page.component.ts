@@ -74,6 +74,7 @@ export class UsersPageComponent {
 
   // 2. Valores de prueba para la tabla
   testValue: any[] = [{
+    id: 1,
     identificacion: '1002819781',
     nombre: 'Simón',
     apellidos: 'Guzmán Anaya',
@@ -102,6 +103,8 @@ export class UsersPageComponent {
    * Maneja las acciones emitidas por la tabla
    */
   handleTableAction(event: { action: string, row: any }) {
+    console.log('Acción disparada:', event.action); // Debug
+    console.log('Data de la fila:', event.row);      // Debug
     if (event.action === 'ver roles asignados') {
       this.usuarioSeleccionado = `${event.row.nombre} ${event.row.apellidos}`;
       if(event.row.originalData){
@@ -113,7 +116,15 @@ export class UsersPageComponent {
       }
       this.mostrarModalRoles = true;
     }
-    // Aquí puedes añadir lógica para 'ver', 'editar' o 'eliminar'
+    if (event.action === 'editar'){
+      const userId = event.row.originalData?.id;
+      if(userId){
+        this.router.navigate(['/users/editar', userId]);
+      }
+    }
+    if (event.action === 'eliminar'){
+      console.log('Eliminar usuario: ', event.row.originalData.id);
+    }
   }
 
   /**

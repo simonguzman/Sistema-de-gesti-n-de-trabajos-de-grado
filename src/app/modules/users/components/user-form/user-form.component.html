@@ -32,7 +32,7 @@
         <div class="flex flex-col gap-1">
           <label for="idNumver" class="title-textbox">Número de documento de identidad <span class="text-orange-500">*</span></label>
           <div class="relative flex items-center">
-            <input id="idNumber" type="number" formControlName="idNumber" placeholder="Número de documento"
+            <input id="idNumber" type="number" formControlName="idNumber"[attr.readonly]="IsEditMode ? true : null" [class.bg-gray-100]="IsEditMode" placeholder="Número de documento"
                    class="text-textbox p-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-primary"
                    [class.input-success]="userForm.get('idNumber')?.valid && userForm.get('idNumber')?.touched">
             @if (userForm.get('idNumber')?.valid && userForm.get('idNumber')?.touched) {
@@ -110,7 +110,7 @@
         <div class="flex flex-col gap-1">
           <label for="number" class="title-textbox">Código<span class="text-orange-500">*</span></label>
           <div class="relative flex items-center">
-            <input id="number" type="number" formControlName="codeNumber" placeholder="Código"
+            <input id="number" type="number" formControlName="codeNumber" [attr.readonly]="IsEditMode ? true : null" [class.bg-gray-100]="IsEditMode" placeholder="Código"
                    class="text-textbox p-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-primary"
                    [class.input-success]="userForm.get('codeNumber')?.valid && userForm.get('codeNumber')?.touched">
             @if (userForm.get('codeNumber')?.valid && userForm.get('codeNumber')?.touched) {
@@ -163,7 +163,7 @@
         </div>
 
         <div class="flex flex-col gap-1">
-          <label for="password" class="title-textbox">Contraseña <span class="text-orange-500">*</span></label>
+          <label for="password" class="title-textbox">Contraseña @if (!IsEditMode) {<span class="text-orange-500">*</span>}</label>
           <div class="relative flex items-center">
             <input id="password" type="password" formControlName="password" placeholder="Contraseña"
                    class="text-textbox p-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-primary"
@@ -180,7 +180,11 @@
     </section>
 
     <div class="flex justify-end gap-2">
-      <app-button-component label="Guardar" variant="primary" type="submit"></app-button-component>
+      <app-button-component
+        [label]="IsEditMode ? 'Actualizar usuario' : 'Registrar usuario'"
+        variant="primary"
+        type="submit"
+      ></app-button-component>
     </div>
 
     <app-roles-selection-modal
