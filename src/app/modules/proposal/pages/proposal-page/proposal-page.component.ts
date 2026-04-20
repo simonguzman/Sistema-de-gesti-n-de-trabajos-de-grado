@@ -27,7 +27,7 @@ export class ProposalPageComponent {
         header: 'Descripción',
         type: 'actions',
         actions: [
-          {action:'ver descripción', label: 'Ver descripción', variant: 'primary'}
+          {action:'ver descripción', label: 'Ver descripción', variant: 'primary', disabled: true}
         ],
         width: 'auto'
       },
@@ -37,9 +37,9 @@ export class ProposalPageComponent {
       header: 'Acciones',
       type: 'actions',
       actions: [
-        { action: 'ver',     icon: 'visibility', variant: 'primary' },
-        { action: 'editar',  icon: 'edit', variant: 'primary' },
-        { action: 'eliminar',icon: 'delete', variant: 'primary' }
+        { action: 'ver',     icon: 'visibility', variant: 'primary', disabled: true },
+        { action: 'editar',  icon: 'edit', variant: 'primary', disabled: true },
+        { action: 'eliminar',icon: 'delete', variant: 'primary', disabled: true }
       ],
       width: 'auto'
       },

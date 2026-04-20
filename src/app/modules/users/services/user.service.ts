@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { User } from '../interfaces/user.interface';
+import { User, UserState } from '../interfaces/user.interface';
 import { delay, Observable, of, tap } from 'rxjs';
+import { UserRoleType } from '../../../core/models/user-role';
 
 @Injectable({
   providedIn: 'root'
@@ -54,5 +55,33 @@ export class UserService {
       })
     );
   }
+
+  softDeleteUserMock(id: string): Observable<void>{
+    return of(undefined).pipe(
+      delay(1000),
+      tap(() => {
+        this.usersList.update(users =>
+          users.map(user =>
+            user.id === id ? {...user, state: user.state === UserState.inactive ? UserState.active : UserState.inactive }: user
+          )
+        );
+      })
+    );
+  }
+
+  updateUserRolesMock(userId: string, newRoles: UserRoleType[]): Observable<void> {
+  return of(undefined).pipe(
+    delay(500),
+    tap(() => {
+      this.usersList.update(users =>
+        users.map(user =>
+          user.id === userId
+            ? { ...user, roles: [...newRoles] }
+            : user
+          )
+      );
+    })
+  );
+}
 
 }

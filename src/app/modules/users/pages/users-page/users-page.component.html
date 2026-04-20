@@ -34,6 +34,12 @@
   (onClose)="mostrarConfirmacion = false"
   (onConfirm)="confirmarCambios()"
 ></app-confirmation-action-modal>
+<app-confirmation-action-modal
+  [isOpen]="mostrarConfirmacionEliminar"
+  [description]="mensajeConfirmacion"
+  (onClose)="mostrarConfirmacionEliminar = false"
+  (onConfirm)="confirmarSoftDelete()"
+></app-confirmation-action-modal>
 
 
 <!-- Botón para abrir el modal -->

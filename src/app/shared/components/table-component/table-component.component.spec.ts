@@ -20,8 +20,8 @@ const COLUMNS_ACTIONS: Column[] = [
     header: 'Acciones',
     type: 'actions',
     actions: [
-      { action: 'ver', icon: 'visibility', variant: 'primary' },
-      { action: 'eliminar', icon: 'delete', variant: 'primary'},
+      { action: 'ver', icon: 'visibility', variant: 'primary', disabled: true },
+      { action: 'eliminar', icon: 'delete', variant: 'primary', disabled: true},
     ],
   },
 ];

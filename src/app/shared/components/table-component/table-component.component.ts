@@ -15,7 +15,8 @@ export interface ActionButton{
   action: string;
   label?: string;
   icon?: string;
-  variant: 'primary' | 'secondary'
+  variant: 'primary' | 'secondary';
+  disabled: true | false;
 }
 export interface Column{
   field: string;

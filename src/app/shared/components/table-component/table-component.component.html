@@ -56,11 +56,12 @@
             }
             @if (col.type === 'actions') {
               <div class="flex justify-center items-center gap-0.5">
-                @for (btn of col.actions; track btn) {
+                @for (btn of (rowData[col.field] || col.actions); track btn.action) {
                   <app-button-component
                     [label]="btn.label"
                     [icon]="btn.icon"
                     [variant]="btn.variant || 'primary'"
+                    [disabled]="btn.disabled"
                     (onClick)="actionClick.emit({action:btn.action, row: rowData})"
                   ></app-button-component>
                 }

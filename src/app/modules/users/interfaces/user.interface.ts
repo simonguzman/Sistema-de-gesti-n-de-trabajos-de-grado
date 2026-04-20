@@ -5,6 +5,11 @@ export enum IdentificationType {
   PASSPORT = 'Pasaporte'
 }
 
+export enum UserState {
+  active = 'Activo',
+  inactive = 'Inactivo'
+}
+
 export interface User {
   id: string;
   idType: IdentificationType;
@@ -17,4 +22,5 @@ export interface User {
   roles: UserRoleType[];
   email: string;
   password: string;
+  state: UserState
 }

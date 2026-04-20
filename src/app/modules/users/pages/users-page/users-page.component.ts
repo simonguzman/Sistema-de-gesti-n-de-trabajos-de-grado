@@ -10,7 +10,6 @@ import { UserRole, UserRoleType } from '../../../../core/models/user-role';
 import { Router } from '@angular/router';
 import { RolesModalComponent } from '../../../../shared/components/modals/roles/roles-modal/roles-modal.component';
 import { UserService } from '../../services/user.service';
-
 @Component({
   selector: 'app-users-page',
   standalone: true,
@@ -30,16 +29,22 @@ export class UsersPageComponent {
   protected stateList = stateList;
   private router = inject(Router);
 
+  idUserForRoles: string | null = null;
+
   // 3. Variables de control para el Modal de Roles
   mostrarModalRoles = false;
   mostrarConfirmacion = false;
   usuarioSeleccionado = '';
 
+  mostrarConfirmacionEliminar = false;
+  idUsuarioAEliminar: string | null = null;
+  mensajeConfirmacion = ' ';
+
   // Inicializamos los roles usando el Enum centralizado
   rolesUsuario: UserRole[] = [];
 
   // NUEVA VARIABLE: Para guardar los cambios antes de la confirmación final
-  private rolesPendientes: UserRole[] = [];
+  private pendingRoles: UserRole[] = [];
 
   // 4. Variables para otros modales
   isModalOpen = false;
@@ -55,7 +60,7 @@ export class UsersPageComponent {
       header: 'Descripción',
       type: 'actions',
       actions: [
-        { action: 'ver roles asignados', label: 'Ver roles asignados', variant: 'primary' }
+        { action: 'ver roles asignados', label: 'Ver roles asignados', variant: 'primary', disabled: false }
       ],
       width: '20%'
     },
@@ -64,9 +69,9 @@ export class UsersPageComponent {
       header: 'Acciones',
       type: 'actions',
       actions: [
-        { action: 'ver',    icon: 'visibility', variant: 'primary' },
-        { action: 'editar',  icon: 'edit', variant: 'primary' },
-        { action: 'eliminar', icon: 'delete', variant: 'primary' }
+        { action: 'ver',    icon: 'visibility', variant: 'primary', disabled: false },
+        { action: 'editar',  icon: 'edit', variant: 'primary', disabled: false },
+        { action: 'eliminar', icon: 'delete', variant: 'primary', disabled: false }
       ],
       width: '20%'
     },
@@ -85,18 +90,53 @@ export class UsersPageComponent {
   }];
 
   usersTableData = computed(() => {
-    return this.userService.users().map(user => ({
-      identificacion: user.idNumber?.toString() || '',
-      nombre: user.firstName,
-      apellidos: `${user.lastName} ${user.secondLastName || ''}`,
-      estado: 'Activo', // Valor por defecto
-      // Guardamos el objeto original por si necesitas editar o ver roles luego
-      originalData: user
-    }));
+    return this.userService.users().map(user => {
+      // DEFINICIÓN: Calculamos la constante para cada usuario dentro del map
+      const esInactivo = user.state === 'Inactivo';
+
+      return {
+        identificacion: user.idNumber?.toString() || '',
+        nombre: user.firstName,
+        apellidos: `${user.lastName} ${user.secondLastName || ''}`,
+        estado: user.state || 'Activo',
+        roles: [
+          {
+            action: 'ver roles asignados',
+            label: 'Ver roles asignados',
+            variant: 'primary',
+            disabled: esInactivo
+          },
+        ],
+
+        // Configuramos las acciones dinámicamente según el estado
+        acciones: [
+          {
+            action: 'ver',
+            icon: 'visibility',
+            variant: 'primary',
+            disabled: esInactivo
+          },
+          {
+            action: 'editar',
+            icon: 'edit',
+            variant: 'primary',
+            disabled: esInactivo // Ahora TypeScript sí encuentra la variable
+          },
+          {
+            action: 'eliminar',
+            icon: esInactivo ? 'person_check' : 'delete',
+            variant: 'primary', // Usamos 'secondary' para que coincida con tu ButtonComponent
+            disabled: false
+          },
+        ],
+        originalData: user
+      };
+    });
   });
-  //EL this.testValue se tiene que eliminar ya que es codigo hardcordeado
+
+  // Eliminamos testValue y dejamos solo la fuente de verdad del servicio
   get displayValue() {
-    return [...this.testValue, ...this.usersTableData()];
+    return this.usersTableData();
   }
 
   /**
@@ -106,6 +146,7 @@ export class UsersPageComponent {
     console.log('Acción disparada:', event.action); // Debug
     console.log('Data de la fila:', event.row);      // Debug
     if (event.action === 'ver roles asignados') {
+      this.idUserForRoles = event.row.originalData?.id;
       this.usuarioSeleccionado = `${event.row.nombre} ${event.row.apellidos}`;
       if(event.row.originalData){
         const userRolesTypes = event.row.originalData.roles as UserRoleType[];
@@ -123,7 +164,14 @@ export class UsersPageComponent {
       }
     }
     if (event.action === 'eliminar'){
-      console.log('Eliminar usuario: ', event.row.originalData.id);
+      const user = event.row.originalData;
+      this.idUsuarioAEliminar = user.id;
+      this.usuarioSeleccionado = `${event.row.nombre} ${event.row.apellidos}`;
+      const esInactivo = event.row.estado === 'Inactivo';
+      this.mensajeConfirmacion = esInactivo
+        ? `¿Desea habilitar nuevamente al usuario ${this.usuarioSeleccionado}?`
+        : `¿Desea deshabilitar al usuario ${this.usuarioSeleccionado}? Esta acción limitará sus accesos al sistema.`
+      this.mostrarConfirmacionEliminar = true;
     }
   }
 
@@ -133,7 +181,7 @@ export class UsersPageComponent {
   handleSaveRoles(updatedRoles: UserRole[]) {
     console.log(`Guardando roles para ${this.usuarioSeleccionado}:`, updatedRoles);
 
-    this.rolesPendientes = updatedRoles;
+    this.pendingRoles = updatedRoles;
     // Aquí es donde dispararías el modal de confirmación que ya tienes configurado
     // Ejemplo: this.mostrarModalConfirmacion = true;
     this.mostrarModalRoles = false;
@@ -141,14 +189,38 @@ export class UsersPageComponent {
   }
 
   confirmarCambios(){
-    // 3. AHORA SÍ: Aplicamos los cambios pendientes a la fuente de verdad
-    this.rolesUsuario = [...this.rolesPendientes];
+    if (!this.idUserForRoles) return;
 
-    console.log('Cambios aplicados con éxito en el padre:', this.rolesUsuario);
+    // 1. Extraemos solo los UserRoleType que el usuario seleccionó
+    const finalsRoles = this.pendingRoles
+      .filter(rol => rol.assigned === true)
+      .map(rol => rol.type);
 
-    // 4. Limpiamos y cerramos
-    this.rolesPendientes = [];
-    this.mostrarConfirmacion = false;
+    // 2. Llamamos al servicio para actualizar (asumiendo que tienes un método update)
+    this.userService.updateUserRolesMock(this.idUserForRoles, finalsRoles).subscribe({
+      next: () => {
+        console.log('Roles actualizados en el servicio');
+
+        // 3. Limpiamos y cerramos
+        this.mostrarConfirmacion = false;
+        this.pendingRoles = [];
+        this.idUserForRoles = null;
+      },
+      error: (err) => console.error('Error al actualizar roles', err)
+    });
+  }
+
+  confirmarSoftDelete() {
+    if (this.idUsuarioAEliminar){
+      this.userService.softDeleteUserMock(this.idUsuarioAEliminar).subscribe({
+        next:() => {
+          console.log('Estado del usuario actualizado con éxito.');
+          this.mostrarConfirmacionEliminar = false;
+          this.idUsuarioAEliminar = null;
+        },
+        error: (err) => console.error('Error al actualizar estado', err)
+      });
+    }
   }
 
   handleFileUploaded(event: { fileName: string, file: File }) {
