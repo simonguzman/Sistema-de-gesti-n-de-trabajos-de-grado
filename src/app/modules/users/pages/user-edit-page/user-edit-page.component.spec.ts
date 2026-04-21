@@ -4,7 +4,7 @@ import { UserEditPageComponent } from './user-edit-page.component';
 import { UserService } from '../../services/user.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IdentificationType, User } from '../../interfaces/user.interface';
+import { IdentificationType, User, UserState } from '../../interfaces/user.interface';
 import { UserRoleType } from '../../../../core/models/user-role';
 import { of, throwError } from 'rxjs';
 import { Location } from '@angular/common';
@@ -29,7 +29,8 @@ describe('UserEditPageComponent', () => {
     roles: [UserRoleType.ADMINISTRADOR],
     password: '123',
     secondLastName: 'Test',
-    codeNumber: 101
+    codeNumber: 101,
+    state: UserState.active
   };
 
   beforeEach(waitForAsync(() => {

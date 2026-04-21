@@ -32,16 +32,16 @@ export class UsersPageComponent {
   idUserForRoles: string | null = null;
 
   // 3. Variables de control para el Modal de Roles
-  mostrarModalRoles = false;
-  mostrarConfirmacion = false;
-  usuarioSeleccionado = '';
+  showRolesModal = false;
+  showConfirmation = false;
+  selectedUser = '';
 
-  mostrarConfirmacionEliminar = false;
-  idUsuarioAEliminar: string | null = null;
-  mensajeConfirmacion = ' ';
+  showDisabledConfirmation = false;
+  idUserToDisabled: string | null = null;
+  confirmationMessage = ' ';
 
   // Inicializamos los roles usando el Enum centralizado
-  rolesUsuario: UserRole[] = [];
+  rolesUser: UserRole[] = [];
 
   // NUEVA VARIABLE: Para guardar los cambios antes de la confirmación final
   private pendingRoles: UserRole[] = [];
@@ -147,15 +147,15 @@ export class UsersPageComponent {
     console.log('Data de la fila:', event.row);      // Debug
     if (event.action === 'ver roles asignados') {
       this.idUserForRoles = event.row.originalData?.id;
-      this.usuarioSeleccionado = `${event.row.nombre} ${event.row.apellidos}`;
+      this.selectedUser = `${event.row.nombre} ${event.row.apellidos}`;
       if(event.row.originalData){
         const userRolesTypes = event.row.originalData.roles as UserRoleType[];
-        this.rolesUsuario = Object.values(UserRoleType).map(type => ({
+        this.rolesUser = Object.values(UserRoleType).map(type => ({
           type: type,
           assigned: userRolesTypes.includes(type)
         }));
       }
-      this.mostrarModalRoles = true;
+      this.showRolesModal = true;
     }
     if (event.action === 'editar'){
       const userId = event.row.originalData?.id;
@@ -165,13 +165,13 @@ export class UsersPageComponent {
     }
     if (event.action === 'eliminar'){
       const user = event.row.originalData;
-      this.idUsuarioAEliminar = user.id;
-      this.usuarioSeleccionado = `${event.row.nombre} ${event.row.apellidos}`;
+      this.idUserToDisabled = user.id;
+      this.selectedUser = `${event.row.nombre} ${event.row.apellidos}`;
       const esInactivo = event.row.estado === 'Inactivo';
-      this.mensajeConfirmacion = esInactivo
-        ? `¿Desea habilitar nuevamente al usuario ${this.usuarioSeleccionado}?`
-        : `¿Desea deshabilitar al usuario ${this.usuarioSeleccionado}? Esta acción limitará sus accesos al sistema.`
-      this.mostrarConfirmacionEliminar = true;
+      this.confirmationMessage = esInactivo
+        ? `¿Desea habilitar nuevamente al usuario ${this.selectedUser}?`
+        : `¿Desea deshabilitar al usuario ${this.selectedUser}? Esta acción limitará sus accesos al sistema.`
+      this.showDisabledConfirmation = true;
     }
   }
 
@@ -179,16 +179,16 @@ export class UsersPageComponent {
    * Maneja la respuesta del modal de roles al presionar Guardar
    */
   handleSaveRoles(updatedRoles: UserRole[]) {
-    console.log(`Guardando roles para ${this.usuarioSeleccionado}:`, updatedRoles);
+    console.log(`Guardando roles para ${this.selectedUser}:`, updatedRoles);
 
     this.pendingRoles = updatedRoles;
     // Aquí es donde dispararías el modal de confirmación que ya tienes configurado
     // Ejemplo: this.mostrarModalConfirmacion = true;
-    this.mostrarModalRoles = false;
-    this.mostrarConfirmacion = true;
+    this.showRolesModal = false;
+    this.showConfirmation = true;
   }
 
-  confirmarCambios(){
+  confirmChanges(){
     if (!this.idUserForRoles) return;
 
     // 1. Extraemos solo los UserRoleType que el usuario seleccionó
@@ -202,7 +202,7 @@ export class UsersPageComponent {
         console.log('Roles actualizados en el servicio');
 
         // 3. Limpiamos y cerramos
-        this.mostrarConfirmacion = false;
+        this.showConfirmation = false;
         this.pendingRoles = [];
         this.idUserForRoles = null;
       },
@@ -210,13 +210,13 @@ export class UsersPageComponent {
     });
   }
 
-  confirmarSoftDelete() {
-    if (this.idUsuarioAEliminar){
-      this.userService.softDeleteUserMock(this.idUsuarioAEliminar).subscribe({
+  confirmSoftDelete() {
+    if (this.idUserToDisabled){
+      this.userService.softDeleteUserMock(this.idUserToDisabled).subscribe({
         next:() => {
           console.log('Estado del usuario actualizado con éxito.');
-          this.mostrarConfirmacionEliminar = false;
-          this.idUsuarioAEliminar = null;
+          this.showDisabledConfirmation = false;
+          this.idUserToDisabled = null;
         },
         error: (err) => console.error('Error al actualizar estado', err)
       });

@@ -87,11 +87,11 @@ describe('UserPageComponent', () => {
 
       component.handleTableAction(event);
 
-      expect(component.mostrarModalRoles).toBe(true);
+      expect(component.showRolesModal).toBe(true);
       // Validamos que el nombre se haya concatenado correctamente
-      expect(component.usuarioSeleccionado).toContain('Juan');
+      expect(component.selectedUser).toContain('Juan');
 
-      const directorRole = component.rolesUsuario.find(r => r.type === UserRoleType.DIRECTOR);
+      const directorRole = component.rolesUser.find(role => role.type === UserRoleType.DIRECTOR);
       expect(directorRole?.assigned).toBe(true);
     });
 
@@ -103,25 +103,25 @@ describe('UserPageComponent', () => {
 
   describe('Flujo de Confirmación de Roles', () => {
     it('debería cerrar modal de roles y abrir confirmación al guardar roles', () => {
-      const nuevosRoles = [{ type: UserRoleType.ADMINISTRADOR, assigned: true }];
+      const newRoles = [{ type: UserRoleType.ADMINISTRADOR, assigned: true }];
 
-      component.handleSaveRoles(nuevosRoles);
+      component.handleSaveRoles(newRoles);
 
-      expect(component.mostrarModalRoles).toBe(false);
-      expect(component.mostrarConfirmacion).toBe(true);
+      expect(component.showRolesModal).toBe(false);
+      expect(component.showConfirmation).toBe(true);
     });
 
     it('debería aplicar los cambios finales al confirmar', () => {
-      const rolesPendientes = [{ type: UserRoleType.DIRECTOR, assigned: true }];
+      const pendingRoles = [{ type: UserRoleType.DIRECTOR, assigned: true }];
       // @ts-ignore - Accediendo a propiedad privada para el test
-      component.rolesPendientes = rolesPendientes;
+      component.pendingRoles = pendingRoles;
 
       component.idUserForRoles = '1';
 
-      component.confirmarCambios();
+      component.confirmChanges();
 
       expect(mockUserService.updateUserRolesMock).toHaveBeenCalled();
-      expect(component.mostrarConfirmacion).toBe(false);
+      expect(component.showConfirmation).toBe(false);
     });
   });
   it('debería navegar a la página de edición con el ID correcto', () => {
@@ -156,39 +156,39 @@ describe('UserPageComponent', () => {
     );
   });
   it('debería limpiar los cambios pendientes si se cancela la confirmación', () => {
-    const rolesOriginales = [...component.rolesUsuario];
+    const originalRoles = [...component.rolesUser];
     // @ts-ignore
-    component.rolesPendientes = [{ type: UserRoleType.DIRECTOR, assigned: true }];
+    component.pendingRoles = [{ type: UserRoleType.DIRECTOR, assigned: true }];
 
-    component.mostrarConfirmacion = false; // Simulamos cerrar sin confirmar
+    component.showConfirmation = false; // Simulamos cerrar sin confirmar
 
     // @ts-ignore
-    expect(component.rolesUsuario).toEqual(rolesOriginales);
+    expect(component.rolesUser).toEqual(originalRoles);
   });
   it('debería llamar al servicio al confirmar cambios de roles', () => {
       // Usamos el mismo nombre de variable que te funcionó en el test anterior
       // @ts-ignore
       component.idUserForRoles = '1';
       // @ts-ignore
-      component.rolesPendientes = [{ type: UserRoleType.DIRECTOR, assigned: true }];
+      component.pendingRoles = [{ type: UserRoleType.DIRECTOR, assigned: true }];
 
-      component.confirmarCambios();
+      component.confirmChanges();
 
       expect(mockUserService.updateUserRolesMock).toHaveBeenCalled();
-      expect(component.mostrarConfirmacion).toBe(false);
+      expect(component.showConfirmation).toBe(false);
   });
 
   it('debería ejecutar la lógica de Soft Delete correctamente', () => {
     // 1. Simulamos que se seleccionó un usuario para eliminar
-    component.idUsuarioAEliminar = '123';
+    component.idUserToDisabled = '123';
 
     // 2. Ejecutamos la confirmación
-    component.confirmarSoftDelete();
+    component.confirmSoftDelete();
 
     // 3. Verificamos que se llamó al servicio y se limpió el estado
     expect(mockUserService.softDeleteUserMock).toHaveBeenCalledWith('123');
-    expect(component.mostrarConfirmacionEliminar).toBe(false);
-    expect(component.idUsuarioAEliminar).toBeNull();
+    expect(component.showDisabledConfirmation).toBe(false);
+    expect(component.idUserToDisabled).toBeNull();
   });
 
   it('debería configurar el mensaje de confirmación correcto según el estado (Habilitar/Deshabilitar)', () => {
@@ -198,7 +198,7 @@ describe('UserPageComponent', () => {
     };
 
     component.handleTableAction(eventEliminar);
-    expect(component.mensajeConfirmacion).toContain('¿Desea deshabilitar al usuario');
+    expect(component.confirmationMessage).toContain('¿Desea deshabilitar al usuario');
 
     const eventHabilitar = {
       action: 'eliminar',
@@ -206,6 +206,6 @@ describe('UserPageComponent', () => {
     };
 
     component.handleTableAction(eventHabilitar);
-    expect(component.mensajeConfirmacion).toContain('¿Desea habilitar nuevamente');
+    expect(component.confirmationMessage).toContain('¿Desea habilitar nuevamente');
   });
 });

@@ -23,22 +23,22 @@
   (onClose)="isModalOpen = false"
 ></app-file-upload-modal>
 <app-roles-modal
-  [(isOpen)]="mostrarModalRoles"
-  [username]="usuarioSeleccionado"
-  [roles]="rolesUsuario"
+  [(isOpen)]="showRolesModal"
+  [username]="selectedUser"
+  [roles]="rolesUser"
   (onSave)="handleSaveRoles($event)"
 ></app-roles-modal>
 <app-confirmation-action-modal
-  [isOpen]="mostrarConfirmacion"
+  [isOpen]="showConfirmation"
   [description]="'¿Desea guardar los cambios realizados en los roles del usuario? Esta acción notificará a los actores involucrados.'"
-  (onClose)="mostrarConfirmacion = false"
-  (onConfirm)="confirmarCambios()"
+  (onClose)="showConfirmation = false"
+  (onConfirm)="confirmChanges()"
 ></app-confirmation-action-modal>
 <app-confirmation-action-modal
-  [isOpen]="mostrarConfirmacionEliminar"
-  [description]="mensajeConfirmacion"
-  (onClose)="mostrarConfirmacionEliminar = false"
-  (onConfirm)="confirmarSoftDelete()"
+  [isOpen]="showDisabledConfirmation"
+  [description]="confirmationMessage"
+  (onClose)="showDisabledConfirmation = false"
+  (onConfirm)="confirmSoftDelete()"
 ></app-confirmation-action-modal>
 
 

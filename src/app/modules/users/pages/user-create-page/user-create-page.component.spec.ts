@@ -4,7 +4,7 @@ import { UserCreatePageComponent } from './user-create-page.component';
 import { UserService } from '../../services/user.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { Router } from '@angular/router';
-import { IdentificationType, User } from '../../interfaces/user.interface';
+import { IdentificationType, User, UserState } from '../../interfaces/user.interface';
 import { UserRoleType } from '../../../../core/models/user-role';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { of, throwError } from 'rxjs';
@@ -40,7 +40,8 @@ describe('UserCreatePageComponent', () => {
     roles: [UserRoleType.ADMINISTRADOR],
     password: 'password123',
     secondLastName: 'Test',
-    codeNumber: 101
+    codeNumber: 101,
+    state: UserState.active
   };
 
   beforeEach(async() => {
