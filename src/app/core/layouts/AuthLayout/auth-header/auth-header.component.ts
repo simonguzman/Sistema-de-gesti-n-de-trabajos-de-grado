@@ -1,15 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-auth-header',
+  imports: [CommonModule],
   templateUrl: './auth-header.component.html',
   styleUrls: ['./auth-header.component.css']
 })
-export class AuthHeaderComponent implements OnInit {
+export class AuthHeaderComponent {
 
-  constructor() { }
-
-  ngOnInit() {
-  }
 
 }

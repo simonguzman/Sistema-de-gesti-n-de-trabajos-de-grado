@@ -15,7 +15,7 @@ import { ConfirmationActionModalComponent } from '../../../../shared/components/
   styleUrls: ['./user-create-page.component.css']
 })
 export class UserCreatePageComponent {
-  private UserService = inject(UserService);
+  private userService = inject(UserService);
   private notificationService = inject(NotificationService);
   private router = inject(Router);
   private location = inject(Location);
@@ -35,30 +35,41 @@ export class UserCreatePageComponent {
   confirmCreation(){
     if(!this.pendingUserData) return;
     this.isConfirmModalOpen = false;
+    this.showInfoNotification();
+    this.userService.createUserMock(this.pendingUserData).subscribe({
+      next: (response) => {
+        this.pendingUserData = null;
+        this.showConfirmationNotification();
+        this.router.navigate(['/users'])
+      },
+      error: (err) => {
+        console.log('Error en la creación ',err)
+        this.showErrorNotification();
+      }
+    });
+  }
+
+  private showInfoNotification() {
     this.notificationService.show({
       title: 'Procesando registro',
       message: 'Estamos procesando la información del usuario...',
       type: NotificationType.INFO
     });
+  }
 
-    this.UserService.createUserMock(this.pendingUserData).subscribe({
-      next: (response) => {
-        this.notificationService.show({
-          title: 'Usuario registrado',
-          message: 'El usuario ha sido registrado correctamente.',
-          type: NotificationType.CONFIRMATION,
-        })
+  private showConfirmationNotification() {
+    this.notificationService.show({
+      title: 'Usuario registrado',
+      message: 'El usuario ha sido registrado correctamente.',
+      type: NotificationType.CONFIRMATION,
+    });
+  }
 
-        this.router.navigate(['/users'])
-      },
-      error: (err) => {
-        console.log('Error en la creación ',err)
-        this.notificationService.show({
-          title: 'Error de servidor',
-          message: 'No se pudo guardar el usuario. Intente nuevamente.',
-          type: NotificationType.ERROR,
-        })
-      }
+  private showErrorNotification() {
+    this.notificationService.show({
+      title: 'Error de servidor',
+      message: 'No se pudo guardar el usuario. Intente nuevamente.',
+      type: NotificationType.ERROR,
     });
   }
 

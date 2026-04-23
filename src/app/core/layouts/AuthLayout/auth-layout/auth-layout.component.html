@@ -1,3 +1,28 @@
-<p>
-  auth-layout works!
-</p>
+<div class="min-h-screen flex flex-col bg-white relative">
+
+  <!-- Imagen posicionada detrás de todo, cubre el 50% derecho desde el top -->
+  <div class="hidden md:block absolute right-0 top-0 w-1/2 h-full z-0">
+    <img
+      src="assets/images/estudiantes-unicauca.png"
+      alt="Estudiantes Unicauca"
+      class="w-full h-full object-cover"
+    >
+    <div class="absolute inset-0 bg-primary/10"></div>
+  </div>
+
+  <!-- Header encima de la imagen -->
+  <app-auth-header class="relative z-10"></app-auth-header>
+
+  <!-- Main solo maneja el lado izquierdo -->
+  <main class="flex-1 flex relative z-10">
+    <section class="w-full md:w-1/2 flex items-center justify-center p-6 bg-white">
+      <div class="w-full max-w-md">
+        <router-outlet></router-outlet>
+      </div>
+    </section>
+    <!-- El lado derecho está vacío, la imagen lo cubre desde atrás -->
+    <div class="hidden md:block md:w-1/2"></div>
+  </main>
+
+  <app-auth-footer class="relative z-10"></app-auth-footer>
+</div>

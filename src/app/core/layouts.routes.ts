@@ -1,7 +1,14 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './layouts/MainLayout/main-layout/main-layout.component';
+import { AuthLayoutComponent } from './layouts/AuthLayout/auth-layout/auth-layout.component';
 
 export const layoutsRoutes: Routes = [
+  {
+    path: 'auth',
+    component: AuthLayoutComponent,
+    loadChildren: () => import('../modules/auth/auth.routes')
+      .then(m => m.authRoutes)
+  },
   {
     path:'',
     component: MainLayoutComponent,
@@ -41,18 +48,12 @@ export const layoutsRoutes: Routes = [
         loadChildren: () => import('../modules/statistics/statistics.routes')
           .then(m => m.statisticsRoutes)
       },
-      {
-        path:'auth',
-        loadChildren: () => import('../modules/auth/auth.routes')
-          .then(m => m.authRoutes)
-      },
-
     ],
   },
 
   {
     path:'**',
-    redirectTo:'notifications',
+    redirectTo:'auth/login',
   },
 ];
 

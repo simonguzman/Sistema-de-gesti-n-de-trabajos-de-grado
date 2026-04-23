@@ -19,15 +19,9 @@ export class UserFormComponent  {
 
   isRolesModalOpen = false;
   currentRolesForModal: UserRole[] = [];
-  selectOpen = false;
 
   user = input<User | null>(null);
   @Output() onSubmit = new EventEmitter <User>();
-
-  roles = Object.values(UserRoleType).map(role => ({
-    label: role,
-    value: role
-  }));
 
   userForm = this.fb.group({
     idType: ['' as IdentificationType | null, [Validators.required]],
@@ -47,9 +41,14 @@ export class UserFormComponent  {
 
   constructor() {
     effect(() => {
-      const userData = this.user();
-      const passwordControl = this.userForm.get('password');
-      if(userData){
+      this.syncFormWithUser();
+    });
+  }
+
+  private syncFormWithUser() {
+    const userData = this.user();
+    const passwordControl = this.userForm.get('password');
+    if(userData){
         this.userForm.patchValue(userData);
         passwordControl?.setValidators([Validators.minLength(6)]);
       } else {
@@ -57,26 +56,37 @@ export class UserFormComponent  {
         passwordControl?.setValidators([Validators.required, Validators.minLength(6)]);
       }
       passwordControl?.updateValueAndValidity();
-    });
   }
 
-  get IsEditMode(): boolean {
+  get isEditMode(): boolean {
     return !!this.user();
   }
 
   submit() {
     if(this.userForm.invalid){
-      this.userForm.markAllAsTouched();
-      this.notificationService.show({
+      this.handleInvalidForm();
+      return;
+    }
+    const updatedUser: User = {
+      ...this.user(),
+      ...(this.userForm.getRawValue() as User)
+    };
+    this.onSubmit.emit(updatedUser);
+  }
+
+  private handleInvalidForm() {
+    this.userForm.markAllAsTouched();
+    this.showErrorNotification();
+  }
+
+  private showErrorNotification() {
+    return this.notificationService.show({
         title: 'Formulario incorrecto',
         message: 'Por favor, diligencie correctamente todos los campos obligatorios.',
         type: NotificationType.ERROR
-      });
-      return;
-    }
-    const formData = this.userForm.getRawValue() as User;
-    this.onSubmit.emit(formData);
+    });
   }
+
   // Calculamos el nombre completo para el título del modal
   get fullName(): string {
     const { firstName, lastName } = this.userForm.value;
@@ -90,12 +100,12 @@ export class UserFormComponent  {
 
   openRolesModal() {
     // 1. Obtenemos los roles que ya están en el form (si existen)
-    const selectedTypes: UserRoleType[] = this.userForm.get('roles')?.value || [];
+    const currentSelected = this.userForm.controls.roles.value;
 
     // 2. Mapeamos todos los posibles roles con su estado actual
     this.currentRolesForModal = Object.values(UserRoleType).map(type => ({
       type: type,
-      assigned: selectedTypes.includes(type)
+      assigned: currentSelected.includes(type)
     }));
 
     // 3. Abrimos el modal
@@ -105,15 +115,16 @@ export class UserFormComponent  {
   handleRolesSaved(updatedRoles: UserRole[]) {
     // 1. Guardamos la estructura completa localmente por si reabren el modal
     this.currentRolesForModal = updatedRoles;
-
     // 2. Filtramos solo los nombres de los roles activos para el FormControl
-    const activeTypes = updatedRoles
-      .filter(r => r.assigned)
-      .map(r => r.type);
-
+    const activeTypes = this.selectedRoleType(updatedRoles);
     this.userForm.get('roles')?.setValue(activeTypes);
-
     // 3. Cerramos
     this.isRolesModalOpen = false;
+  }
+
+  private selectedRoleType(roles: UserRole[]){
+    return roles
+      .filter(role => role.assigned)
+      .map(role => role.type);
   }
 }

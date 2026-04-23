@@ -28,20 +28,14 @@ export class UserEditPageComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if(id){
-      this.userService.getUserByIdMock(id).subscribe({
-        next: (userFound) => {
-          if(userFound) {
-            this.userToEdit.set(userFound);
-          } else {
-            this.handleNotFound();
-          }
-        },
+    id ? this.loadUserData(id) : this.router.navigate(['/users']);
+  }
+
+  private loadUserData(id: string): void {
+    this.userService.getUserByIdMock(id).subscribe({
+        next: (userFound) => userFound ? this.userToEdit.set(userFound) : this.handleNotFound(),
         error: () => this.handleNotFound('Error al conectar con el servidor')
       });
-    } else {
-      this.router.navigate(['/users']);
-    }
   }
 
   handleUpdate(updatedData: User):void {
@@ -52,35 +46,50 @@ export class UserEditPageComponent implements OnInit {
   confirmUpdate(): void {
     const id = this.userToEdit()?.id;
     if (!id || !this.pendingUpdateData) return;
+    this.showInfoNotification();
+    this.userService.updateUserMock(id, this.pendingUpdateData).subscribe({
+      next: () => {
+        this.handleUpdateSuccess()
+      },
+      error: () => {
+        this.handleUpdateError()
+      }
+    });
+  }
+
+  private handleUpdateSuccess(): void {
+    this.showSuccessNotification();
+    this.pendingUpdateData = null;
+    this.router.navigate(['/users']);
+  }
+
+  private handleUpdateError(): void {
+    this.showErrorNotification();
+    this.isConfirmModalOpen = false;
+  }
+
+  private showInfoNotification() {
     this.notificationService.show({
       title: 'Procesando actualización',
       message: 'Estamos procesando la actualización de la información del usuario...',
       type: NotificationType.INFO
     });
+  }
 
-    this.userService.updateUserMock(id, this.pendingUpdateData).subscribe({
-      next: () => {
-        this.notificationService.show({
-          title:'¡Actualización exitosa!',
-          message: 'Los datos del usuario han sido modificados correctamente.',
-          type: NotificationType.CONFIRMATION
-        });
-        this.router.navigate(['/users']);
-      },
-      error: () => {
-        this.notificationService.show({
-          title: 'Error de actualización',
-          message: 'No se pudo guardar la información. Intente de nuevo',
-          type: NotificationType.ERROR
-        });
-        this.isConfirmModalOpen = false;
-      }
+  private showSuccessNotification(){
+    this.notificationService.show({
+      title:'¡Actualización exitosa!',
+      message: 'Los datos del usuario han sido modificados correctamente.',
+      type: NotificationType.CONFIRMATION
     });
   }
 
-  cancelUpdate(): void {
-    this.isConfirmModalOpen = false;
-    this.pendingUpdateData = null;
+  private showErrorNotification() {
+    this.notificationService.show({
+      title: 'Error de actualización',
+      message: 'No se pudo guardar la información. Intente de nuevo',
+      type: NotificationType.ERROR
+    });
   }
 
   private handleNotFound(message: string = 'Usuario no encontrado'): void {
@@ -90,6 +99,11 @@ export class UserEditPageComponent implements OnInit {
       type: NotificationType.ERROR
     });
     this.router.navigate(['/users']);
+  }
+
+  cancelUpdate(): void {
+    this.isConfirmModalOpen = false;
+    this.pendingUpdateData = null;
   }
 
   goBack (){
