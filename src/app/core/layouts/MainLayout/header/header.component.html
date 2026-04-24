@@ -38,4 +38,10 @@
       <p-menu #menu [model]="menuItems" [popup]="true" appendTo="body" (onHide)="isMenuOpen = false"></p-menu>
     </div>
   </div>
+  <app-confirmation-action-modal
+    [isOpen]="isLogoutModal"
+    [description]="'¿Está seguro de que desea cerrar su sesión en el Sistema de Gestión? Asegúrese de haber guardado cualquier cambio pendiente en sus acciones o documentos.'"
+    (onClose)="cancelLogout()"
+    (onConfirm)="confirmLogout()"
+  ></app-confirmation-action-modal>
 </header>
