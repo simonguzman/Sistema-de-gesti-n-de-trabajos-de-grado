@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { UserService } from './user.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-import { IdentificationType, User } from '../interfaces/user.interface';
+import { IdentificationType, User, UserState } from '../interfaces/user.interface';
 import { UserRoleType } from '../../../core/models/user-role';
 
 describe('Service: User', () => {
@@ -19,7 +19,8 @@ describe('Service: User', () => {
     roles: [UserRoleType.ADMINISTRADOR],
     password: 'password123',
     secondLastName: 'Test',
-    codeNumber: 101
+    codeNumber: 101,
+    state: UserState.active
   };
 
   beforeEach(() => {

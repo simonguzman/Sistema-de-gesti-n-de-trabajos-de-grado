@@ -10,5 +10,4 @@ import { Component } from '@angular/core';
 export class AuthFooterComponent {
   currentYear = new Date().getFullYear();
   version = '1.0.0';
-
 }

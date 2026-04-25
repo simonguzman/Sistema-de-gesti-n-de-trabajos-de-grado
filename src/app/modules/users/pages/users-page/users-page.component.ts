@@ -134,6 +134,9 @@ export class UsersPageComponent {
       case 'ver roles asignados':
         this.prepareRolesModal(user, event.row);
         break;
+      case 'ver':
+        this.router.navigate(['/users/ver', user.id]);
+        break
       case 'editar':
         this.router.navigate(['/users/editar', user.id]);
         break;

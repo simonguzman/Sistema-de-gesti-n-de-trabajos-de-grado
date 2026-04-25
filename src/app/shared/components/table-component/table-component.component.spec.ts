@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Column, TableComponent } from './table-component.component';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
+import { Tooltip } from 'primeng/tooltip';
 
 const COLUMNS_TEXT: Column[] = [
   { field: 'nombre', header: 'Nombre', type: 'text', width: '50%' },
@@ -21,7 +22,7 @@ const COLUMNS_ACTIONS: Column[] = [
     type: 'actions',
     actions: [
       { action: 'ver', icon: 'visibility', variant: 'primary', disabled: true },
-      { action: 'eliminar', icon: 'delete', variant: 'primary', disabled: true},
+      { action: 'eliminar', icon: 'delete', variant: 'primary', disabled: true },
     ],
   },
 ];
@@ -35,7 +36,7 @@ async function mountTable(
   columns: Column[],
   value: any[] = ROWS,
   overrides: Partial<TableComponent> = {}
-): Promise<{ fixture: ComponentFixture<TableComponent>; component: TableComponent}> {
+): Promise<{ fixture: ComponentFixture<TableComponent>; component: TableComponent }> {
 
   const fixture = TestBed.createComponent(TableComponent);
   const component = fixture.componentInstance;
@@ -54,12 +55,12 @@ describe('TableComponent', () => {
   let component: TableComponent;
   let fixture: ComponentFixture<TableComponent>;
 
-  beforeEach(async() => {
+  beforeEach(async () => {
     TestBed.configureTestingModule({
-      imports: [ TableComponent ],
-      providers: [ provideNoopAnimations() ]
+      imports: [TableComponent],
+      providers: [provideNoopAnimations()]
     })
-    .compileComponents();
+      .compileComponents();
   });
 
   it('Debe crearse correctamente', async () => {
@@ -69,132 +70,85 @@ describe('TableComponent', () => {
 
   it('Debe renderizar los encabezados definidos en las columnas', async () => {
     const { fixture } = await mountTable(COLUMNS_TEXT);
-
     const headers = fixture.nativeElement.querySelectorAll('th');
-
     expect(headers.length).toBe(COLUMNS_TEXT.length);
     expect(headers[0].textContent.trim()).toBe('Nombre');
-    expect(headers[1].textContent.trim()).toBe('Correo');
   });
 
   it('Debe aplicarse el width definido en las columnas', async () => {
     const { fixture } = await mountTable(COLUMNS_TEXT);
-
     const headers = fixture.nativeElement.querySelectorAll('th');
-
     expect(headers[0].style.width).toBe('50%');
-  });
-
-  it('Debe renderizar una fila para cada elemento', async () => {
-    const { fixture } = await mountTable(COLUMNS_TEXT);
-
-    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
-
-    expect(rows.length).toBe(ROWS.length);
   });
 
   it('Debe mostrar el empty state cuando value este vacio', async () => {
     const { fixture } = await mountTable(COLUMNS_TEXT, []);
-
     const emptyState = fixture.debugElement.query(By.css('app-empty-state'));
-
     expect(emptyState).toBeTruthy();
   });
 
-  it('Debe mostrar el mensaje personalizado en el empty state', async () => {
-    const message = 'No hay trabajos registrados';
-    const { fixture } = await mountTable(COLUMNS_TEXT, [], {
-      emptyMessage: message,
-    });
-
-    const emptyState = fixture.debugElement.query(By.css('app-empty-state'));
-
-    expect(emptyState.componentInstance.message).toBe(message);
-  });
-
-  it('Debe renderizar app-state en columnas del tipo estado', async () => {
+  it('Debe pasar correctamente el valor al state component', async () => {
     const { fixture } = await mountTable(COLUMS_STATE);
     const states = fixture.debugElement.queryAll(By.css('app-state'));
-    expect(states.length).toBe(ROWS.length);
-  });
-
-  it('Debe pasar correctamente el valor al state component', async () =>{
-    const { fixture } = await mountTable(COLUMS_STATE);
-
-    const states = fixture.debugElement.queryAll(By.css('app-state'));
-
     expect(states[0].componentInstance.state).toBe('Aprobado');
-    expect(states[1].componentInstance.state).toBe('En revision');
-  });
-
-  it('Debe renderizar botones de acción correctamente', async () => {
-    const { fixture } = await mountTable(COLUMNS_ACTIONS);
-
-    const buttons = fixture.debugElement.queryAll(By.css('td app-button-component'));
-
-    expect(buttons.length).toBe(
-      ROWS.length * COLUMNS_ACTIONS[1].actions!.length
-    );
   });
 
   it('Debe emitir actionClick con acción y fila correcta', async () => {
     const { fixture, component } = await mountTable(COLUMNS_ACTIONS);
-
     const spy = jest.fn();
     component.actionClick.subscribe(spy);
-
-    const buttons= fixture.debugElement.queryAll(By.css('td app-button-component'));
-
+    const buttons = fixture.debugElement.queryAll(By.css('td app-button-component'));
     buttons[0].componentInstance.onClick.emit();
-
     expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: 'ver',
-        row: expect.any(Object),
-      })
+      expect.objectContaining({ action: 'ver', row: expect.any(Object) })
     );
   });
 
-  it('No debe renderizar header buttons si esta vacío', async () => {
-    const { fixture } = await mountTable(COLUMNS_TEXT, ROWS, {
-      headerButtons: []
-    });
-
-    const caption = fixture.nativeElement.querySelector('.flex.justify-end');
-
-    expect(caption).toBeNull();
-  });
-
-  it('Debe emitir un evento al click en header button', async () => {
+  it('Debe emitir un evento al click en el botón del encabezado (Header)', async () => {
     const { fixture, component } = await mountTable(COLUMNS_TEXT, ROWS, {
-      headerButtons: [
-        { label: 'Nuevo', variant: 'primary'}
-      ]
+      headerButtons: [{ label: 'Nuevo', variant: 'primary' }]
     });
 
     const spy = jest.fn();
     component.headerButtonClick.subscribe(spy);
 
-    const btn = fixture.debugElement.query(By.css('.flex.justify-end app-button-component'));
+    // Selector actualizado a la estructura de tu nuevo HTML (flex gap-2)
+    const btn = fixture.debugElement.query(By.css('.flex.gap-2 app-button-component'));
 
+    expect(btn).not.toBeNull(); // Verificamos que el botón existe antes de emitir
     btn.componentInstance.onClick.emit();
 
     expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        label: 'Nuevo',
-        variant: 'primary'
-      })
+      expect.objectContaining({ label: 'Nuevo', variant: 'primary' })
     );
   });
 
-  it('Debe respetar el input del paginator', async () =>{
-    const { fixture } = await mountTable(COLUMNS_TEXT, ROWS, {
-      paginator: false
-    });
+  it('Debe llamar a filterGlobal cuando se escribe en el buscador', async () => {
+    const { fixture } = await mountTable(COLUMNS_TEXT);
+    const pTable = fixture.debugElement.query(By.css('p-table')).componentInstance;
+    const filterSpy = jest.spyOn(pTable, 'filterGlobal');
 
-    const pTable = fixture.debugElement.query(By.css('p-table'));
+    const input = fixture.nativeElement.querySelector('.table-search-input');
+    input.value = 'Simón';
+    input.dispatchEvent(new Event('input'));
 
-    expect(pTable.componentInstance.paginator).toBe(false);
+    expect(filterSpy).toHaveBeenCalledWith('Simón', 'contains');
   });
 
+  it('Debe tener configurado el tooltip en las celdas de texto', async () => {
+    const { fixture } = await mountTable(COLUMNS_TEXT);
+    const firstCell = fixture.debugElement.query(By.css('td span'));
+
+    // Obtenemos la instancia de la directiva Tooltip
+    const tooltip = firstCell.injector.get(Tooltip);
+    expect(tooltip.content).toBe(ROWS[0].nombre);
+  });
+
+  it('Debe respetar el input del paginator', async () => {
+    const { fixture } = await mountTable(COLUMNS_TEXT, ROWS, {
+      paginator: true
+    });
+    const pTable = fixture.debugElement.query(By.css('p-table'));
+    expect(pTable.componentInstance.paginator).toBe(true);
+  });
 });

@@ -1,61 +1,72 @@
-<div class="overflow-x-auto">
+<div class="overflow-x-auto shadow-sm border border-gray-100 rounded-lg bg-white p-4">
   <p-table
+    #dt
     [value]="value"
     [columns]="columns"
     [rows]="rows"
     [paginator]="paginator"
+    [globalFilterFields]="getFilterFields"
     [tableStyle]="{'table-layout': 'fixed'}"
   >
-
-    <!-- botones de arriba -->
     <ng-template #caption>
-    @if (headerButtons && headerButtons.length > 0) {
-      <div class="flex justify-end gap-2">
-        @for (btn of headerButtons; track btn) {
-          <app-button-component
-            [label]="btn.label"
-            [icon]="btn.icon"
-            [variant]="btn.variant"
-            (onClick)="headerButtonClick.emit(btn)"
-          ></app-button-component>
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gray-100 mb-4">
+
+        <div class="relative flex items-center w-full md:w-80">
+          <span class="material-symbols-outlined search-icon-container">
+            search
+          </span>
+          <input
+            type="text"
+            (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+            placeholder="Buscar en la tabla..."
+            class="table-search-input"
+          />
+        </div>
+
+        @if (headerButtons && headerButtons.length > 0) {
+          <div class="flex gap-2">
+            @for (btn of headerButtons; track btn) {
+              <app-button-component
+                [label]="btn.label"
+                [icon]="btn.icon"
+                [variant]="btn.variant"
+                (onClick)="headerButtonClick.emit(btn)"
+              ></app-button-component>
+            }
+          </div>
         }
       </div>
-    }
-  </ng-template>
+    </ng-template>
 
-    <!-- header -->
-      <ng-template #header let-columns>
+    <ng-template #header let-columns>
       <tr>
         @for (col of columns; track col){
           <th
-          scope="col"
-          [style.width]="col.width"
-          [style.textAlign]="col.type === 'state' || col.type === 'actions' ? 'center' : 'left'"
+            scope="col"
+            [style.width]="col.width"
+            [style.textAlign]="col.type === 'state' || col.type === 'actions' ? 'center' : 'left'"
+            class="bg-gray-50 text-primary font-bold py-3 px-3 border-b text-sm"
           >
             {{ col.header }}
           </th>
         }
       </tr>
-      </ng-template>
+    </ng-template>
 
-    <!-- body -->
     <ng-template #body let-rowData let-columns="columns">
-      <tr>
+      <tr class="hover:bg-blue-50/20 transition-colors">
         @for (col of columns; track col) {
-          <td [style.textAlign]="col.type === 'state' || col.type === 'actions' ? 'center' : 'left'">
+          <td [style.textAlign]="col.type === 'state' || col.type === 'actions' ? 'center' : 'left'" class="py-3 px-3 border-b border-gray-50 text-sm">
             @if (col.type === 'text' || !col.type) {
-              <span class="block w-full overflow-hidden whitespace-nowrap text-ellipsis " [pTooltip]="rowData[col.field]" tooltipPosition="top">
+              <span class="block w-full overflow-hidden whitespace-nowrap text-ellipsis" [pTooltip]="rowData[col.field]" tooltipPosition="top">
                 {{ rowData[col.field] }}
               </span>
             }
             @if (col.type === 'state') {
-              <app-state
-                [label] = "rowData[col.field]"
-                [state] = "rowData[col.field]"
-              ></app-state>
+              <app-state [label]="rowData[col.field]" [state]="rowData[col.field]"></app-state>
             }
             @if (col.type === 'actions') {
-              <div class="flex justify-center items-center gap-0.5">
+              <div class="flex justify-center items-center gap-1">
                 @for (btn of (rowData[col.field] || col.actions); track btn.action) {
                   <app-button-component
                     [label]="btn.label"
@@ -72,16 +83,12 @@
       </tr>
     </ng-template>
 
-    <!-- empty state -->
-      <ng-template #emptymessage>
+    <ng-template #emptymessage>
       <tr>
-        <td [colSpan]="columns.length">
+        <td [colSpan]="columns.length" class="py-12">
           <app-empty-state [message]="emptyMessage"></app-empty-state>
         </td>
       </tr>
-      </ng-template>
-
-
+    </ng-template>
   </p-table>
-
 </div>

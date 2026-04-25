@@ -44,4 +44,16 @@
     (onClose)="cancelLogout()"
     (onConfirm)="confirmLogout()"
   ></app-confirmation-action-modal>
+  @if (isChangePasswordModal) {
+    <app-change-password-modal
+      (onClose)="closeChangePasswordModal()"
+    ></app-change-password-modal>
+  }
+
+  @if (isChangePasswordModal) {
+    <app-change-password-modal
+      [isOpen]="isChangePasswordModal"
+      (onClose)="closeChangePasswordModal()"
+    ></app-change-password-modal>
+  }
 </header>

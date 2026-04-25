@@ -5,6 +5,8 @@ import { CommonModule } from '@angular/common';
 import { StateComponent } from '../state/state.component';
 import { ButtonComponent } from '../button-component/button-component.component';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
+
+
 export interface TableButton{
   label?: string;
   icon?: string;
@@ -26,10 +28,16 @@ export interface Column{
   width ?: string;
 }
 
-
 @Component({
   selector: 'app-table-component',
-  imports: [ CommonModule, TableModule, ButtonComponent, StateComponent, EmptyStateComponent, TooltipModule],
+  imports: [
+    CommonModule,
+    TableModule,
+    ButtonComponent,
+    StateComponent,
+    EmptyStateComponent,
+    TooltipModule,
+  ],
   templateUrl: './table-component.component.html',
   styleUrl: './table-component.component.css'
 })
@@ -42,7 +50,14 @@ export class TableComponent {
   @Input() headerButtons?: TableButton[];
   @Input() emptyMessage: string = 'No hay datos registrados en el sistema';
 
+  @Input() filterFields: string[] = [];
+
   @Output() actionClick = new EventEmitter<{ action: string; row:any }>();
   @Output() headerButtonClick = new EventEmitter<TableButton>();
 
+  get getFilterFields(): string[] {
+    return this.filterFields.length > 0
+      ? this.filterFields
+      : this.columns.map(col => col.field);
+  }
 }

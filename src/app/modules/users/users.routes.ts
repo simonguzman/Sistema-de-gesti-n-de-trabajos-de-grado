@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { UsersPageComponent } from './pages/users-page/users-page.component';
 import { UserCreatePageComponent } from './pages/user-create-page/user-create-page.component';
 import { UserEditPageComponent } from './pages/user-edit-page/user-edit-page.component';
+import { UserDetailsPageComponent } from './pages/user-details-page/user-details-page.component';
 
 export const usersRoutes: Routes = [
   {
@@ -21,5 +22,17 @@ export const usersRoutes: Routes = [
     component: UserEditPageComponent,
     title: 'Editar usuario',
     data: { breadcrumb: 'Editar' }
+  },
+  {
+    path:'perfil',
+    component: UserDetailsPageComponent,
+    title: 'Mi perfil',
+    data: { breadcrumb: 'Perfil'}
+  },
+  {
+    path:'ver/:id',
+    component: UserDetailsPageComponent,
+    title: 'Información del usuario',
+    data: { breadcrumb: 'Información del usuario'}
   }
 ]

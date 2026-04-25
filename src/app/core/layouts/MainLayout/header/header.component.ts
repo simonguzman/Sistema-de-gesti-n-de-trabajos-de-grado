@@ -6,10 +6,11 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../modules/auth/services/auth.service';
 import { Router } from '@angular/router';
 import { ConfirmationActionModalComponent } from '../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component';
+import { ChangePasswordModalComponent } from '../../../../shared/components/modals/change-password-modal/change-password-modal.component';
 
 @Component({
   selector: 'app-header',
-  imports: [CommonModule, AvatarModule, MenuModule, ConfirmationActionModalComponent],
+  imports: [CommonModule, AvatarModule, MenuModule, ConfirmationActionModalComponent, ChangePasswordModalComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
 })
@@ -19,6 +20,7 @@ export class HeaderComponent {
   @ViewChild('menu') menu!: Menu;
   isMenuOpen = false;
   isLogoutModal = false;
+  isChangePasswordModal = false;
 
   userName = 'Admin';
   userRole = 'Administrador';
@@ -29,6 +31,12 @@ export class HeaderComponent {
     label: 'Mi Perfil',
     icon: 'pi pi-user',
     command: () => this.goToProfile()
+  },
+  { separator: true},
+  {
+    label: 'Cambiar contraseña',
+    icon: 'pi pi-key',
+    command: () => this.openChangePasswordModal()
   },
   { separator: true },
   {
@@ -44,12 +52,9 @@ export class HeaderComponent {
   }
 
   goToProfile() {
-    // Navegar a perfil
+    this.router.navigate(['/users/perfil'])
   }
 
-  goToSettings() {
-    // Navegar a configuración
-  }
   closeMenu() {
     this.isMenuOpen = false;
   }
@@ -66,5 +71,13 @@ export class HeaderComponent {
     this.isLogoutModal = false;
     this.authService.logout();
     this.router.navigate(['/auth/login']);
+  }
+
+  openChangePasswordModal() {
+    this.isChangePasswordModal = true;
+  }
+
+  closeChangePasswordModal() {
+    this.isChangePasswordModal = false;
   }
 }
