@@ -1,0 +1,20 @@
+<div class="mb-4">
+  <button
+    (click)="goBack()"
+    class="flex items-center gap-2 text-navy-900 hover:text-[#000066] transition-colors font-bold group"
+  >
+    <span class="material-symbols-outlined text-[#000066] text-lg group-hover:-translate-x-1 transition-transform">
+      arrow_back
+    </span>
+    <span class="return-arrow-option">Regresar</span>
+  </button>
+</div>
+
+<app-proposal-form (onSubmit)="handleCreateProposal($event)"></app-proposal-form>
+
+<app-confirmation-action-modal
+  [isOpen]="isConfirmModalOpen"
+  [description]="'¿Está seguro de que desea registrar esta propuesta de grado? Verifique que el formato adjunto y los participantes sean correctos.'"
+  (onClose)="cancelCreation()"
+  (onConfirm)="confirmCreation()"
+></app-confirmation-action-modal>

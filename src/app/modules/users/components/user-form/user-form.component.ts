@@ -24,7 +24,7 @@ export class UserFormComponent  {
   @Output() onSubmit = new EventEmitter <User>();
 
   userForm = this.fb.group({
-    idType: ['' as IdentificationType | null, [Validators.required]],
+    idType: ['', [Validators.required]],
     idNumber: [null as number | null, [Validators.required, Validators.min(0)]],
     firstName: ['', [Validators.required]],
     secondName: [''],
@@ -39,6 +39,11 @@ export class UserFormComponent  {
     password: ['', [Validators.minLength(6)]]
   })
 
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.userForm.get(fieldName);
+    return !!(field && field.invalid && field.touched);
+  }
+
   constructor() {
     effect(() => {
       this.syncFormWithUser();
@@ -52,7 +57,14 @@ export class UserFormComponent  {
         this.userForm.patchValue(userData);
         passwordControl?.setValidators([Validators.minLength(6)]);
       } else {
-        this.userForm.reset();
+        this.userForm.reset({
+        idType: '',
+        firstName: '',
+        lastName: '',
+        secondLastName: '',
+        email: '',
+        password: ''
+      });
         passwordControl?.setValidators([Validators.required, Validators.minLength(6)]);
       }
       passwordControl?.updateValueAndValidity();

@@ -6,22 +6,34 @@ import { UserDetailsPageComponent } from './pages/user-details-page/user-details
 
 export const usersRoutes: Routes = [
   {
-    path:'',
-    component: UsersPageComponent,
-    title: 'Gestión de usuarios',
-    data: { breadcrumb: 'Usuarios' }
-  },
-  {
-    path:'crear',
-    component: UserCreatePageComponent,
-    title: 'Crear nuevo usuario',
-    data: { breadcrumb: 'Crear'}
-  },
-  {
-    path:'editar/:id',
-    component: UserEditPageComponent,
-    title: 'Editar usuario',
-    data: { breadcrumb: 'Editar' }
+    path: '',
+    data: { breadcrumb: 'Usuarios' },
+    children: [
+      {
+        path:'',
+        component: UsersPageComponent,
+        title: 'Gestión de usuarios',
+        data: { breadcrumb: null }
+      },
+      {
+        path:'crear',
+        component: UserCreatePageComponent,
+        title: 'Crear nuevo usuario',
+        data: { breadcrumb: 'Crear usuario'}
+      },
+      {
+        path:'editar/:id',
+        component: UserEditPageComponent,
+        title: 'Editar usuario',
+        data: { breadcrumb: 'Editar usuario' }
+      },
+      {
+        path:'ver/:id',
+        component: UserDetailsPageComponent,
+        title: 'Información del usuario',
+        data: { breadcrumb: 'Información del usuario'}
+      }
+    ]
   },
   {
     path:'perfil',
@@ -29,10 +41,4 @@ export const usersRoutes: Routes = [
     title: 'Mi perfil',
     data: { breadcrumb: 'Perfil'}
   },
-  {
-    path:'ver/:id',
-    component: UserDetailsPageComponent,
-    title: 'Información del usuario',
-    data: { breadcrumb: 'Información del usuario'}
-  }
 ]

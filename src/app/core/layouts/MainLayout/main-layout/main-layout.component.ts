@@ -4,10 +4,11 @@ import { RouterModule, Router, NavigationEnd, ActivatedRoute } from "@angular/ro
 import { HeaderComponent } from "../header/header.component";
 import { SidebarComponent } from "../sidebar/sidebar.component";
 import { filter, map } from 'rxjs/operators';
+import { BreadcrumbComponent } from "../../../components/Breadcrumb/Breadcrumb.component";
 
 @Component({
   selector: 'app-main-layout',
-  imports: [FooterComponent, RouterModule, HeaderComponent, SidebarComponent],
+  imports: [FooterComponent, RouterModule, HeaderComponent, SidebarComponent, BreadcrumbComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.css',
 })
@@ -25,15 +26,11 @@ export class MainLayoutComponent implements OnInit {
           map(() => {
             let route = this.activatedRoute;
             while(route.firstChild) route = route.firstChild;
-            return {
-               title: route.snapshot.title ?? 'Inicio',
-               breadcrumb: route.snapshot.data['breadcrumb'] ?? 'Inicio'
-            }
+            return route.snapshot.title ?? 'Inicio'
           })
         )
-      .subscribe(({title, breadcrumb}) => {
+      .subscribe((title) => {
         this.currentPageTitle = title;
-        this.currentPageBreadcrumb = breadcrumb;
       });
   }
 }

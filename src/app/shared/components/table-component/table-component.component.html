@@ -67,7 +67,7 @@
             }
             @if (col.type === 'actions') {
               <div class="flex justify-center items-center gap-1">
-                @for (btn of (rowData[col.field] || col.actions); track btn.action) {
+                @for (btn of col.actions; track btn.action) {
                   <app-button-component
                     [label]="btn.label"
                     [icon]="btn.icon"

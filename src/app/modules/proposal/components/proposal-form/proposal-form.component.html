@@ -1,0 +1,208 @@
+<div class="p-6 bg-white rounded-lg">
+  <form [formGroup]="proposalForm" (ngSubmit)="submit()" class="flex flex-col gap-8">
+
+    <!-- SECCIÓN 1: Información de la propuesta -->
+    <section>
+      <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2">Información de la propuesta</h3>
+      <div class="flex flex-col gap-4">
+
+        <!-- Título -->
+        <div class="flex flex-col gap-1">
+          <label for="title" class="font-display font-semibold text-size-section title-textbox">Título <span class="text-orange-500">*</span></label>
+          <div class="relative flex items-center">
+            <input id="title" type="text" formControlName="title" placeholder="Ej: Frontend de las funcionalidades..."
+                   class=" font-sans font-normal text-size-body text-textbox p-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-primary"
+                   [class.border-orange-500]="isFieldInvalid('title')"
+                   [class.input-success]="proposalForm.get('title')?.valid && proposalForm.get('title')?.touched">
+            @if (proposalForm.get('title')?.valid && proposalForm.get('title')?.touched) {
+              <span class="material-symbols-outlined success-icon">check_circle</span>
+            }
+          </div>
+          @if (isFieldInvalid('title')) {
+            <span class="text-textbox-alert">El título es obligatorio</span>
+          }
+        </div>
+
+        <!-- Descripción -->
+        <div class="flex flex-col gap-1">
+          <label for="description" class="font-display font-semibold text-size-section title-textbox">Descripción (Objetivo general) <span class="text-orange-500">*</span></label>
+          <div class="relative flex items-center">
+            <input id="description" type="text" formControlName="description" placeholder="Ej: Optimizar los procesos..."
+                   class="font-sans font-normal text-size-body text-textbox p-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-primary"
+                   [class.border-orange-500]="isFieldInvalid('description')"
+                   [class.input-success]="proposalForm.get('description')?.valid && proposalForm.get('description')?.touched">
+            @if (proposalForm.get('description')?.valid && proposalForm.get('description')?.touched) {
+              <span class="material-symbols-outlined success-icon">check_circle</span>
+            }
+          </div>
+          @if (isFieldInvalid('description')) {
+            <span class="text-textbox-alert">La descripción es obligatoria</span>
+          }
+        </div>
+
+        <!-- Modalidad -->
+        <div class="flex flex-col gap-1">
+          <label for="modality" class="font-display font-semibold text-size-section title-textbox">Modalidad del trabajo de grado <span class="text-orange-500">*</span></label>
+          <div class="relative flex items-center">
+            <select id="modality" formControlName="modality"
+                    class="font-sans font-normal text-size-body custom-select p-2 border rounded-md bg-gray-50 w-full focus:outline-none focus:ring-1 focus:ring-primary pr-10"
+                    [class.border-orange-500]="isFieldInvalid('modality')"
+                    [class.text-gray-400]="!proposalForm.get('modality')?.value"
+                    [class.text-textbox]="proposalForm.get('modality')?.value"
+                    [class.input-success]="proposalForm.get('modality')?.valid && proposalForm.get('modality')?.touched">
+              <option value="" disabled>Modalidad</option>
+              <option value="Practica profesional">Práctica profesional</option>
+              <option value="Trabajo de investigacion">Trabajo de investigación</option>
+            </select>
+            <span class="material-symbols-outlined select-arrow">arrow_forward_ios</span>
+            @if (proposalForm.get('modality')?.valid && proposalForm.get('modality')?.touched) {
+              <span class="material-symbols-outlined success-icon mr-8">check_circle</span>
+            }
+          </div>
+          @if (isFieldInvalid('modality')) {
+            <span class="text-textbox-alert">Seleccione la modalidad del trabajo</span>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 2: Participantes -->
+    <section>
+      <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2">Participantes del trabajo de grado</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+
+        <!-- Estudiante 1 -->
+        <div class="flex flex-col gap-1">
+          <label for="student1" class="font-display font-semibold text-size-section title-textbox">Estudiante <span class="text-orange-500">*</span></label>
+          <div class="relative flex items-center">
+            <select id="student1" formControlName="student1"
+                    class="font-sans font-normal text-size-body custom-select p-2 border rounded-md w-full bg-gray-50 pr-10 focus:ring-1 focus:ring-primary"
+                    [class.border-orange-500]="isFieldInvalid('student1')"
+                    [class.text-gray-400]="!proposalForm.get('student1')?.value"
+                    [class.text-textbox]="proposalForm.get('student1')?.value"
+                    [class.input-success]="proposalForm.get('student1')?.valid && proposalForm.get('student1')?.touched">
+
+              <!-- Es vital que el value sea cadena vacía para que Validators.required funcione bien -->
+              <option value="" class="" disabled selected>Seleccione un estudiante</option>
+              <option value="user_123">Simón Guzmán Anaya</option>
+            </select>
+
+            <span class="material-symbols-outlined select-arrow">arrow_forward_ios</span>
+
+            @if (proposalForm.get('student1')?.valid && proposalForm.get('student1')?.touched) {
+              <span class="material-symbols-outlined success-icon mr-8">check_circle</span>
+            }
+          </div>
+
+          <!-- Mensaje de error: solo si es inválido y ha sido manipulado -->
+          @if (isFieldInvalid('student1')) {
+            <span class="text-textbox-alert">Debe seleccionar al menos un estudiante</span>
+          }
+        </div>
+
+        <!-- Estudiante 2 -->
+        <div class="flex flex-col gap-1">
+          <label for="student2" class="font-display font-semibold text-size-section title-textbox">Estudiante</label>
+          <div class="relative flex items-center">
+            <select id="student2" formControlName="student2"
+                    class="font-sans font-normal text-size-body custom-select p-2 border rounded-md w-full bg-gray-50 pr-10 focus:ring-1 focus:ring-primary"
+                    [class.text-gray-400]="!proposalForm.get('student2')?.value"
+                    [class.text-textbox]="proposalForm.get('student2')?.value">
+              <option value="" disabled>Seleccione un estudiante</option>
+              <option value="user_456">Juan Pérez</option>
+            </select>
+            <span class="material-symbols-outlined select-arrow">arrow_forward_ios</span>
+          </div>
+        </div>
+
+        <!-- Codirector -->
+        <div class="flex flex-col gap-1">
+          <label for="codirector" class="font-display font-semibold text-size-section title-textbox">Codirector</label>
+          <div class="relative flex items-center">
+            <select id="codirector" formControlName="codirector"
+                    class="font-sans font-normal text-size-body custom-select p-2 border rounded-md w-full bg-gray-50 pr-10 focus:ring-1 focus:ring-primary"
+                    [class.text-gray-400]="!proposalForm.get('codirector')?.value"
+                    [class.text-textbox]="proposalForm.get('codirector')?.value">
+              <option value="" disabled>Seleccionar codirector</option>
+              <option value="doc_789">Pablo Augusto Mage Imbachi</option>
+            </select>
+            <span class="material-symbols-outlined select-arrow">arrow_forward_ios</span>
+          </div>
+        </div>
+
+        <!-- Asesor (Selector dinámico para Práctica Profesional) -->
+        @if (showAdvisorField) {
+          <div class="flex flex-col gap-1">
+            <label for="advisor" class="font-display font-semibold text-size-section title-textbox">Asesor <span class="text-orange-500">*</span></label>
+            <div class="relative flex items-center">
+              <select id="advisor" formControlName="advisor"
+                      class="font-sans font-normal text-size-body custom-select p-2 border rounded-md w-full bg-gray-50 pr-10 focus:ring-1 focus:ring-primary"
+                      [class.border-orange-500]="isFieldInvalid('advisor')"
+                      [class.text-gray-400]="!proposalForm.get('advisor')?.value"
+                      [class.text-textbox]="proposalForm.get('advisor')?.value"
+                      [class.input-success]="proposalForm.get('advisor')?.valid && proposalForm.get('advisor')?.touched">
+                <option value="" disabled>Seleccionar asesor</option>
+                <option value="doc_012">Alejandro Toledo Tovar</option>
+              </select>
+              <span class="material-symbols-outlined select-arrow">arrow_forward_ios</span>
+              @if (proposalForm.get('advisor')?.valid && proposalForm.get('advisor')?.touched) {
+                <span class="material-symbols-outlined success-icon mr-8">check_circle</span>
+              }
+            </div>
+            @if (isFieldInvalid('advisor')) {
+              <span class="text-textbox-alert">Debe seleccionar un asesor para la práctica</span>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- SECCIÓN 3: Formato y Botones -->
+    <section class="mt-2">
+      <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2">Formato de propuesta (Formato A)</h3>
+
+      <div class="flex flex-wrap justify-between items-center mt-4 gap-4">
+        <div class="flex items-center">
+          @if (hasAttachedFile) {
+            <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-white shadow-sm min-w-[300px]">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-red-600 text-3xl">picture_as_pdf</span>
+                <div class="flex flex-col">
+                  <span class="text-sm font-semibold text-gray-700 max-w-[200px] truncate" [title]="uploadedFileName">{{ uploadedFileName }}</span>
+                  <span class="text-xs text-gray-500">Cargado por el estudiante</span>
+                </div>
+              </div>
+              <button type="button" (click)="removeFile()" class="text-gray-400 hover:text-red-500 transition-colors ml-4 flex items-center justify-center">
+                <span class="material-symbols-outlined text-xl">close</span>
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="flex items-center gap-2">
+          @if (!hasAttachedFile) {
+            <app-button-component
+              label="Cargar formato de propuesta"
+              variant="secondary"
+              type="button"
+              (click)="isModalOpen = true"
+            ></app-button-component>
+          }
+          <app-button-component
+            [label]="isEditMode ? 'Actualizar propuesta' : 'Registrar propuesta'"
+            variant="primary"
+            type="submit"
+          ></app-button-component>
+        </div>
+      </div>
+    </section>
+  </form>
+</div>
+
+<app-file-upload-modal
+  [isOpen]="isModalOpen"
+  [description]="'Subir formato A de propuesta de grado'"
+  [uploadedBy]="'Cargado por el estudiante'"
+  (onFileUploaded)="handleFileUploaded($event)"
+  (onClose)="isModalOpen = false"
+></app-file-upload-modal>
