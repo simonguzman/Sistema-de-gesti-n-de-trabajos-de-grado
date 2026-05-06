@@ -43,6 +43,8 @@ export interface Column{
 })
 export class TableComponent {
 
+  protected Array = Array;
+
   @Input() value: any[] = [];
   @Input() columns: Column[] = [];
   @Input() rows: number = 5;

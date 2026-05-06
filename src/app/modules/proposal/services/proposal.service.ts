@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { Proposal } from '../interfaces/proposal.interface';
+import { Modality, Proposal } from '../interfaces/proposal.interface';
 import { BehaviorSubject, delay, Observable, of, tap } from 'rxjs';
 import { stateList } from '../../../shared/components/state/state.component';
 import { Evaluation } from '../interfaces/evaluation.interface';
@@ -14,54 +14,90 @@ export class ProposalService {
   private http = inject(HttpClient);
   private apiUrl = 'https://api-sgtg-placeholder.com/api/proposals';
 
-  private initialData: any[] = [
+  private initialData: Proposal[] = [
 
     {
       id:'prop-001',
       title: 'Frontend de las funcionalidades asociadas a la aplicación web para la Facultad de Ingeniería Electrónica y Telecomunicaciones, dedicada a los módulos de Gestión de Trabajos de Grado de los programas de pregrado, Gestión de Estadísticas y Gestión de Notificaciones',
-      modality: 'Practica profesional',
+      modality: Modality.PP,
       description: 'Desarrollar un prototipo del FrontEnd de una aplicación web para apoyar la gestión de los procesos académicos y administrativos asociados a los trabajos de grado, las estadísticas y las notificaciones de la FIET, facilitando la organización, el seguimiento y la comunicación de la información, con el fin de contribuir al mejoramiento de la eficiencia del proceso y a la satisfacción de los usuarios involucrados. ',
-      state: 'Aprobado',
+      state: stateList.APROBADO,
+      authors: ['user_123'],
+      directorId: 'director_mock_001',
+      codirector: undefined,
+      documents: [],
+      evaluations: [],
+      createdAt: new Date()
     },
     {
       id:'prop-002',
       title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-      modality: 'Trabajo de investigacón',
+      modality: Modality.TI,
       description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-      state: 'Aprobado con observaciones',
+      state: stateList.APROBADO_CON_OBSERVACIONES,
+      authors: ['user_123'],
+      directorId: 'director_mock_001',
+      codirector: undefined,
+      documents: [],
+      evaluations: [],
+      createdAt: new Date()
     },
     {
       id:'prop-003',
       title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-      modality: 'Practica profesional',
+      modality: Modality.PP,
       description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-      state: 'No aprobado',
+      state: stateList.NO_APROBADO,
+      authors: ['user_123'],
+      directorId: 'director_mock_001',
+      codirector: undefined,
+      documents: [],
+      evaluations: [],
+      createdAt: new Date()
     },
     {
       id:'prop-004',
       title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-      modality: 'Trabajo de investigación',
+      modality: Modality.TI,
       description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-      state: 'Aprobado con observaciones',
+      state: stateList.APROBADO_CON_OBSERVACIONES,
+      authors: ['user_123'],
+      directorId: 'director_mock_001',
+      codirector: undefined,
+      documents: [],
+      evaluations: [],
+      createdAt: new Date()
     },
     {
       id:'prop-005',
       title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-      modality: 'Practica profesional',
+      modality: Modality.PP,
       description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-      state: 'Aprobado',
+      state: stateList.APROBADO,
+      authors: ['user_123'],
+      directorId: 'director_mock_001',
+      codirector: undefined,
+      documents: [],
+      evaluations: [],
+      createdAt: new Date()
     },
     {
       id:'prop-006',
       title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-      modality: 'Practica profesional',
+      modality: Modality.PP,
       description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-      state: 'Aprobado',
+      state: stateList.APROBADO,
+      authors: ['user_123'],
+      directorId: 'director_mock_001',
+      codirector: undefined,
+      documents: [],
+      evaluations: [],
+      createdAt: new Date()
     },
   ];
 
 
-  private _proposalsList = signal<any[]>(this.initialData);
+  private _proposalsList = signal<Proposal[]>(this.initialData);
   public proposals = this._proposalsList.asReadonly();
 
   createProposalMock(proposal: Proposal): Observable<Proposal>{
@@ -103,8 +139,8 @@ export class ProposalService {
     return of(undefined).pipe(
       delay(1000),
       tap(() =>{
-        this._proposalsList.update(proposals =>
-          proposals.filter(proposal => proposal.id !== id)
+        this._proposalsList.update(proposalsList =>
+          proposalsList.filter(proposal => proposal.id !== id)
         );
       })
     );

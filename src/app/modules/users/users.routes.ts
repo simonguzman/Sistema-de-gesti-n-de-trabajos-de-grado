@@ -16,19 +16,19 @@ export const usersRoutes: Routes = [
         data: { breadcrumb: null }
       },
       {
-        path:'crear',
+        path:'create',
         component: UserCreatePageComponent,
         title: 'Crear nuevo usuario',
         data: { breadcrumb: 'Crear usuario'}
       },
       {
-        path:'editar/:id',
+        path:'edit/:id',
         component: UserEditPageComponent,
         title: 'Editar usuario',
         data: { breadcrumb: 'Editar usuario' }
       },
       {
-        path:'ver/:id',
+        path:'details/:id',
         component: UserDetailsPageComponent,
         title: 'Información del usuario',
         data: { breadcrumb: 'Información del usuario'}
@@ -36,7 +36,7 @@ export const usersRoutes: Routes = [
     ]
   },
   {
-    path:'perfil',
+    path:'profile',
     component: UserDetailsPageComponent,
     title: 'Mi perfil',
     data: { breadcrumb: 'Perfil'}

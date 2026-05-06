@@ -241,6 +241,13 @@ html, body {
   backdrop-filter:  blur(4px);
 }
 
+.information-block{
+  background-color: rgba(234, 240, 251, 0.9) !important;
+  border:           1px solid rgba(101, 183, 65, 0.24) !important;
+  box-shadow:       0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter:  blur(4px);
+}
+
 /* Texto informativo dentro del empty state */
 .empty-state-message {
   font-weight: var(--font-semibold-weight);

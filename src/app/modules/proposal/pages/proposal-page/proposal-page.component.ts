@@ -4,11 +4,15 @@ import { stateList } from '../../../../shared/components/state/state.component';
 import { DescriptionModalComponent } from '../../../../shared/components/modals/description-modal/description-modal.component';
 import { Router } from '@angular/router';
 import { ProposalService } from '../../services/proposal.service';
+import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
+import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
+import { Proposal } from '../../interfaces/proposal.interface';
 
 
 @Component({
   selector: 'app-proposal-page',
-  imports: [TableComponent, DescriptionModalComponent],
+  imports: [TableComponent, DescriptionModalComponent, ConfirmationActionModalComponent],
   templateUrl: './proposal-page.component.html',
   styleUrl: './proposal-page.component.css',
 })
@@ -17,11 +21,17 @@ export class ProposalPageComponent {
    private router = inject(Router);
    protected stateList = stateList;
    private proposalService = inject(ProposalService)
+   private notificationService = inject(NotificationService);
 
    // 3. Variables para controlar el modal
    mostrarModalDesc: boolean = false;
    tituloParaModal: string = '';
    textoParaModal: string = '';
+
+   showDeleteConfirmation = false;
+   proposalIdToDelete: string | null = null;
+   proposalTitleToDelete = '';
+   isDeleting = false;
 
    protected testValue = this.proposalService.proposals;
 
@@ -52,7 +62,7 @@ export class ProposalPageComponent {
     ];
 
     // 4. Función para capturar el evento de la tabla
-  handleTableAction(event: { action: string, row: any }) {
+  handleTableAction(event: { action: string, row: Proposal }) {
     const proposalId = event.row.id;
     switch (event.action) {
       case 'ver descripcion':
@@ -62,20 +72,85 @@ export class ProposalPageComponent {
         this.mostrarModalDesc = true;
         break;
       case 'ver':
-        this.router.navigate(['/proposal/ver', proposalId]);
+        this.router.navigate(['/proposal/details', proposalId]);
         break;
       case 'editar':
-        this.router.navigate(['/proposal/editar', proposalId]);
+        this.router.navigate(['/proposal/edit', proposalId]);
         break;
       case 'eliminar':
-        console.log('Lógica para eliminar propuesta:', proposalId);
+        this.prepareDelete(event.row);
         break;
     }
   }
 
   handleHeaderButton(button: TableButton){
-    if(button.label === 'Registrar propuesta'){
-      this.router.navigate(['/proposal/create']);
+    switch(button.label){
+      case 'Registrar propuesta':
+        this.router.navigate(['/proposal/create']);
+        break;
+      case 'Formatos descargables':
+        this.router.navigate(['/proposal/downloadable_formats']);
+        break;
     }
   }
+
+  confirmDelete() {
+    if(!this.proposalIdToDelete || this.isDeleting) return;
+    this.isDeleting = true;
+    this.showDeleteInfoNotification();
+    this.proposalService.deleteProposalMock(this.proposalIdToDelete).subscribe({
+      next: () => {
+        this.showDeleteSuccessNotification();
+        this.resetDeleteState();
+      },
+      error: () => {
+        this.showDeleteErrorNotification();
+        this.isDeleting = false;
+      }
+    })
+  }
+
+  cancelDelete() {
+    this.showDeleteConfirmation = false;
+    this.proposalIdToDelete = null;
+    this.proposalTitleToDelete = '';
+  }
+
+  private resetDeleteState() {
+    this.isDeleting = false;
+    this.showDeleteConfirmation = false;
+    this.proposalIdToDelete = null;
+    this.proposalTitleToDelete = '';
+  }
+
+  private showDeleteInfoNotification() {
+    this.notificationService.show({
+      title: 'Eliminando propuesta',
+      message: 'Se está eliminando la propuesta...',
+      type: NotificationType.INFO
+    })
+  }
+
+  private prepareDelete(row: any){
+    this.proposalIdToDelete = row.id;
+    this.proposalTitleToDelete = row.title;
+    this.showDeleteConfirmation = true;
+  }
+
+  private showDeleteSuccessNotification() {
+    this.notificationService.show({
+      title: 'Propuesta eliminada',
+      message: 'La propuesta fue eliminada correctamente.',
+      type: NotificationType.CONFIRMATION
+    })
+  }
+
+  private showDeleteErrorNotification() {
+    this.notificationService.show({
+      title: 'Error',
+      message: 'No se pudo eliminar la propuesta',
+      type: NotificationType.ERROR
+    });
+  }
+
 }

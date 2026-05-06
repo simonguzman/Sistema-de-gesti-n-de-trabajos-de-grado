@@ -25,7 +25,7 @@
 
         @if (headerButtons && headerButtons.length > 0) {
           <div class="flex gap-2">
-            @for (btn of headerButtons; track btn) {
+            @for (btn of headerButtons; track btn.label) {
               <app-button-component
                 [label]="btn.label"
                 [icon]="btn.icon"
@@ -40,7 +40,7 @@
 
     <ng-template #header let-columns>
       <tr>
-        @for (col of columns; track col){
+        @for (col of columns; track col.field){
           <th
             scope="col"
             [style.width]="col.width"
@@ -55,7 +55,7 @@
 
     <ng-template #body let-rowData let-columns="columns">
       <tr class="hover:bg-blue-50/20 transition-colors">
-        @for (col of columns; track col) {
+        @for (col of columns; track col.field) {
           <td [style.textAlign]="col.type === 'state' || col.type === 'actions' ? 'center' : 'left'" class="py-3 px-3 border-b border-gray-50 text-sm">
             @if (col.type === 'text' || !col.type) {
               <span class="block w-full overflow-hidden whitespace-nowrap text-ellipsis" [pTooltip]="rowData[col.field]" tooltipPosition="top">
@@ -67,7 +67,15 @@
             }
             @if (col.type === 'actions') {
               <div class="flex justify-center items-center gap-1">
-                @for (btn of col.actions; track btn.action) {
+                @for (
+                  btn of (
+                    col.type === 'actions'
+                      ? (Array.isArray(rowData[col.field]) ? rowData[col.field] : col.actions ?? [])
+                      : []
+                  );
+                  let i = $index;
+                  track i
+                ) {
                   <app-button-component
                     [label]="btn.label"
                     [icon]="btn.icon"

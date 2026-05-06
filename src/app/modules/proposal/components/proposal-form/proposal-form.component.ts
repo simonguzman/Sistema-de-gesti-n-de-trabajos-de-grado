@@ -28,7 +28,6 @@ export class ProposalFormComponent {
     student2: [''],
     codirector: [''],
     advisor: [''],
-    directorId: ['', [Validators.required]]
   });
 
   isModalOpen = false;
@@ -63,7 +62,6 @@ export class ProposalFormComponent {
         title: proposalData.title,
         description: proposalData.description,
         modality: proposalData.modality,
-        directorId: proposalData.directorId,
         codirector: proposalData.codirector || '',
         student1: proposalData.authors[0] || '',
         student2: proposalData.authors[1] || '',
@@ -103,7 +101,7 @@ export class ProposalFormComponent {
       description: rawValue.description as string,
       modality: rawValue.modality as string,
       authors: authorsArray,
-      directorId: rawValue.directorId as string,
+      directorId: 'director_mock_001',
       codirector: rawValue.codirector || undefined,
       state: this.proposal()?.state || stateList.EN_REVISION,
       createdAt: this.proposal()?.createdAt || new Date(),

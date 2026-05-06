@@ -10,7 +10,7 @@ import { RolesModalComponent } from '../../../../shared/components/modals/roles/
 import { UserService } from '../../services/user.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
-import { User } from '../../interfaces/user.interface';
+import { User, UserState } from '../../interfaces/user.interface';
 @Component({
   selector: 'app-users-page',
   standalone: true,
@@ -86,12 +86,12 @@ export class UsersPageComponent {
   });
 
   private mapUserToTable(user: User) {
-    const isInactive = user.state === 'Inactivo';
+    const isInactive = user.state === UserState.inactive;
     return {
       identificacion: user.idNumber?.toString() || '',
       nombre: user.firstName,
       apellidos: `${user.lastName} ${user.secondLastName || ''}`,
-      estado: user.state || 'Activo',
+      estado: isInactive ? 'Inactivo' : 'Activo',
       roles: this.getTableRolesAction(isInactive),
       acciones: this.getTableActions(isInactive),
       originalData: user
@@ -135,10 +135,10 @@ export class UsersPageComponent {
         this.prepareRolesModal(user, event.row);
         break;
       case 'ver':
-        this.router.navigate(['/users/ver', user.id]);
+        this.router.navigate(['/users/details', user.id]);
         break
       case 'editar':
-        this.router.navigate(['/users/editar', user.id]);
+        this.router.navigate(['/users/edit', user.id]);
         break;
       case 'eliminar':
         this.prepareDisabledModal(user, event.row);
@@ -160,7 +160,7 @@ export class UsersPageComponent {
   private prepareDisabledModal(user: User, row: any){
     this.idUserToDisabled = user.id!;
     this.selectedUser = `${row.nombre} ${row.apellidos}`;
-    const isInactive = row.estado === 'Inactivo';
+    const isInactive = row.estado === UserState.inactive;
     this.confirmationMessage = isInactive
       ? `¿Desea habilitar nuevamente al usuario ${this.selectedUser}?`
       : `¿Desea deshabilitar al usuario ${this.selectedUser}? Esta acción limitará sus accesos al sistema.`
@@ -270,7 +270,7 @@ export class UsersPageComponent {
 
   handleHeaderButton(button: TableButton) {
     if (button.label === 'Crear usuarios') {
-      this.router.navigate(['/users/crear']); // Navega a la ruta que creamos
+      this.router.navigate(['/users/create']); // Navega a la ruta que creamos
     }
   }
 }
