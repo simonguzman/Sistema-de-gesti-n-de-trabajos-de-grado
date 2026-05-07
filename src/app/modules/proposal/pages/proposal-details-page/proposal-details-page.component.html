@@ -1,6 +1,6 @@
 <div class="pt-2 max-w-5xl mx-auto">
   <!-- Regresar -->
-  <div class="mb-4">
+  <div class="flex justify-between items-center mb-6">
     <button
       (click)="goBack()"
       class="flex items-center gap-2 text-navy-900 hover:text-navy-700 transition-colors font-bold group"
@@ -10,6 +10,21 @@
       </span>
       <span class="return-arrow-option">Regresar</span>
     </button>
+    @if (!isLoading() && proposal()) {
+    <!-- Botones de Acción (Solo se muestran si hay datos) -->
+     <div class="flex justify-end gap-4 mb-6">
+      <app-button-component
+        label="Evaluaciones realizadas"
+        variant="primary"
+        (onClick)="goToEvaluationsPage()"
+      ></app-button-component>
+      <app-button-component
+        label="Propuesta cargadas"
+        variant="primary"
+        (onClick)="goToLoadedProposalsPage()"
+      ></app-button-component>
+     </div>
+    }
   </div>
   <!-- Loading -->
   @if (isLoading()) {
@@ -19,18 +34,6 @@
   }
   <!-- Contenido -->
   @if (!isLoading() && proposal()) {
-    <!-- HEADER TABS -->
-     <div class="flex justify-end gap-4 mb-6">
-      <app-button-component
-        label="Evaluaciones realizadas"
-        variant="primary"
-      ></app-button-component>
-      <app-button-component
-        label="Propuesta cargadas"
-        variant="primary"
-      ></app-button-component>
-     </div>
-
     <!-- INFORMACIÓN -->
      <h3 class="font-semibold text-size-header-title font-display text-primary mb-4">Información de la propuesta</h3>
      <div class="space-y-3">

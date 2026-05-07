@@ -5,14 +5,12 @@ import { CommonModule } from '@angular/common';
 import { StateComponent } from '../state/state.component';
 import { ButtonComponent } from '../button-component/button-component.component';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
-
-
 export interface TableButton{
   label?: string;
   icon?: string;
   variant: 'primary' | 'secondary';
+  disabled?: boolean;
 }
-
 export interface ActionButton{
   action: string;
   label?: string;

@@ -30,6 +30,7 @@
                 [label]="btn.label"
                 [icon]="btn.icon"
                 [variant]="btn.variant"
+                [disabled]="!!btn.disabled"
                 (onClick)="headerButtonClick.emit(btn)"
               ></app-button-component>
             }
@@ -80,7 +81,7 @@
                     [label]="btn.label"
                     [icon]="btn.icon"
                     [variant]="btn.variant || 'primary'"
-                    [disabled]="btn.disabled"
+                    [disabled]="!!btn.disabled"
                     (onClick)="actionClick.emit({action:btn.action, row: rowData})"
                   ></app-button-component>
                 }

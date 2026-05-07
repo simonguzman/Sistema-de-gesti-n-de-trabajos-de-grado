@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import { Modality, Proposal } from '../interfaces/proposal.interface';
 import { BehaviorSubject, delay, Observable, of, tap } from 'rxjs';
 import { stateList } from '../../../shared/components/state/state.component';
@@ -97,28 +97,47 @@ export class ProposalService {
   ];
 
 
-  private _proposalsList = signal<Proposal[]>(this.initialData);
+  private _proposalsList = signal<Proposal[]>(this.getStoredProposals());
   public proposals = this._proposalsList.asReadonly();
 
-  createProposalMock(proposal: Proposal): Observable<Proposal>{
+  constructor() {
+    // 2. EFECTO DE PERSISTENCIA: Cada vez que _proposalsList cambie,
+    // se guardará automáticamente en el localStorage.
+    effect(() => {
+      localStorage.setItem('proposals', JSON.stringify(this._proposalsList()));
+    });
+  }
+
+  private getStoredProposals(): Proposal[] {
+    const stored = localStorage.getItem('proposals');
+    return stored ? JSON.parse(stored) : this.initialData;
+  }
+
+  createProposalMock(proposal: Proposal): Observable<Proposal> {
     const newProposal: Proposal = {
       ...proposal,
       id: Math.random().toString(36).substring(2, 11),
       createdAt: new Date(),
       state: stateList.EN_REVISION,
-      documents: proposal.documents || [],
+      // Nos aseguramos de que si el formulario envió un documento, se guarde
+      documents: proposal.documents ? proposal.documents.map(doc => ({
+        ...doc,
+        id: doc.id || Date.now().toString() // Asegurar un ID si no lo tiene
+      })) : [],
       evaluations: []
     };
+
     return of(newProposal).pipe(
       delay(1000),
       tap(saved => {
-        this._proposalsList.update(currentProposal => [saved, ...currentProposal]);
+        this._proposalsList.update(current => [saved, ...current]);
+        // El effect() se encargará de guardarlo en LocalStorage automáticamente
       })
     );
   }
 
-  getProposalByIdMock(id: string): Observable<Proposal | undefined>{
-    const proposal = this._proposalsList().find(proposal => proposal.id === id);
+  getProposalByIdMock(id: string): Observable<Proposal | undefined> {
+    const proposal = this._proposalsList().find(p => p.id === id);
     return of(proposal).pipe(delay(1000));
   }
 
@@ -126,38 +145,18 @@ export class ProposalService {
     return of(changes as Proposal).pipe(
       delay(1000),
       tap(() => {
-        this._proposalsList.update(proposals =>
-          proposals.map(proposal =>
-            proposal.id === id ? {...proposal,...changes} : proposal
-          )
-        );
-      })
-    );
-  }
-
-  deleteProposalMock(id: string): Observable<void>{
-    return of(undefined).pipe(
-      delay(1000),
-      tap(() =>{
         this._proposalsList.update(proposalsList =>
-          proposalsList.filter(proposal => proposal.id !== id)
-        );
-      })
-    );
-  }
+          proposalsList.map(proposal => {
+            if (proposal.id === id) {
+              const updatedProposal = { ...proposal, ...changes };
 
-  addEvaluationMock(proposalId: string, evaluation: Evaluation): Observable<void>{
-    return of(undefined).pipe(
-      delay(1000),
-      tap (() => {
-        this._proposalsList.update(list =>
-          list.map(proposal => {
-            if(proposal.id === proposalId){
-              return {
-                ... proposal,
-                state: evaluation.veredict,
-                evaluations: [...proposal.evaluations, {...evaluation, id: Math.random().toString(36).substring(2,7)}]
-              };
+              // Si el cambio incluye un nuevo estado, sincronizamos el documento principal
+              if (changes.state && updatedProposal.documents && updatedProposal.documents.length > 0) {
+                const updatedDocs = [...updatedProposal.documents];
+                updatedDocs[0] = { ...updatedDocs[0], status: changes.state };
+                updatedProposal.documents = updatedDocs;
+              }
+              return updatedProposal;
             }
             return proposal;
           })
@@ -166,19 +165,62 @@ export class ProposalService {
     );
   }
 
+  deleteProposalMock(id: string): Observable<void> {
+    return of(undefined).pipe(
+      delay(1000),
+      tap(() => {
+        this._proposalsList.update(list => list.filter(p => p.id !== id));
+      })
+    );
+  }
+
+  addEvaluationMock(proposalId: string, evaluation: Evaluation): Observable<void> {
+    return of(undefined).pipe(
+      delay(1000),
+      tap(() => {
+        this._proposalsList.update(list => {
+          const updatedList = list.map(p => {
+            if (p.id === proposalId) {
+              console.log('Actualizando propuesta con evaluación:', evaluation);
+
+              // Actualizamos la propuesta y sus evaluaciones
+              const updatedProposal = {
+                ...p,
+                state: evaluation.veredict,
+                evaluations: [{ ...evaluation, id: Math.random().toString(36).substring(2, 7) }, ...(p.evaluations || [])]
+              };
+
+              // IMPORTANTE: También debemos actualizar el estado del último documento cargado
+              if (updatedProposal.documents && updatedProposal.documents.length > 0) {
+                updatedProposal.documents = updatedProposal.documents.map((doc, index) =>
+                  index === 0 ? { ...doc, status: evaluation.veredict } : doc
+                );
+              }
+
+              return updatedProposal;
+            }
+            return p;
+          });
+          return updatedList;
+        });
+      })
+    );
+  }
+
+  // 3. PERSISTENCIA DE DOCUMENTOS: Al actualizar la lista aquí, el 'effect' lo guardará en el navegador
   uploadCorrectionMock(proposalId: string, newDoc: ProposalDocument): Observable<void> {
-  return of(undefined).pipe(
-    delay(1200),
-    tap(() => {
-      this._proposalsList.update(list =>
-        list.map(proposal => proposal.id === proposalId
-          ? { ...proposal, documents: [...proposal.documents, newDoc], state: stateList.EN_REVISION }
-          : proposal
-        )
-      );
-    })
-  );
-}
+    return of(undefined).pipe(
+      delay(1200),
+      tap(() => {
+        this._proposalsList.update(list =>
+          list.map(p => p.id === proposalId
+            ? { ...p, documents: [newDoc,...p.documents], state: stateList.EN_REVISION }
+            : p
+          )
+        );
+      })
+    );
+  }
 
   getDownloadableFormatsMock(): Observable<ProposalDocument[]> {
     const formats: ProposalDocument[] = [
@@ -186,6 +228,12 @@ export class ProposalService {
       { id: 'f2', name: 'Anexo_A_Estudiantes.pdf', url: '#', uploadDate: new Date(), type: 'Formato' }
     ];
     return of(formats).pipe(delay(300));
+  }
+
+  // 4. HELPER DE CONSULTA: Útil para refrescar la vista en el componente
+  getDocumentsByProposalId(id: string): ProposalDocument[] {
+    const proposal = this._proposalsList().find(p => p.id === id);
+    return proposal ? proposal.documents : [];
   }
 
 }

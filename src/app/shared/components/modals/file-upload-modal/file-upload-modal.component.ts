@@ -22,11 +22,15 @@ export class FileUploadModalComponent {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0]
     if(file){
+      if(file.type !== 'application/pdf'){
+        alert('Solo se permiten archivos en formato PDF');
+        input.value = '';
+        return;
+      }
       this.uploadedFile = file
       this.onFileUploaded.emit({
         fileName: this.uploadedFile.name,
         file: this.uploadedFile
-
       })
     }
   }

@@ -6,6 +6,7 @@ import { NotificationType } from '../../../../shared/components/notifications/mo
 import { stateList } from '../../../../shared/components/state/state.component';
 import { ButtonComponent } from "../../../../shared/components/button-component/button-component.component";
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
+import { ProposalDocument } from '../../interfaces/proposalDocument.inteface';
 
 @Component({
   selector: 'app-proposal-form',
@@ -95,6 +96,24 @@ export class ProposalFormComponent {
     const authorsArray = rawValue.student2
       ? [rawValue.student1 as string, rawValue.student2 as string]
       : [rawValue.student1 as string]
+    let initialDocuments: ProposalDocument[] = this.proposal()?.documents || [];
+
+    if (!this.isEditMode && this.hasAttachedFile && this.uploadedFileName) {
+      const documentoInicial: ProposalDocument = {
+        id: Date.now().toString(),
+        name: this.uploadedFileName,
+        url: '', // Placeholder
+        uploadDate: new Date().toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }).replace(/\//g, ' - '),
+        type: 'Propuesta',
+        status: stateList.EN_REVISION
+      };
+      initialDocuments = [documentoInicial];
+    }
+
     const updatedProposal: Proposal = {
       ...(this.proposal() || {}),
       title: rawValue.title as string,
@@ -103,9 +122,10 @@ export class ProposalFormComponent {
       authors: authorsArray,
       directorId: 'director_mock_001',
       codirector: rawValue.codirector || undefined,
+      advisor: rawValue.advisor || undefined,
       state: this.proposal()?.state || stateList.EN_REVISION,
       createdAt: this.proposal()?.createdAt || new Date(),
-      documents: this.proposal()?.documents || [],
+      documents: initialDocuments,
       evaluations: this.proposal()?.evaluations || []
     }as Proposal;
     this.onSubmit.emit(updatedProposal);

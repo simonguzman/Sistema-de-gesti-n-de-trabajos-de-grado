@@ -4,8 +4,9 @@ export interface Evaluation {
   id: string;
   proposalId: string;
   evaluatorName: string;
+  evaluatorRole: string;
   date: Date;
   veredict: stateList;
   observations: string;
-  signedDocumentUrl?: string;
+  signedDocuments?: string[];
 }

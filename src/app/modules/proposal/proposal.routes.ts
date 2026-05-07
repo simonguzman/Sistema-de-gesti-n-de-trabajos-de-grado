@@ -4,6 +4,9 @@ import { ProposalCreatePageComponent } from './pages/proposal-create-page/propos
 import { ProposalEditPageComponent } from './pages/proposal-edit-page/proposal-edit-page.component';
 import { ProposalDetailsPageComponent } from './pages/proposal-details-page/proposal-details-page.component';
 import { DownloadableFormatsPageComponent } from './pages/downloadable-formats-page/downloadable-formats-page.component';
+import { LoadedProposalsPageComponent } from './pages/loaded-proposals-page/loaded-proposals-page.component';
+import { EvaluationsPerformedPageComponent } from './pages/evaluations-performed-page/evaluations-performed-page.component';
+import { EvaluationProposalPageComponent } from './pages/evaluation-proposal-page/evaluation-proposal-page.component';
 
 export const proposalRoutes: Routes = [
   {
@@ -36,9 +39,39 @@ export const proposalRoutes: Routes = [
       },
       {
         path: 'details/:id',
-        component: ProposalDetailsPageComponent,
-        title: 'Información de la propuesta',
-        data: { breadcrumb: 'Información de la propuesta' }
+        data: { breadcrumb: 'Información de la propuesta' },
+        children:[
+          {
+            path: '',
+            component: ProposalDetailsPageComponent,
+            title: 'Información de la propuesta',
+            data: { breadcrumb: null },
+          },
+          {
+            path: 'evaluations_performed',
+            component: EvaluationsPerformedPageComponent,
+            title: 'Evaluaciones realizadas',
+            data: { breadcrumb: 'Evaluaciones realizadas' }
+          },
+          {
+            path: 'loaded_proposals',
+            data: { breadcrumb: 'Propuestas cargadas' },
+            children: [
+              {
+                path: '',
+                component: LoadedProposalsPageComponent,
+                title: 'Propuestas cargadas',
+                data: { breadcrumb: null }
+              },
+              {
+                path: 'evaluate_proposal',
+                component: EvaluationProposalPageComponent,
+                title: 'Evaluar propuesta',
+                data: { breadcrumb: 'Evaluar propuesta' }
+              }
+            ]
+          },
+        ]
       }
     ]
   }

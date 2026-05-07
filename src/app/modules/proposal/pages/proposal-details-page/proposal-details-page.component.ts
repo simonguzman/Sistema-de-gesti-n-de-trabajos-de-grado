@@ -21,7 +21,7 @@ export class ProposalDetailsPageComponent implements OnInit {
   isLoading = signal(true);
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
+    const id = this.route.parent?.snapshot.paramMap.get('id')
     if(!id){
       this.router.navigate(['/proposal']);
       return;
@@ -44,6 +44,14 @@ export class ProposalDetailsPageComponent implements OnInit {
 
   goBack(){
     this.router.navigate(['/proposal'])
+  }
+
+  goToEvaluationsPage(){
+    this.router.navigate(['evaluations_performed'], { relativeTo: this.route });
+  }
+
+  goToLoadedProposalsPage(){
+    this.router.navigate(['loaded_proposals'], { relativeTo: this.route });
   }
 
 }
