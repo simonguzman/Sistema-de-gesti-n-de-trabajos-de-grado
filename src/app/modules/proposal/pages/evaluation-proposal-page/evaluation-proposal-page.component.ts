@@ -13,6 +13,7 @@ import { ButtonComponent } from "../../../../shared/components/button-component/
 import { Evaluation } from '../../interfaces/evaluation.interface';
 import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
 import { UserService } from '../../../users/services/user.service';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 
 const RESULT_TO_STATE: Record<string, stateList> = {
   'Aprobado':                    stateList.APROBADO,
@@ -33,6 +34,7 @@ export class EvaluationProposalPageComponent implements OnInit  {
   private downloadService     = inject(FileDownloadService);
   private notificationService = inject(NotificationService);
   private userService = inject(UserService);
+  private authService = inject(AuthService);
   private fb                  = inject(FormBuilder);
 
   proposal = signal<Proposal | null>(null);
@@ -169,16 +171,30 @@ export class EvaluationProposalPageComponent implements OnInit  {
   confirmEvaluation(): void {
     this.modalState.confirm = false;
     const currentProposal = this.proposal();
-    if (!currentProposal?.id) return;
+    const currentUser = this.authService.currentUser();
+    if (!currentProposal?.id || !currentUser) return;
 
     const { result, comments } = this.evaluationForm.value;
     const newState = RESULT_TO_STATE[result!] ?? currentProposal.state;
 
+    // --- NUEVA VALIDACIÓN DE NEGOCIO ---
+    // Antes de guardar, verificamos que el estado de la propuesta no rompa reglas
+    // (útil si la evaluación implica cambios en la estructura de la propuesta)
+    const validationError = this.proposalService.validateProposalRules(currentProposal);
+    if (validationError) {
+      this.notificationService.show({
+        title: 'Restricción de Negocio',
+        message: validationError,
+        type: NotificationType.ERROR
+      });
+      return;
+    }
+
     const newEvaluation: Evaluation = {
       id: crypto.randomUUID(),
       proposalId: currentProposal.id,
-      evaluatorName: 'Usuario Autenticado', // Aquí podrías usar authService.currentUser()
-      evaluatorRole: 'Jurado',
+      evaluatorName: `${currentUser.firstName} ${currentUser.lastName}`, // Aquí podrías usar authService.currentUser()
+      evaluatorRole: currentUser.roles[0],
       signedDocuments: this.signedFile() ? [this.signedFile()!.name] : [],
       veredict: newState,
       observations: comments!,

@@ -7,6 +7,7 @@ import { Evaluation } from '../interfaces/evaluation.interface';
 import { ProposalDocument } from '../interfaces/proposalDocument.inteface';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { UserRoleType } from '../../../core/models/user-role';
+import { UserService } from '../../users/services/user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class ProposalService {
 
   private http = inject(HttpClient);
   private authService = inject(AuthService);
+  private userService = inject(UserService);
   private apiUrl = 'https://api-sgtg-placeholder.com/api/proposals';
 
   private initialData: Proposal[] = [
@@ -160,7 +162,11 @@ export class ProposalService {
       delay(1000),
       tap(saved => {
         this._proposalsList.update(current => [saved, ...current]);
-        // El effect() se encargará de guardarlo en LocalStorage automáticamente
+
+        // --- GESTIÓN DE ROLES AL CREAR ---
+        if (saved.directorId) this.userService.addRoleToUser(saved.directorId, UserRoleType.DIRECTOR);
+        if (saved.codirector) this.userService.addRoleToUser(saved.codirector, UserRoleType.CODIRECTOR);
+        if (saved.advisor)    this.userService.addRoleToUser(saved.advisor, UserRoleType.ASESOR);
       })
     );
   }
@@ -170,36 +176,110 @@ export class ProposalService {
     return of(proposal).pipe(delay(1000));
   }
 
+  /**
+   * REGLA DE NEGOCIO: Valida las restricciones de la universidad
+   * @returns string con el error o null si es válido
+   */
+  validateProposalRules(proposal: Partial<Proposal>): string | null {
+    // 1. Regla: Director != Codirector
+    if (proposal.directorId && proposal.codirector && proposal.directorId === proposal.codirector) {
+      return 'Un docente no puede ser Director y Codirector simultáneamente en el mismo proyecto.';
+    }
+
+    // 2. Regla: Máximo 2 propuestas por estudiante
+    if (proposal.authors && proposal.authors.length > 0) {
+      for (const authorId of proposal.authors) {
+        const activeCount = this._proposalsList().filter(p =>
+          p.authors?.includes(authorId) && p.id !== proposal.id
+        ).length;
+
+        if (activeCount >= 2) {
+          const studentName = this.userService.getUserFullName(authorId);
+          return `El estudiante ${studentName} ya está vinculado a 2 propuestas (límite máximo permitido).`;
+        }
+      }
+    }
+    return null;
+  }
+
   updateProposalMock(id: string, changes: Partial<Proposal>): Observable<Proposal> {
+    const oldProposal = this._proposalsList().find(p => p.id === id);
+
     return of(null).pipe(
       delay(1000),
       tap(() => {
+        if (!oldProposal) return;
+
+        // Pasamos el 'id' de la propuesta actual para que handleRoleExchange la ignore al contar
+        this.handleRoleExchange(oldProposal.codirector, changes.codirector, UserRoleType.CODIRECTOR, id);
+        this.handleRoleExchange(oldProposal.advisor, changes.advisor, UserRoleType.ASESOR, id);
+
         this._proposalsList.update(list =>
-          list.map(p => {
-            if (p.id !== id) return p;
-
-            const updated = { ...p, ...changes };
-
-            // Sincronización automática del estado del documento principal
-            if (changes.state && updated.documents?.length > 0) {
-              const docs = [...updated.documents];
-              docs[0] = { ...docs[0], status: changes.state };
-              updated.documents = docs;
-            }
-            return updated;
-          })
+          list.map(p => (p.id === id ? { ...p, ...changes } : p))
         );
       }),
-      // Retornamos la propuesta actualizada
       map(() => this._proposalsList().find(p => p.id === id)!)
     );
   }
 
+  /**
+   * Gestiona el traspaso de roles entre docentes al editar
+   */
+  private handleRoleExchange(
+    oldId: string | undefined,
+    newId: string | undefined,
+    role: UserRoleType,
+    currentProposalId: string // <--- Agregamos esto
+  ): void {
+    if (oldId === newId) return;
+
+    if (newId) this.userService.addRoleToUser(newId, role);
+
+    if (oldId) {
+      // Verificamos si aparece en OTRA propuesta (que no sea la actual)
+      const isStillLinked = this._proposalsList().some(p =>
+        p.id !== currentProposalId && ( // <--- Crucial: Ignorar la que estamos editando
+          (role === UserRoleType.CODIRECTOR && p.codirector === oldId) ||
+          (role === UserRoleType.ASESOR && p.advisor === oldId)
+        )
+      );
+
+      if (!isStillLinked) {
+        this.userService.removeRoleFromUser(oldId, role);
+      }
+    }
+  }
+
   deleteProposalMock(id: string): Observable<void> {
+    const proposalToRemove = this._proposalsList().find(p => p.id === id);
+
     return of(undefined).pipe(
       delay(1000),
       tap(() => {
+        if (!proposalToRemove) return;
+
+        // 1. Primero actualizamos la lista (eliminamos la propuesta del Signal)
         this._proposalsList.update(list => list.filter(p => p.id !== id));
+
+        // 2. Ahora que el Signal NO tiene la propuesta, verificamos los roles
+        const rolesToCheck = [
+          { id: proposalToRemove.codirector, role: UserRoleType.CODIRECTOR },
+          { id: proposalToRemove.advisor,    role: UserRoleType.ASESOR }
+        ];
+
+        rolesToCheck.forEach(({ id: userId, role }) => {
+          if (userId) {
+            // Ahora esta búsqueda dará 'false' si era su única propuesta
+            const isStillLinked = this._proposalsList().some(p =>
+              (role === UserRoleType.CODIRECTOR && p.codirector === userId) ||
+              (role === UserRoleType.ASESOR && p.advisor === userId)
+            );
+
+            if (!isStillLinked) {
+              this.userService.removeRoleFromUser(userId, role);
+            }
+          }
+        });
       })
     );
   }

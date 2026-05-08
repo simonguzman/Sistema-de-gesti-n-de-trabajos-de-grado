@@ -3,8 +3,6 @@ import { MainLayoutComponent } from './layouts/MainLayout/main-layout/main-layou
 import { AuthLayoutComponent } from './layouts/AuthLayout/auth-layout/auth-layout.component';
 import { authGuard } from './guards/auth.guard';
 import { publicGuard } from './guards/public.guard';
-import { roleGuard } from './guards/role.guard';
-import { UserRoleType } from './models/user-role';
 
 export const layoutsRoutes: Routes = [
   {
@@ -31,8 +29,6 @@ export const layoutsRoutes: Routes = [
       },
       {
         path:'users',
-        canActivate: [roleGuard],
-        data: { roles: [UserRoleType.ADMINISTRADOR] },
         loadChildren: () => import('../modules/users/users.routes')
           .then(m => m.usersRoutes),
       },
@@ -53,8 +49,6 @@ export const layoutsRoutes: Routes = [
       },
       {
         path:'statistics',
-        canActivate: [roleGuard],
-        data: { roles: [UserRoleType.ADMINISTRADOR, UserRoleType.CONSEJO]},
         loadChildren: () => import('../modules/statistics/statistics.routes')
           .then(m => m.statisticsRoutes)
       },

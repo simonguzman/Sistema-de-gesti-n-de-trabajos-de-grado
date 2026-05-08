@@ -7,6 +7,8 @@ import { DownloadableFormatsPageComponent } from './pages/downloadable-formats-p
 import { LoadedProposalsPageComponent } from './pages/loaded-proposals-page/loaded-proposals-page.component';
 import { EvaluationsPerformedPageComponent } from './pages/evaluations-performed-page/evaluations-performed-page.component';
 import { EvaluationProposalPageComponent } from './pages/evaluation-proposal-page/evaluation-proposal-page.component';
+import { roleGuard } from '../../core/guards/role.guard';
+import { UserRoleType } from '../../core/models/user-role';
 
 export const proposalRoutes: Routes = [
   {
@@ -28,14 +30,22 @@ export const proposalRoutes: Routes = [
       {
         path: 'create',
         component: ProposalCreatePageComponent,
+        canActivate: [roleGuard],
         title: 'Registrar propuesta de trabajo de grado',
-        data: { breadcrumb: 'Crear propuesta' }
+        data: {
+          breadcrumb: 'Crear propuesta',
+          roles: [UserRoleType.ADMINISTRADOR, UserRoleType.DIRECTOR]
+        }
       },
       {
         path: 'edit/:id',
         component: ProposalEditPageComponent,
+        canActivate: [roleGuard],
         title: 'Editar propuesta de trabajo de grado',
-        data: { breadcrumb: 'Actualizar propuesta' }
+        data: {
+          breadcrumb: 'Actualizar propuesta',
+          roles: [UserRoleType.ADMINISTRADOR, UserRoleType.DIRECTOR]
+        }
       },
       {
         path: 'details/:id',
@@ -44,14 +54,36 @@ export const proposalRoutes: Routes = [
           {
             path: '',
             component: ProposalDetailsPageComponent,
+            canActivate: [roleGuard],
             title: 'Información de la propuesta',
-            data: { breadcrumb: null },
+            data: {
+              breadcrumb: null,
+              roles: [
+                UserRoleType.ADMINISTRADOR,
+                UserRoleType.DIRECTOR,
+                UserRoleType.CODIRECTOR,
+                UserRoleType.ASESOR,
+                UserRoleType.ESTUDIANTE,
+                UserRoleType.COMITE
+              ]
+            },
           },
           {
             path: 'evaluations_performed',
             component: EvaluationsPerformedPageComponent,
+            canActivate: [roleGuard],
             title: 'Evaluaciones realizadas',
-            data: { breadcrumb: 'Evaluaciones realizadas' }
+            data: {
+              breadcrumb: 'Evaluaciones realizadas',
+              roles: [
+                UserRoleType.ADMINISTRADOR,
+                UserRoleType.DIRECTOR,
+                UserRoleType.CODIRECTOR,
+                UserRoleType.ASESOR,
+                UserRoleType.ESTUDIANTE,
+                UserRoleType.COMITE
+              ]
+            }
           },
           {
             path: 'loaded_proposals',
@@ -60,14 +92,29 @@ export const proposalRoutes: Routes = [
               {
                 path: '',
                 component: LoadedProposalsPageComponent,
+                canActivate: [roleGuard],
                 title: 'Propuestas cargadas',
-                data: { breadcrumb: null }
+                data: {
+                  breadcrumb: null,
+                  roles: [
+                    UserRoleType.ADMINISTRADOR,
+                    UserRoleType.DIRECTOR,
+                    UserRoleType.CODIRECTOR,
+                    UserRoleType.ASESOR,
+                    UserRoleType.ESTUDIANTE,
+                    UserRoleType.COMITE
+                  ]
+                }
               },
               {
                 path: 'evaluate_proposal',
                 component: EvaluationProposalPageComponent,
+                canActivate: [roleGuard],
                 title: 'Evaluar propuesta',
-                data: { breadcrumb: 'Evaluar propuesta' }
+                data: {
+                  breadcrumb: 'Evaluar propuesta',
+                  roles: [UserRoleType.ADMINISTRADOR, UserRoleType.COMITE]
+                }
               }
             ]
           },

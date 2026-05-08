@@ -44,6 +44,33 @@ export class UserService {
     password: 'password123',
     state: UserState.active
   },
+  {
+    id: 'user-100',
+    idType: IdentificationType.CC,
+    idNumber: 1061700000,
+    firstName: 'Julian',
+    secondName: 'David',
+    lastName: 'Camacho',
+    secondLastName: 'Erazo',
+    codeNumber: 20262,
+    roles: [UserRoleType.ESTUDIANTE],
+    email: 'jda@unicauca.edu.co',
+    password: 'password123',
+    state: UserState.active
+  },
+  {
+    id: 'user-200',
+    idType: IdentificationType.CC,
+    idNumber: 1061700000,
+    firstName: 'Santiago',
+    lastName: 'Benitez',
+    secondLastName: 'Lopez',
+    codeNumber: 201412,
+    roles: [UserRoleType.ESTUDIANTE],
+    email: 'santiago@unicauca.edu.co',
+    password: 'password123',
+    state: UserState.active
+  },
 
   // 2. CONSEJO DE FACULTAD
   {
@@ -377,6 +404,28 @@ export class UserService {
 
   getAllUsers(): User[] {
     return [...this._usersList()];
+  }
+
+  addRoleToUser(userId: string, role: UserRoleType): void {
+    this._usersList.update(users =>
+      users.map(user => {
+        if (user.id === userId && !user.roles.includes(role)) {
+          return { ...user, roles: [...user.roles, role] };
+        }
+        return user;
+      })
+    );
+  }
+
+  removeRoleFromUser(userId: string, role: UserRoleType): void {
+    this._usersList.update(users =>
+      users.map(u => {
+        if (u.id === userId) {
+          return { ...u, roles: u.roles.filter(r => r !== role) };
+        }
+        return u;
+      })
+    );
   }
 
 }

@@ -1,13 +1,15 @@
 <div class="p-6 bg-white rounded-lg">
   <form [formGroup]="proposalForm" (ngSubmit)="submit()" class="flex flex-col gap-8">
+
     <section>
       <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2">Información de la propuesta</h3>
       <div class="flex flex-col gap-4">
+
         <div class="flex flex-col gap-1">
           <label for="title" class="font-display font-semibold text-size-section title-textbox">Título <span class="text-orange-500">*</span></label>
           <div class="relative flex items-center">
             <input id="title" type="text" formControlName="title" placeholder="Ej: Frontend de las funcionalidades..."
-                   class=" font-sans font-normal text-size-body text-textbox p-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-primary"
+                   class="font-sans font-normal text-size-body text-textbox p-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-primary"
                    [class.border-orange-500]="isFieldInvalid('title')"
                    [class.input-success]="proposalForm.get('title')?.valid && proposalForm.get('title')?.touched">
             @if (proposalForm.get('title')?.valid && proposalForm.get('title')?.touched) {
@@ -63,8 +65,9 @@
     <section>
       <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2">Participantes del trabajo de grado</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+
         <div class="flex flex-col gap-1">
-          <label for="student1" class="font-display font-semibold text-size-section title-textbox">Estudiante <span class="text-[#ED7D31]">*</span></label>
+          <label for="student1" class="font-display font-semibold text-size-section title-textbox">Estudiante 1 <span class="text-[#ED7D31]">*</span></label>
           <div class="relative flex items-center">
             <select id="student1" formControlName="student1"
                     class="font-sans font-normal text-size-body custom-select p-2 border rounded-md w-full bg-gray-50 pr-10 focus:ring-1 focus:ring-primary"
@@ -73,7 +76,7 @@
                     [class.text-textbox]="proposalForm.get('student1')?.value"
                     [class.input-success]="proposalForm.get('student1')?.valid && proposalForm.get('student1')?.touched">
               <option value="" disabled selected>Seleccione un estudiante</option>
-              @for (student of students(); track student.id) {
+              @for (student of availableStudents(); track student.id) {
                 <option [value]="student.id">{{ student.firstName }} {{ student.secondName }} {{ student.lastName }} {{ student.secondLastName }}</option>
               }
             </select>
@@ -83,19 +86,19 @@
             }
           </div>
           @if (isFieldInvalid('student1')) {
-            <span class="text-textbox-alert">Debe seleccionar al menos un estudiante</span>
+            <span class="text-textbox-alert">Debe seleccionar al menos un estudiante disponible</span>
           }
         </div>
 
         <div class="flex flex-col gap-1">
-          <label for="student2" class="font-display font-semibold text-size-section title-textbox">Estudiante</label>
+          <label for="student2" class="font-display font-semibold text-size-section title-textbox">Estudiante 2 (Opcional)</label>
           <div class="relative flex items-center">
             <select id="student2" formControlName="student2"
                     class="font-sans font-normal text-size-body custom-select p-2 border rounded-md w-full bg-gray-50 pr-10 focus:ring-1 focus:ring-primary"
                     [class.text-gray-400]="!proposalForm.get('student2')?.value"
                     [class.text-textbox]="proposalForm.get('student2')?.value">
-              <option value="" disabled>Seleccione un estudiante</option>
-              @for (student of students(); track student.id) {
+              <option value="">Ninguno / Seleccione estudiante</option>
+              @for (student of filteredStudentsForS2(); track student.id) {
                 <option [value]="student.id">{{ student.firstName }} {{ student.secondName }} {{ student.lastName }} {{ student.secondLastName }} </option>
               }
             </select>
