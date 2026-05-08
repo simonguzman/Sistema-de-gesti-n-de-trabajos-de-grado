@@ -16,8 +16,10 @@ export interface Proposal {
   authors: string[];
   directorId: string;
   codirector?: string;
+  advisor?: string;
   state: stateList;
   createdAt: Date;
   documents: ProposalDocument[];
   evaluations: Evaluation[];
+  isActive?: boolean;
 }

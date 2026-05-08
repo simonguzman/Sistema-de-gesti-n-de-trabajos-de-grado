@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
-import { effect, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { Modality, Proposal } from '../interfaces/proposal.interface';
-import { BehaviorSubject, delay, Observable, of, tap } from 'rxjs';
+import { delay, map, Observable, of, tap } from 'rxjs';
 import { stateList } from '../../../shared/components/state/state.component';
 import { Evaluation } from '../interfaces/evaluation.interface';
 import { ProposalDocument } from '../interfaces/proposalDocument.inteface';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { UserRoleType } from '../../../core/models/user-role';
 
 @Injectable({
   providedIn: 'root'
@@ -12,84 +14,90 @@ import { ProposalDocument } from '../interfaces/proposalDocument.inteface';
 export class ProposalService {
 
   private http = inject(HttpClient);
+  private authService = inject(AuthService);
   private apiUrl = 'https://api-sgtg-placeholder.com/api/proposals';
 
   private initialData: Proposal[] = [
-
     {
-      id:'prop-001',
-      title: 'Frontend de las funcionalidades asociadas a la aplicación web para la Facultad de Ingeniería Electrónica y Telecomunicaciones, dedicada a los módulos de Gestión de Trabajos de Grado de los programas de pregrado, Gestión de Estadísticas y Gestión de Notificaciones',
+      id: 'prop-001',
+      title: 'Frontend de las funcionalidades asociadas a la aplicación web para la Facultad de Ingeniería Electrónica...',
       modality: Modality.PP,
-      description: 'Desarrollar un prototipo del FrontEnd de una aplicación web para apoyar la gestión de los procesos académicos y administrativos asociados a los trabajos de grado, las estadísticas y las notificaciones de la FIET, facilitando la organización, el seguimiento y la comunicación de la información, con el fin de contribuir al mejoramiento de la eficiencia del proceso y a la satisfacción de los usuarios involucrados. ',
+      description: 'Desarrollar un prototipo del FrontEnd...',
       state: stateList.APROBADO,
-      authors: ['user_123'],
-      directorId: 'director_mock_001',
-      codirector: undefined,
+      authors: ['user-001'], // Simón Guzmán
+      directorId: 'doc-005', // Hugo Armando Ordoñez
+      codirector: 'doc-001', // Pablo Mage
+      advisor: 'doc-002',    // Alejandro Toledo
       documents: [],
       evaluations: [],
       createdAt: new Date()
     },
     {
-      id:'prop-002',
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      id: 'prop-002',
+      title: 'Análisis de vulnerabilidades en redes IoT...',
       modality: Modality.TI,
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      description: 'Investigación sobre seguridad en protocolos Zigbee...',
       state: stateList.APROBADO_CON_OBSERVACIONES,
-      authors: ['user_123'],
-      directorId: 'director_mock_001',
+      authors: ['user-001'], // Simón Guzmán (Tiene 2 propuestas)
+      directorId: 'doc-005', // Hugo Armando Ordoñez
       codirector: undefined,
+      advisor: undefined,
       documents: [],
       evaluations: [],
       createdAt: new Date()
     },
     {
-      id:'prop-003',
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      id: 'prop-003',
+      title: 'Implementación de microservicios para gestión académica...',
       modality: Modality.PP,
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      description: 'Migración de monolito a microservicios...',
       state: stateList.NO_APROBADO,
-      authors: ['user_123'],
-      directorId: 'director_mock_001',
+      authors: ['user-456'], // Juan Pérez
+      directorId: 'doc-005', // Hugo Armando Ordoñez
       codirector: undefined,
+      advisor: 'doc-002',    // Alejandro Toledo (Como asesor)
       documents: [],
       evaluations: [],
       createdAt: new Date()
     },
     {
-      id:'prop-004',
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      id: 'prop-004',
+      title: 'Estudio de algoritmos de optimización para transporte...',
       modality: Modality.TI,
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      description: 'Optimización de rutas de buses...',
       state: stateList.APROBADO_CON_OBSERVACIONES,
-      authors: ['user_123'],
-      directorId: 'director_mock_001',
-      codirector: undefined,
+      authors: ['user-003'], // María Fernanda Rojas
+      directorId: 'doc-001', // Pablo Mage (Como director)
+      codirector: 'doc-008', // Gustavo Ramírez
+      advisor: undefined,
       documents: [],
       evaluations: [],
       createdAt: new Date()
     },
     {
-      id:'prop-005',
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      id: 'prop-005',
+      title: 'Desarrollo de App móvil para seguimiento de egresados...',
       modality: Modality.PP,
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      description: 'Aplicación en Flutter con Firebase...',
       state: stateList.APROBADO,
-      authors: ['user_123'],
-      directorId: 'director_mock_001',
+      authors: ['user-004'], // Andrés Felipe Caldas
+      directorId: 'doc-005', // Hugo Armando Ordoñez
       codirector: undefined,
+      advisor: 'doc-003',    // Carlos Eduardo Ramírez
       documents: [],
       evaluations: [],
       createdAt: new Date()
     },
     {
-      id:'prop-006',
-      title: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      id: 'prop-006',
+      title: 'Sistema de monitoreo ambiental basado en LoRaWAN...',
       modality: Modality.PP,
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      description: 'Uso de sensores de calidad de aire...',
       state: stateList.APROBADO,
-      authors: ['user_123'],
-      directorId: 'director_mock_001',
-      codirector: undefined,
+      authors: ['user-005'], // Camila Andrea Suárez
+      directorId: 'doc-006', // Libardo Pantoja
+      codirector: 'doc-001', // Pablo Mage (Como codirector)
+      advisor: 'doc-002',    // Alejandro Toledo (Como asesor)
       documents: [],
       evaluations: [],
       createdAt: new Date()
@@ -98,7 +106,28 @@ export class ProposalService {
 
 
   private _proposalsList = signal<Proposal[]>(this.getStoredProposals());
-  public proposals = this._proposalsList.asReadonly();
+
+  public proposals = computed(() => {
+    const currentUser = this.authService.currentUser();
+    const activeProposals = this._proposalsList().filter(p => p.isActive !== false);
+
+    if (!currentUser) return [];
+
+    // Uso de UserRoleType para mayor seguridad
+    if (this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR, UserRoleType.COMITE])) {
+      return activeProposals;
+    }
+
+    return activeProposals.filter(proposal => {
+      // Filtrado estricto por ID
+      const isAuthor     = proposal.authors?.includes(currentUser.id);
+      const isDirector   = proposal.directorId === currentUser.id;
+      const isCodirector = proposal.codirector === currentUser.id;
+      const isAdvisor    = proposal.advisor === currentUser.id;
+
+      return isAuthor || isDirector || isCodirector || isAdvisor;
+    });
+  });
 
   constructor() {
     // 2. EFECTO DE PERSISTENCIA: Cada vez que _proposalsList cambie,
@@ -142,26 +171,27 @@ export class ProposalService {
   }
 
   updateProposalMock(id: string, changes: Partial<Proposal>): Observable<Proposal> {
-    return of(changes as Proposal).pipe(
+    return of(null).pipe(
       delay(1000),
       tap(() => {
-        this._proposalsList.update(proposalsList =>
-          proposalsList.map(proposal => {
-            if (proposal.id === id) {
-              const updatedProposal = { ...proposal, ...changes };
+        this._proposalsList.update(list =>
+          list.map(p => {
+            if (p.id !== id) return p;
 
-              // Si el cambio incluye un nuevo estado, sincronizamos el documento principal
-              if (changes.state && updatedProposal.documents && updatedProposal.documents.length > 0) {
-                const updatedDocs = [...updatedProposal.documents];
-                updatedDocs[0] = { ...updatedDocs[0], status: changes.state };
-                updatedProposal.documents = updatedDocs;
-              }
-              return updatedProposal;
+            const updated = { ...p, ...changes };
+
+            // Sincronización automática del estado del documento principal
+            if (changes.state && updated.documents?.length > 0) {
+              const docs = [...updated.documents];
+              docs[0] = { ...docs[0], status: changes.state };
+              updated.documents = docs;
             }
-            return proposal;
+            return updated;
           })
         );
-      })
+      }),
+      // Retornamos la propuesta actualizada
+      map(() => this._proposalsList().find(p => p.id === id)!)
     );
   }
 

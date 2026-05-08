@@ -16,98 +16,93 @@ import { ProposalFormComponent } from "../../components/proposal-form/proposal-f
 })
 export class ProposalEditPageComponent implements OnInit {
 
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private ProposalService = inject(ProposalService);
+  private route               = inject(ActivatedRoute);
+  private router              = inject(Router);
+  private location            = inject(Location);
+  private proposalService     = inject(ProposalService);     // ← minúscula
   private notificationService = inject(NotificationService);
-  private location = inject(Location);
 
   proposalToEdit = signal<Proposal | null>(null);
 
-  isConfirmModalOpen = false;
-  private pendingUpdateData: Proposal | null = null;
+  // Estado del flujo de confirmación agrupado
+  confirmState = {
+    show:        false,
+    pendingData: null as Proposal | null
+  };
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    id ? this.loadProposalData(id) : this.router.navigate(['/proposal'])
+    id ? this.loadProposalData(id) : this.router.navigate(['/proposal']);
   }
 
   private loadProposalData(id: string): void {
-    this.ProposalService.getProposalByIdMock(id).subscribe({
-      next: (proposalFound) =>
-        proposalFound
-        ? this.proposalToEdit.set(proposalFound)
-        : this.handleNotFound(),
-      error: () => this.handleNotFound('Error al cargar la propuesta')
+    this.proposalService.getProposalByIdMock(id).subscribe({
+      next: (found) => {
+        if (found) {
+          // Clonamos para evitar modificar la referencia del servicio accidentalmente
+          this.proposalToEdit.set({ ...found });
+        } else {
+          this.handleNotFound();
+        }
+      }
     });
   }
 
-  handleUpdate(updatedData: Proposal): void{
-    this.pendingUpdateData = updatedData;
-    this.isConfirmModalOpen= true;
+  handleUpdate(updatedData: Proposal): void {
+    this.confirmState = { show: true, pendingData: updatedData };
   }
 
-  confirmUpdate(): void{
-    const id = this.proposalToEdit()?.id;
-    if(!id || !this.pendingUpdateData) return;
-    this.showEditInfoNotificaction();
-    this.ProposalService.updateProposalMock(id, this.pendingUpdateData).subscribe({
+  confirmUpdate(): void {
+    const currentProposal = this.proposalToEdit();
+    const dataToSave = this.confirmState.pendingData;
+    if (!currentProposal?.id || !dataToSave) return;
+
+    this.notificationService.show({
+      title:   'Procesando actualización',
+      message: 'Estamos actualizando la propuesta...',
+      type:    NotificationType.INFO
+    });
+
+    this.proposalService.updateProposalMock(currentProposal.id, dataToSave).subscribe({
       next: () => this.handleUpdateSuccess(),
-      error: () => this.handleUpdateError(),
-    })
+      error: () => this.handleUpdateError()
+    });
+  }
+
+  cancelUpdate(): void {
+    this.confirmState = { show: false, pendingData: null };
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   private handleUpdateSuccess(): void {
-    this.showEditSuccessNotificaction();
-    this.pendingUpdateData = null;
-    this.router.navigate(['/proposal'])
+    this.notificationService.show({
+      title:   '¡Actualización exitosa!',
+      message: 'La propuesta fue actualizada correctamente.',
+      type:    NotificationType.CONFIRMATION
+    });
+    this.confirmState = { show: false, pendingData: null };
+    this.router.navigate(['/proposal']);
   }
 
-  private handleUpdateError(): void{
-    this.showEditErrorNotification();
-    this.isConfirmModalOpen = false;
+  private handleUpdateError(): void {
+    this.notificationService.show({
+      title:   'Error',
+      message: 'No se pudo actualizar la propuesta.',
+      type:    NotificationType.ERROR
+    });
+    this.confirmState.show = false;
   }
 
-  private handleNotFound(message: string = 'Propuesta no encontrada'): void {
+  private handleNotFound(message = 'Propuesta no encontrada'): void {
     this.notificationService.show({
       title: 'Atención',
       message,
       type: NotificationType.ERROR
     });
     this.router.navigate(['/proposal']);
-  }
-
-  cancelUpdate(): void{
-    this.isConfirmModalOpen = false;
-    this.pendingUpdateData = null;
-  }
-
-  goBack(): void {
-    this.location.back()
-  }
-
-  private showEditInfoNotificaction(){
-    this.notificationService.show({
-      title: 'Procesando actualización',
-      message: 'Estamos actualizando la propuesta...',
-      type: NotificationType.INFO
-    });
-  }
-
-  private showEditSuccessNotificaction(){
-    this.notificationService.show({
-      title: '¡Actualización exitosa!',
-      message: 'La propuesta fue actualizada correctamente',
-      type: NotificationType.CONFIRMATION
-    });
-  }
-
-  private showEditErrorNotification(){
-    this.notificationService.show({
-      title: 'Error',
-      message: 'No se pudo actualizar la propuesta',
-      type: NotificationType.ERROR
-    });
   }
 
 }

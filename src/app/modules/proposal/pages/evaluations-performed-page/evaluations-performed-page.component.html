@@ -1,14 +1,15 @@
 <div class="w-full">
   <div class="bg-white rounded-lg shadow-sm p-6">
-    <!-- Header y botón regresar -->
-    <div class="flex flex-col gap-4 mb-6">
+
+    <div class="mb-6">
       <button (click)="goBack()" class="flex items-center gap-2 text-navy-900 hover:text-navy-700 font-bold group w-fit">
-        <span class="material-symbols-outlined text-[#000066] text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
+        <span class="material-symbols-outlined text-[#000066] text-lg group-hover:-translate-x-1 transition-transform">
+          arrow_back
+        </span>
         <span class="return-arrow-option">Regresar</span>
       </button>
     </div>
 
-    <!-- Tabla -->
     <app-table-component
       [value]="evaluations()"
       [columns]="columns"
@@ -16,19 +17,19 @@
       (actionClick)="handleTableAction($event)"
       emptyMessage="No hay evaluaciones registradas."
     ></app-table-component>
+
   </div>
 </div>
 
-<!-- Modal de Evaluación -->
-@if (selectedEvaluation()) {
+@if (modalState().evaluation; as evaluation) {
   <app-evaluation-modal
-    [isOpen]="isModalOpen()"
-    [name]="selectedEvaluation()!.evaluatorName"
-    [role]="selectedEvaluation()!.evaluatorRole"
-    [evaluationDate]="selectedEvaluation()!.date"
-    [state]="selectedEvaluation()!.veredict"
-    [comments]="selectedEvaluation()!.observations"
-    [documents]="selectedEvaluation()!.signedDocuments || []"
+    [isOpen]="modalState().open"
+    [name]="evaluation.evaluatorName"
+    [role]="evaluation.evaluatorRole"
+    [evaluationDate]="evaluation.date"
+    [state]="evaluation.veredict"
+    [comments]="evaluation.observations"
+    [documents]="evaluation.signedDocuments || []"
     (onClose)="closeModal()"
     (onDownloadFile)="handleDownload($event)"
   ></app-evaluation-modal>

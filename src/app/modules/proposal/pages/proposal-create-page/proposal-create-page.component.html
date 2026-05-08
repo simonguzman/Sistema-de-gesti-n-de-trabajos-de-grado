@@ -13,8 +13,8 @@
 <app-proposal-form (onSubmit)="handleCreateProposal($event)"></app-proposal-form>
 
 <app-confirmation-action-modal
-  [isOpen]="isConfirmModalOpen"
-  [description]="'¿Está seguro de que desea registrar esta propuesta de grado? Verifique que el formato adjunto y los participantes sean correctos.'"
+  [isOpen]="confirmState.show"
+  description="¿Está seguro de registrar esta propuesta? Verifique que el formato adjunto y los participantes sean correctos."
   (onClose)="cancelCreation()"
   (onConfirm)="confirmCreation()"
 ></app-confirmation-action-modal>

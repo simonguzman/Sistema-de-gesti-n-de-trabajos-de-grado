@@ -6,6 +6,12 @@ import { UserDetailsPageComponent } from './pages/user-details-page/user-details
 
 export const usersRoutes: Routes = [
   {
+    path:'profile',
+    component: UserDetailsPageComponent,
+    title: 'Mi perfil',
+    data: { breadcrumb: 'Perfil'}
+  },
+  {
     path: '',
     data: { breadcrumb: 'Usuarios' },
     children: [
@@ -34,11 +40,5 @@ export const usersRoutes: Routes = [
         data: { breadcrumb: 'Información del usuario'}
       }
     ]
-  },
-  {
-    path:'profile',
-    component: UserDetailsPageComponent,
-    title: 'Mi perfil',
-    data: { breadcrumb: 'Perfil'}
   },
 ]

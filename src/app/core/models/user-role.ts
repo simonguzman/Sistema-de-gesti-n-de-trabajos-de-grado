@@ -1,14 +1,16 @@
 export enum UserRoleType {
   ADMINISTRADOR = 'Administrador',
-  DIRECTOR = 'Director',
+  DOCENTE = 'Docente',
   ESTUDIANTE = 'Estudiante',
+  DIRECTOR = 'Director',
   CODIRECTOR = 'Codirector',
   ASESOR = 'Asesor',
   JEFE_DEP = 'Jefe de departamento',
   COMITE = 'Comité del programa',
   EVALUADOR = 'Evaluador',
   CONSEJO = 'Consejo de facultad',
-  JURADO = 'Jurado'
+  JURADO = 'Jurado',
+  DECANATURA = 'Decanatura'
 }
 
 export interface UserRole {

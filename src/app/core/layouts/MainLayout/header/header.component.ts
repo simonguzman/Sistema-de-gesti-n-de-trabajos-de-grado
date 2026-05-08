@@ -3,7 +3,7 @@ import { AvatarModule } from 'primeng/avatar'
 import { MenuModule, Menu } from 'primeng/menu'
 import { MenuItem } from 'primeng/api';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../../modules/auth/services/auth.service';
+import { AuthService } from '../../../services/auth/auth.service';
 import { Router } from '@angular/router';
 import { ConfirmationActionModalComponent } from '../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component';
 import { ChangePasswordModalComponent } from '../../../../shared/components/modals/change-password-modal/change-password-modal.component';
@@ -15,8 +15,8 @@ import { ChangePasswordModalComponent } from '../../../../shared/components/moda
   styleUrl: './header.component.css',
 })
 export class HeaderComponent {
-   private authService = inject(AuthService);
-   private router = inject(Router);
+  protected authService = inject(AuthService);
+  private router = inject(Router);
   @ViewChild('menu') menu!: Menu;
   isMenuOpen = false;
   isLogoutModal = false;
@@ -52,7 +52,7 @@ export class HeaderComponent {
   }
 
   goToProfile() {
-    this.router.navigate(['/users/perfil'])
+    this.router.navigate(['/users/profile'])
   }
 
   closeMenu() {

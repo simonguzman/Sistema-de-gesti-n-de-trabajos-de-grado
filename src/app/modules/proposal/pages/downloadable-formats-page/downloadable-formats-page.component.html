@@ -1,17 +1,21 @@
 <div class="w-full">
   <div class="bg-white rounded-lg shadow-sm p-8">
+
     <div class="mb-6">
-      <button (click)="goBack()" class="flex items-center gap-2 text-navy-900 font-bold group hover:text-navy-700 w-fit">
-        <span class="material-symbols-outlined text-[#000066] text-lg group-hover:-translate-x-1 transition-transform">arrow_back</span>
-        <span>Regresar</span>
+      <button (click)="goBack()"
+        class="flex items-center gap-2 text-navy-900 font-bold group hover:text-navy-700 w-fit">
+        <span class="material-symbols-outlined text-[#000066] text-lg group-hover:-translate-x-1 transition-transform">
+          arrow_back
+        </span>
+        <span class="return-arrow-option">Regresar</span>
       </button>
     </div>
 
     <app-tabs
       [tabs]="tabs"
       [activeTab]="activeTab()"
-      (tabChange)="onTabChange($event)">
-    </app-tabs>
+      (tabChange)="activeTab.set($event)"
+    ></app-tabs>
 
     <div class="mt-6">
       <app-table-component

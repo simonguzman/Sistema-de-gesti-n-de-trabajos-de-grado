@@ -97,7 +97,7 @@ describe('UserPageComponent', () => {
 
     it('debería navegar a la ruta de creación al presionar el botón del header', () => {
       component.handleHeaderButton({ label: 'Crear usuarios', variant: 'primary' });
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/users/crear']);
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/users/create']);
     });
   });
 
@@ -134,7 +134,7 @@ describe('UserPageComponent', () => {
 
     component.handleTableAction(event);
 
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/users/editar', 'user-123']);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/users/edit', 'user-123']);
   });
   it('debería ejecutar la lógica de eliminación con el ID correcto', () => {
     const consoleSpy = jest.spyOn(console, 'log');

@@ -1,110 +1,110 @@
 <div class="pt-2 max-w-4xl mx-auto pb-10">
-  <!-- Botón Regresar -->
+
   <div class="mb-6">
-    <button
-      (click)="goBack()"
-      class="flex items-center gap-2 text-navy-900 hover:text-[#000066] transition-colors font-bold group"
-    >
+    <button (click)="goBack()"
+      class="flex items-center gap-2 text-navy-900 hover:text-[#000066] transition-colors font-bold group">
       <span class="material-symbols-outlined text-[#000066] text-lg group-hover:-translate-x-1 transition-transform">
         arrow_back
       </span>
-      <span class="return-arrow-option text-[#000066]">Regresar</span>
+      <span class="return-arrow-option">Regresar</span>
     </button>
   </div>
 
-  @if (isLoading()) {
+  @if (!proposal()) {
     <div class="text-center text-gray-500 my-10 font-display">
       Cargando información de la propuesta...
     </div>
   }
 
-  @if (!isLoading() && proposal()) {
+  @if (proposal(); as p) {
+
     <!-- SECCIÓN 1: Información de solo lectura -->
     <section class="mb-10">
-      <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Información del formato de propuesta</h3>
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">
+      Información del formato de propuesta
+    </h3>
 
-      <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4">
+
+      @for (field of [
+        { label: 'Título',                         value: p.title                    },
+        { label: 'Fecha de carga',                 value: documentUploadDate         },
+        { label: 'Modalidad del trabajo de grado', value: p.modality                 },
+        { label: 'Estudiante',                     value: getStudentNames(p.authors) }
+      ]; track field.label) {
         <div class="flex flex-col gap-1">
-          <label class="font-display font-semibold text-primary text-size-section">Título</label>
-          <input type="text" [value]="proposal()?.title" disabled
-                 class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
+          <label class="font-display font-semibold text-primary text-size-section">{{ field.label }}</label>
+          <input type="text" [value]="field.value" disabled
+                class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
         </div>
+      }
 
-        <div class="flex flex-col gap-1">
-          <label class="font-display font-semibold text-primary text-size-section">Fecha de carga</label>
-          <input type="text" [value]="documentUploadDate" disabled
-                 class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="font-display font-semibold text-primary text-size-section">Modalidad del trabajo de grado</label>
-          <input type="text" [value]="proposal()?.modality" disabled
-                 class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="font-display font-semibold text-primary text-size-section">Estudiante</label>
-          <input type="text" [value]="proposal()?.authors?.join(', ')" disabled
-                 class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <label class="font-display font-semibold text-primary text-size-section">Director</label>
-          <input type="text" [value]="proposal()?.directorId" disabled
-                 class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
-        </div>
-
-        @if (proposal()?.codirector) {
-          <div class="flex flex-col gap-1">
-            <label class="font-display font-semibold text-primary text-size-section">Codirector</label>
-            <input type="text" [value]="proposal()?.codirector" disabled
-                   class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
-          </div>
-        }
-
-        <div class="flex flex-col gap-1">
-          <label class="font-display font-semibold text-primary text-size-section">Estado</label>
-          <input type="text" [value]="proposal()?.state" disabled
-                 class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
-        </div>
+      <div class="flex flex-col gap-1">
+        <label class="font-display font-semibold text-primary text-size-section">Director</label>
+        <input type="text" [value]="getDirectorName(p.directorId)" disabled
+              class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
       </div>
-    </section>
+
+      @if (p.codirector) {
+        <div class="flex flex-col gap-1">
+          <label class="font-display font-semibold text-primary text-size-section">Codirector</label>
+          <input type="text" [value]="getCodirectorName(p.codirector)" disabled
+                class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
+        </div>
+      }
+
+      @if (p.advisor) {
+        <div class="flex flex-col gap-1">
+          <label class="font-display font-semibold text-primary text-size-section">Asesor</label>
+          <input type="text" [value]="getAdvisorName(p.advisor)" disabled
+                class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
+        </div>
+      }
+
+      <div class="flex flex-col gap-1">
+        <label class="font-display font-semibold text-primary text-size-section">Estado</label>
+        <input type="text" [value]="p.state" disabled
+              class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
+      </div>
+
+    </div>
+  </section>
 
     <!-- SECCIÓN 2: Formulario de Evaluación -->
     <section>
-      <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Resultado de la evaluación</h3>
+      <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">
+        Resultado de la evaluación
+      </h3>
 
       <form [formGroup]="evaluationForm" (ngSubmit)="initiateEvaluationSubmit()" class="flex flex-col gap-6">
 
-        <!-- Radio Buttons -->
         <div class="flex items-center justify-center gap-8">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" formControlName="result" value="Aprobado" class="w-4 h-4 text-green-600 focus:ring-green-500">
-            <span class="text-sm font-sans text-gray-700">Aprobado</span>
-          </label>
-
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" formControlName="result" value="Aprobado con observaciones" class="w-4 h-4 text-[#000066] focus:ring-[#000066]">
-            <span class="text-sm font-sans text-gray-700">Aprobado con observaciones</span>
-          </label>
-
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" formControlName="result" value="No aprobado" class="w-4 h-4 text-red-600 focus:ring-red-500">
-            <span class="text-sm font-sans text-gray-700">No aprobado</span>
-          </label>
+          @for (option of [
+            { value: 'Aprobado',                   color: 'text-green-600'    },
+            { value: 'Aprobado con observaciones', color: 'text-[#000066]'   },
+            { value: 'No aprobado',                color: 'text-red-600'     }
+          ]; track option.value) {
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" formControlName="result" [value]="option.value"
+                     class="w-4 h-4 focus:ring-[#000066]">
+              <span class="text-sm font-sans text-gray-700">{{ option.value }}</span>
+            </label>
+          }
         </div>
+
         @if (evaluationForm.get('result')?.invalid && evaluationForm.get('result')?.touched) {
-          <span class="text-textbox-alert text-center -mt-2">Debe seleccionar un resultado de evaluación</span>
+          <span class="text-textbox-alert text-center -mt-2">
+            Debe seleccionar un resultado de evaluación
+          </span>
         }
 
-        <!-- Comentarios -->
         <div class="flex flex-col gap-1">
           <label class="font-display font-semibold text-primary text-size-section">Comentarios</label>
           <textarea formControlName="comments" rows="4"
-                    class="font-sans font-normal text-size-section text-[#777680] p-3 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-[#000066]"
-                    [class.border-red-500]="evaluationForm.get('comments')?.invalid && evaluationForm.get('comments')?.touched"
-                    [class.border-[#000066]]="!(evaluationForm.get('comments')?.invalid && evaluationForm.get('comments')?.touched)"
-                    placeholder="Ingrese sus comentarios aquí..."></textarea>
+            class="font-sans font-normal text-size-section text-[#777680] p-3 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-[#000066]"
+            [class.border-red-500]="evaluationForm.get('comments')?.invalid && evaluationForm.get('comments')?.touched"
+            placeholder="Ingrese sus comentarios aquí...">
+          </textarea>
           @if (evaluationForm.get('comments')?.invalid && evaluationForm.get('comments')?.touched) {
             <span class="text-textbox-alert">Los comentarios son obligatorios</span>
           }
@@ -113,60 +113,54 @@
         <!-- Archivos adjuntos -->
         <div class="flex flex-col gap-4 mt-4">
           <label class="font-display font-semibold text-primary text-size-section">Archivos adjuntos</label>
-
           <div class="flex flex-col gap-3 w-full">
-            <!-- TARJETA: Documento Original (Ancho completo) -->
-            <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm w-full">
+
+            <!-- Documento original -->
+            <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
               <div class="flex items-center gap-3 overflow-hidden">
-                <div class="flex-shrink-0">
-                  <span class="material-symbols-outlined text-red-600 text-4xl">picture_as_pdf</span>
-                </div>
+                <span class="material-symbols-outlined text-red-600 text-4xl flex-shrink-0">picture_as_pdf</span>
                 <div class="flex flex-col overflow-hidden">
-                  <span class="text-sm font-bold text-primary truncate">{{ originalDocumentName }}</span>
+                  <span class="text-sm font-bold text-primary truncate">
+                    {{ originalDocument?.name ?? 'Documento no disponible' }}
+                  </span>
                   <span class="text-xs text-gray-500 font-sans">Aprobado por el jefe de departamento</span>
                 </div>
               </div>
-              <div class="flex-shrink-0 ml-4">
-                <app-button-component
-                  label="Descargar"
-                  variant="primary"
-                  type="button"
-                  (onClick)="downloadOriginalDocument()"
-                ></app-button-component>
-              </div>
+              <app-button-component
+                label="Descargar"
+                variant="primary"
+                type="button"
+                (onClick)="downloadOriginalDocument()"
+              ></app-button-component>
             </div>
 
-            <!-- TARJETA: Formato Firmado (Ancho completo) -->
-            @if (hasSignedFile) {
-              <div class="relative flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm w-full animate-fade-in">
+            <!-- Formato firmado -->
+            @if (signedFile(); as signed) {
+              <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
                 <div class="flex items-center gap-3 overflow-hidden">
-                  <div class="flex-shrink-0">
-                    <span class="material-symbols-outlined text-red-600 text-4xl">picture_as_pdf</span>
-                  </div>
+                  <span class="material-symbols-outlined text-red-600 text-4xl flex-shrink-0">picture_as_pdf</span>
                   <div class="flex flex-col overflow-hidden">
-                    <span class="text-sm font-bold text-primary truncate pr-10">{{ signedFileName }}</span>
+                    <span class="text-sm font-bold text-primary truncate pr-10">{{ signed.name }}</span>
                     <span class="text-xs text-gray-500 font-sans">Cargado por el evaluador</span>
                   </div>
                 </div>
-                <!-- Botón X para eliminar alineado a la derecha -->
                 <button type="button" (click)="removeSignedFile()"
                         class="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 ml-4">
                   <span class="material-symbols-outlined text-2xl font-bold">close</span>
                 </button>
               </div>
             }
+
           </div>
         </div>
 
-        <!-- Botones de Acción Final -->
         <div class="flex gap-4 justify-end mt-10">
           <app-button-component
-            [label]="hasSignedFile ? 'Actualizar formato' : 'Cargar formato firmado'"
+            [label]="signedFile() ? 'Actualizar formato' : 'Cargar formato firmado'"
             variant="secondary"
             type="button"
-            (onClick)="isUploadModalOpen = true"
+            (onClick)="modalState.upload = true"
           ></app-button-component>
-
           <app-button-component
             label="Guardar"
             variant="primary"
@@ -179,18 +173,17 @@
   }
 </div>
 
-<!-- Modales -->
 <app-file-upload-modal
-  [isOpen]="isUploadModalOpen"
-  [description]="'Subir formato de evaluación firmado'"
-  [uploadedBy]="'Cargado por el evaluador'"
+  [isOpen]="modalState.upload"
+  description="Subir formato de evaluación firmado"
+  uploadedBy="Cargado por el evaluador"
   (onFileUploaded)="handleFileUploaded($event)"
-  (onClose)="isUploadModalOpen = false"
+  (onClose)="modalState.upload = false"
 ></app-file-upload-modal>
 
 <app-confirmation-action-modal
-  [isOpen]="isConfirmModalOpen"
-  [description]="'¿Está seguro de que desea guardar esta evaluación? Se notificará al estudiante y se actualizará el estado de la propuesta.'"
+  [isOpen]="modalState.confirm"
+  description="¿Está seguro de guardar esta evaluación? Se notificará al estudiante y se actualizará el estado de la propuesta."
   (onClose)="cancelEvaluation()"
   (onConfirm)="confirmEvaluation()"
 ></app-confirmation-action-modal>

@@ -1,12 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MenuModule } from 'primeng/menu';
-import { MenuItem } from 'primeng/api';
+import { UserRoleType } from '../../../models/user-role';
+import { AuthService } from '../../../services/auth/auth.service';
 
-interface MenuItemCustom extends MenuItem {
-  routerLink?: string;
-  isActive?: boolean;
+interface MenuItem {
+  label: string;
+  icon: string;
+  routerLink: string;
+  roles: UserRoleType[]; // Roles permitidos para este item
 }
 
 @Component({
@@ -16,36 +19,49 @@ interface MenuItemCustom extends MenuItem {
   styleUrl: './sidebar.component.css',
 })
 export class SidebarComponent {
-  menuItems: MenuItemCustom[] = [
+  private authService = inject(AuthService);
+  private allMenuItems: MenuItem[] = [
     {
       label: 'Bandeja de entrada',
       routerLink: '/notifications',
-      icon: 'pi pi-check-circle'
+      icon: 'pi pi-check-circle',
+      roles: [UserRoleType.ESTUDIANTE, UserRoleType.DOCENTE, UserRoleType.ADMINISTRADOR, UserRoleType.CONSEJO]
     },
     {
       label: 'Usuarios',
       routerLink: '/users',
-      icon: 'pi pi-check-circle'
+      icon: 'pi pi-check-circle',
+      roles: [UserRoleType.ADMINISTRADOR]
     },
     {
       label: 'Propuesta',
       routerLink: '/proposal',
-      icon: 'pi pi-check-circle'
+      icon: 'pi pi-check-circle',
+      roles: [UserRoleType.ESTUDIANTE, UserRoleType.DIRECTOR, UserRoleType.CODIRECTOR, UserRoleType.ASESOR, UserRoleType.JEFE_DEP, UserRoleType.ADMINISTRADOR, UserRoleType.COMITE]
     },
     {
       label: 'Anteproyecto',
       routerLink: '/preliminary-draft',
-      icon: 'pi pi-check-circle'
+      icon: 'pi pi-check-circle',
+      roles: [UserRoleType.ESTUDIANTE, UserRoleType.DIRECTOR, UserRoleType.CODIRECTOR, UserRoleType.ASESOR, UserRoleType.JEFE_DEP, UserRoleType.EVALUADOR, UserRoleType.ADMINISTRADOR, UserRoleType.CONSEJO]
     },
     {
       label: 'Trabajo de grado',
       routerLink: '/thesis-work',
-      icon: 'pi pi-check-circle'
+      icon: 'pi pi-check-circle',
+      roles: [UserRoleType.ESTUDIANTE, UserRoleType.DIRECTOR, UserRoleType.CODIRECTOR, UserRoleType.ASESOR, UserRoleType.DECANATURA, UserRoleType.JURADO, UserRoleType.ADMINISTRADOR, UserRoleType.CONSEJO]
     },
     {
       label: 'Estadísticas',
       routerLink: '/statistics',
-      icon: 'pi pi-check-circle'
+      icon: 'pi pi-check-circle',
+      roles: [UserRoleType.ADMINISTRADOR, UserRoleType.CONSEJO]
     }
   ];
+
+  public menuItems = computed(() => {
+    return this.allMenuItems.filter(item =>
+      this.authService.hasAnyRole(item.roles)
+    );
+  });
  }

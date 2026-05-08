@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { UserService } from './user.service';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
@@ -7,11 +7,10 @@ import { UserRoleType } from '../../../core/models/user-role';
 
 describe('Service: User', () => {
   let service: UserService;
-  let httpMock: HttpTestingController;
 
   const mockUser: User = {
-    id: '123',
-    idType: 'CC' as IdentificationType,
+    id: 'temp-id',
+    idType: IdentificationType.CC,
     idNumber: 12345,
     firstName: 'Test',
     lastName: 'User',
@@ -24,6 +23,8 @@ describe('Service: User', () => {
   };
 
   beforeEach(() => {
+    localStorage.clear();
+
     TestBed.configureTestingModule({
       providers: [
         UserService,
@@ -31,61 +32,84 @@ describe('Service: User', () => {
         provideHttpClientTesting(),
       ]
     });
+
     service = TestBed.inject(UserService);
-    httpMock = TestBed.inject(HttpTestingController);
+
+    // MAGIA AQUÍ: Forzamos que el effect() inicial del constructor se ejecute
+    // Esto asegura que 'Simón' se guarde en localStorage antes de que empiece cualquier test.
+    TestBed.flushEffects();
   });
 
-  afterEach(() => {
-    httpMock.verify();
-  });
-
-  it('debería crearse correctamente', () => {
+  it('debería crearse correctamente con el usuario inicial', () => {
     expect(service).toBeTruthy();
+    expect(service.users().length).toBe(1);
+    expect(service.users()[0].firstName).toBe('Simón');
   });
 
-  describe('Métodos Reales (HTTP)', () => {
-    it('debería enviar una petición POST al crear un usuario', () => {
-      service.createUser(mockUser).subscribe((user) => {
-        expect(user).toEqual(mockUser);
+  describe('Métodos Mock (Signals & Persistence)', () => {
+
+    it('debería agregar el usuario al signal y persistirlo en LocalStorage', fakeAsync(() => {
+      service.createUserMock(mockUser).subscribe();
+
+      tick(1000);
+
+      // MAGIA AQUÍ: Obligamos a Angular a ejecutar el effect() después de que el signal cambió
+      TestBed.flushEffects();
+
+      const currentUsers = service.users();
+      expect(currentUsers.length).toBe(2);
+      expect(currentUsers.find(u => u.email === mockUser.email)).toBeDefined();
+
+      const storedData = localStorage.getItem('sgtg_users');
+      expect(storedData).not.toBeNull();
+
+      const parsedData = JSON.parse(storedData!);
+      expect(parsedData.length).toBe(2);
+      expect(parsedData[1].email).toBe(mockUser.email);
+    }));
+
+    it('debería actualizar los roles de un usuario y reflejarlo en storage', fakeAsync(() => {
+      const newRoles = [UserRoleType.EVALUADOR];
+
+      service.updateUserRolesMock('user-001', newRoles).subscribe();
+
+      tick(500);
+      TestBed.flushEffects(); // Forzamos el effect()
+
+      const user = service.users().find(u => u.id === 'user-001');
+      expect(user?.roles).toEqual(newRoles);
+
+      const stored = JSON.parse(localStorage.getItem('sgtg_users') || '[]');
+      // Ahora stored[0] sí existirá porque el beforeEach guardó a Simón correctamente
+      expect(stored[0].roles).toEqual(newRoles);
+    }));
+
+    it('debería alternar el estado en el soft delete', fakeAsync(() => {
+      service.softDeleteUserMock('user-001').subscribe();
+
+      tick(800);
+      TestBed.flushEffects(); // Forzamos el effect()
+
+      expect(service.users()[0].state).toBe(UserState.inactive);
+
+      service.softDeleteUserMock('user-001').subscribe();
+
+      tick(800);
+      TestBed.flushEffects(); // Forzamos el effect()
+
+      expect(service.users()[0].state).toBe(UserState.active);
+    }));
+
+    it('debería recuperar un usuario por ID', fakeAsync(() => {
+      let foundUser: User | undefined;
+
+      service.getUserByIdMock('user-001').subscribe(user => {
+        foundUser = user;
       });
 
-      const req = httpMock.expectOne('https://api-sgtg-placeholder.com/api/users');
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(mockUser);
-      req.flush(mockUser);
-    });
-  });
-
-  describe('Métodos Mock (Signals & Logic)', () => {
-    it('debería agregar el usuario al signal usersList al usar createUserMock', (done) => {
-      service.createUserMock(mockUser).subscribe(() => {
-        const currentUsers = service.users();
-
-        // CAMBIO: No usamos toContain(mockUser) porque el ID será diferente.
-        // Verificamos propiedades que sabemos que no cambian.
-        expect(currentUsers.length).toBe(1);
-        expect(currentUsers[0].email).toBe(mockUser.email);
-        expect(currentUsers[0].id).toBeDefined();
-        expect(currentUsers[0].id).not.toBe(mockUser.id); // Validamos que se generó uno nuevo
-        done();
-      });
-    });
-
-    it('debería mantener la inmutabilidad al actualizar el signal', (done) => {
-      // CAMBIO: Quitamos el ID de aquí para ser consistentes con la lógica de generación
-      const secondUserData = { ...mockUser, email: 'otro@user.com', firstName: 'Otro' };
-
-      service.createUserMock(mockUser).subscribe(() => {
-        service.createUserMock(secondUserData).subscribe(() => {
-          const list = service.users();
-          expect(list.length).toBe(2);
-
-          // CAMBIO: Comparamos por propiedades estáticas (email), no el objeto completo
-          expect(list[0].email).toBe(mockUser.email);
-          expect(list[1].email).toBe(secondUserData.email);
-          done();
-        });
-      });
-    });
+      tick(500);
+      expect(foundUser).toBeDefined();
+      expect(foundUser?.firstName).toBe('Simón');
+    }));
   });
 });

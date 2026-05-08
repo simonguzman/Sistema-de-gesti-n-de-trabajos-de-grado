@@ -1,25 +1,19 @@
 <aside class="bg-unicauca-blue h-full w-full flex flex-col">
-  <!-- Logo -->
   <div class="py-4 px-6 flex justify-center items-center relative">
-    <img
-      src="assets/images/logo-unicauca.png"
-      alt="Logo"
-      class="max-w-[180px] h-auto object-contain"
-    />
+    <img src="assets/images/logo-unicauca.png" alt="Logo" class="max-w-[180px] h-auto object-contain" />
     <div class="absolute bottom-0 left-10 right-10 border-b border-white"></div>
   </div>
 
-  <!-- Menú -->
   <nav class="flex-1 py-4">
     <ul class="space-y-1">
-      @for (item of menuItems; track item.label) {
+      @for (item of menuItems(); track item.label) {
         <li>
           <a
             [routerLink]="item.routerLink"
             routerLinkActive="active-link"
             class="menu-link flex items-center gap-3 px-6 py-3 text-white transition-colors cursor-pointer"
           >
-            <i class="pi pi-check-circle text-lg"></i>
+            <i [className]="'pi ' + item.icon + ' text-lg'"></i>
             <span class="text-size-body font-medium font-display">{{ item.label }}</span>
           </a>
         </li>

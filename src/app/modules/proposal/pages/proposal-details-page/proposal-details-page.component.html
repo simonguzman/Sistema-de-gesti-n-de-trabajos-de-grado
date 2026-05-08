@@ -1,8 +1,9 @@
 <div class="pt-2 max-w-5xl mx-auto">
-  <!-- Regresar -->
+
+  <!-- Encabezado -->
   <div class="flex justify-between items-center mb-6">
     <button
-      (click)="goBack()"
+      (click)="router.navigate(['/proposal'])"
       class="flex items-center gap-2 text-navy-900 hover:text-navy-700 transition-colors font-bold group"
     >
       <span class="material-symbols-outlined text-[#000066] text-lg group-hover:-translate-x-1 transition-transform">
@@ -10,70 +11,76 @@
       </span>
       <span class="return-arrow-option">Regresar</span>
     </button>
-    @if (!isLoading() && proposal()) {
-    <!-- Botones de Acción (Solo se muestran si hay datos) -->
-     <div class="flex justify-end gap-4 mb-6">
-      <app-button-component
-        label="Evaluaciones realizadas"
-        variant="primary"
-        (onClick)="goToEvaluationsPage()"
-      ></app-button-component>
-      <app-button-component
-        label="Propuesta cargadas"
-        variant="primary"
-        (onClick)="goToLoadedProposalsPage()"
-      ></app-button-component>
-     </div>
+
+    @if (proposal()) {
+      <div class="flex gap-4">
+        <app-button-component
+          label="Evaluaciones realizadas"
+          variant="primary"
+          (onClick)="router.navigate(['evaluations_performed'], { relativeTo: route })"
+        ></app-button-component>
+        <app-button-component
+          label="Propuestas cargadas"
+          variant="primary"
+          (onClick)="router.navigate(['loaded_proposals'], { relativeTo: route })"
+        ></app-button-component>
+      </div>
     }
   </div>
+
   <!-- Loading -->
-  @if (isLoading()) {
-    <div class="text-center text-gray-500">
-      Cargando información...
-    </div>
+  @if (!proposal()) {
+    <div class="text-center text-gray-500">Cargando información...</div>
   }
+
   <!-- Contenido -->
-  @if (!isLoading() && proposal()) {
-    <!-- INFORMACIÓN -->
-     <h3 class="font-semibold text-size-header-title font-display text-primary mb-4">Información de la propuesta</h3>
-     <div class="space-y-3">
-      <div class="p-3 information-block rounded">
-        <span class="font-semibold font-display text-size-section text-primary">Título</span>
-        <p class="font-normal font-sans text-size-section text-[#777680]">{{ proposal()?.title }}</p>
-      </div>
-      <div class="p-3 information-block rounded">
-        <span class="font-semibold font-display text-size-section text-primary">Descripción</span>
-        <p class="font-normal font-sans text-size-section text-[#777680]">{{ proposal()?.description }}</p>
-      </div>
-      <div class="p-3 information-block rounded">
-        <span class="font-semibold font-display text-size-section text-primary">Modalidad</span>
-        <p class="font-normal font-sans text-size-section text-[#777680]">{{ proposal()?.modality }}</p>
-      </div>
-      <div class="p-3 information-block rounded">
-        <span class="font-semibold font-display text-size-section text-primary">Estado</span>
-        <p class="font-normal font-sans text-size-section text-[#777680]">{{ proposal()?.state }}</p>
-      </div>
-     </div>
-     <!-- PARTICIPANTES -->
-      <h3 class="font-semibold text-size-header-title font-display text-primary mt-8 mb-4">Participantes del trabajo de grado</h3>
-      <div class="p-4 information-block rounded space-y-2">
-        <div>
-          <span class="font-semibold font-display text-size-section text-primary">Estudiante(s): </span>
-          <span class="font-normal font-sans text-size-section text-[#777680]">{{ proposal()?.authors?.join(', ') }}</span>
-        </div>
-        <div>
-          <span class="font-semibold font-display text-size-section text-primary">Director: </span>
-          <span class="font-normal font-sans text-size-section text-[#777680]">{{ proposal()?.directorId }}</span>
-        </div>
+  @if (proposal(); as proposal) {
 
-        @if (proposal()?.codirector) {
-          <div>
-            <span class="font-semibold font-display text-size-section text-primary">Codirector: </span>
-            <span class="font-normal font-sans text-size-section text-[#777680]">{{ proposal()?.codirector }}</span>
-          </div>
-        }
+    <h3 class="font-semibold text-size-header-title font-display text-primary mb-4">
+      Información de la propuesta
+    </h3>
 
+    <div class="space-y-3">
+      @for (item of [
+        { label: 'Título',      value: proposal.title       },
+        { label: 'Descripción', value: proposal.description },
+        { label: 'Modalidad',   value: proposal.modality    },
+        { label: 'Estado',      value: proposal.state       }
+      ]; track item.label) {
+        <div class="p-3 information-block rounded">
+          <span class="font-semibold font-display text-size-section text-primary">{{ item.label }}</span>
+          <p class="font-normal font-sans text-size-section text-[#777680]">{{ item.value }}</p>
+        </div>
+      }
+    </div>
+
+    <h3 class="font-semibold text-size-header-title font-display text-primary mt-8 mb-4">
+      Participantes del trabajo de grado
+    </h3>
+
+    <div class="p-4 information-block rounded space-y-2">
+      <div>
+        <span class="font-semibold font-display text-size-section text-primary">Estudiante(s): </span>
+        <span class="font-normal font-sans text-size-section text-[#777680]">{{ getAuthors(proposal.authors || []) }}</span>
       </div>
+      <div>
+        <span class="font-semibold font-display text-size-section text-primary">Director: </span>
+        <span class="font-normal font-sans text-size-section text-[#777680]">{{ getMemberName(proposal.directorId) }}</span>
+      </div>
+      @if (proposal.codirector) {
+        <div>
+          <span class="font-semibold font-display text-size-section text-primary">Codirector: </span>
+          <span class="font-normal font-sans text-size-section text-[#777680]">{{ getMemberName(proposal.codirector) }}</span>
+        </div>
+      }
+      @if (proposal.advisor) {
+      <div>
+        <span class="font-semibold font-display text-size-section text-primary">Asesor: </span>
+        <span class="font-normal font-sans text-size-section text-[#777680]">{{ getMemberName(proposal.advisor) }}</span>
+      </div>
+    }
+    </div>
+
   }
 
 </div>

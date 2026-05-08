@@ -1,25 +1,23 @@
 <app-table-component
-  [value]="testValue()"
-  [headerButtons]="[
-    { label: 'Formatos descargables' , variant: 'primary'},
-    { label: 'Registrar propuesta', variant: 'primary' }
-  ]"
-  [columns]="testColumns"
+  [value]="proposals()"
+  [headerButtons]="headerButtons"
+  [columns]="columns"
   [paginator]="true"
   (actionClick)="handleTableAction($event)"
   (headerButtonClick)="handleHeaderButton($event)"
-  emptyMessage="No han sido registrados propuestas de trabajo de grado en el sistema"
+  emptyMessage="No han sido registradas propuestas de trabajo de grado en el sistema"
 ></app-table-component>
+
 <app-description-modal
-  [isOpen]="mostrarModalDesc"
-  [titleDescription]="tituloParaModal"
-  [description]="textoParaModal"
-  (onClose)="mostrarModalDesc = false"
+  [isOpen]="descModal.show"
+  [titleDescription]="descModal.title"
+  [description]="descModal.content"
+  (onClose)="descModal.show = false"
 ></app-description-modal>
 
 <app-confirmation-action-modal
-  [isOpen]="showDeleteConfirmation"
-  [description]="'¿Está seguro de eliminar la propuesta: ' + proposalTitleToDelete + '?'"
+  [isOpen]="deleteState.show"
+  [description]="'¿Está seguro de eliminar la propuesta: ' + deleteState.title + '?'"
   (onClose)="cancelDelete()"
   (onConfirm)="confirmDelete()"
 ></app-confirmation-action-modal>

@@ -1,6 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Column, TableButton, TableComponent } from '../../../../shared/components/table-component/table-component.component';
-import { stateList } from '../../../../shared/components/state/state.component';
 import { DescriptionModalComponent } from '../../../../shared/components/modals/description-modal/description-modal.component';
 import { Router } from '@angular/router';
 import { ProposalService } from '../../services/proposal.service';
@@ -8,7 +7,37 @@ import { NotificationService } from '../../../../shared/components/notifications
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
 import { Proposal } from '../../interfaces/proposal.interface';
+import { AuthService } from '../../../../core/services/auth/auth.service';
+import { UserRoleType } from '../../../../core/models/user-role';
 
+const PROPOSAL_COLUMNS: Column[] = [
+  { field: 'title', header: 'Titulo', type: 'text', width: '30%' },
+  { field: 'modality', header: 'Modalidad', type: 'text', width: 'auto'},
+  {
+    field: 'description',
+    header: 'Descripción',
+    type: 'actions',
+    actions: [{action:'ver descripcion', label: 'Ver descripcion', variant: 'primary', disabled: false}],
+    width: 'auto'
+  },
+  { field: 'state', header: 'Estado', type: 'state', width: 'auto' },
+  {
+    field: 'acciones',
+    header: 'Acciones',
+    type: 'actions',
+    actions: [
+      { action: 'ver', icon: 'visibility', variant: 'primary', disabled: false },
+      { action: 'editar', icon: 'edit', variant: 'primary', disabled: false },
+      { action: 'eliminar', icon: 'delete', variant: 'primary', disabled: false }
+    ],
+    width: 'auto'
+  },
+];
+
+const HEADER_BUTTONS: TableButton[] = [
+  { label: 'Formatos descargables', variant: 'primary' },
+  { label: 'Registrar propuesta',   variant: 'primary' }
+]
 
 @Component({
   selector: 'app-proposal-page',
@@ -16,75 +45,76 @@ import { Proposal } from '../../interfaces/proposal.interface';
   templateUrl: './proposal-page.component.html',
   styleUrl: './proposal-page.component.css',
 })
-export class ProposalPageComponent {
+export class ProposalPageComponent implements OnInit {
+  private router            = inject(Router);
+  private proposalService   = inject(ProposalService);
+  private notificationService = inject(NotificationService);
+  private authService = inject(AuthService);
 
-   private router = inject(Router);
-   protected stateList = stateList;
-   private proposalService = inject(ProposalService)
-   private notificationService = inject(NotificationService);
+  protected proposals     = this.proposalService.proposals;
+  protected columns: Column[] = [];
+  protected headerButtons: TableButton[] = [];
 
-   // 3. Variables para controlar el modal
-   mostrarModalDesc: boolean = false;
-   tituloParaModal: string = '';
-   textoParaModal: string = '';
+  // Estado del modal de descripción
+  descModal = { show: false, title: '', content: '' };
 
-   showDeleteConfirmation = false;
-   proposalIdToDelete: string | null = null;
-   proposalTitleToDelete = '';
-   isDeleting = false;
+  // Estado del flujo de eliminación
+  deleteState = {
+    show:    false,
+    id:      null as string | null,
+    title:   '',
+    loading: false
+  };
 
-   protected testValue = this.proposalService.proposals;
 
-    testColumns: Column[] = [
-      { field: 'title', header: 'Titulo', type: 'text', width: '30%' },
-      { field: 'modality', header: 'Modalidad', type: 'text', width: 'auto'},
-      {
-        field: 'description',
-        header: 'Descripción',
-        type: 'actions',
-        actions: [
-          {action:'ver descripcion', label: 'Ver descripcion', variant: 'primary', disabled: false}
-        ],
-        width: 'auto'
-      },
-      { field: 'state', header: 'Estado', type: 'state', width: 'auto' },
-      {
-      field: 'acciones',
-      header: 'Acciones',
-      type: 'actions',
-      actions: [
-        { action: 'ver',     icon: 'visibility', variant: 'primary', disabled: false },
-        { action: 'editar',  icon: 'edit', variant: 'primary', disabled: false },
-        { action: 'eliminar',icon: 'delete', variant: 'primary', disabled: false }
-      ],
-      width: 'auto'
-      },
-    ];
+  ngOnInit(): void {
+    const canManage = this.authService.hasAnyRole([
+      UserRoleType.ADMINISTRADOR,
+      UserRoleType.DIRECTOR
+    ]);
+    const canRegister = this.authService.hasAnyRole([
+      UserRoleType.ADMINISTRADOR,
+      UserRoleType.DIRECTOR
+    ]);
+    this.headerButtons = canRegister
+      ? [...HEADER_BUTTONS]
+      : HEADER_BUTTONS.filter(btn => btn.label !== 'Registrar propuesta');
+    this.columns = PROPOSAL_COLUMNS.map(col => {
+      if (col.field === 'acciones') {
+        return {
+          ...col,
+          actions: canManage
+            ? col.actions
+            : col.actions?.filter(a => a.action === 'ver')
+        };
+      }
+      return { ...col };
+    });
+  }
 
-    // 4. Función para capturar el evento de la tabla
-  handleTableAction(event: { action: string, row: Proposal }) {
-    const proposalId = event.row.id;
+  handleTableAction(event: { action: string, row: Proposal }): void {
     switch (event.action) {
       case 'ver descripcion':
-        this.tituloParaModal = 'Descripción de la propuesta';
-        // Asignamos el contenido de la columna 'titulo' o una propiedad 'descripcion' si existiera
-        this.textoParaModal = event.row.description;
-        this.mostrarModalDesc = true;
+        this.descModal = {
+          show:    true,
+          title:   'Descripción de la propuesta',
+          content: event.row.description
+        };
         break;
       case 'ver':
-        this.router.navigate(['/proposal/details', proposalId]);
+        this.router.navigate(['/proposal/details', event.row.id]);
         break;
       case 'editar':
-        this.router.navigate(['/proposal/edit', proposalId]);
+        this.router.navigate(['/proposal/edit', event.row.id]);
         break;
       case 'eliminar':
-        this.prepareDelete(event.row);
+        this.deleteState = { show: true, id: event.row.id!, title: event.row.title, loading: false };
         break;
     }
   }
 
-  handleHeaderButton(button: TableButton){
-    switch(button.label){
+  handleHeaderButton(button: TableButton): void {
+    switch (button.label) {
       case 'Registrar propuesta':
         this.router.navigate(['/proposal/create']);
         break;
@@ -94,63 +124,44 @@ export class ProposalPageComponent {
     }
   }
 
-  confirmDelete() {
-    if(!this.proposalIdToDelete || this.isDeleting) return;
-    this.isDeleting = true;
-    this.showDeleteInfoNotification();
-    this.proposalService.deleteProposalMock(this.proposalIdToDelete).subscribe({
+  confirmDelete(): void {
+    const idToDelete= this.deleteState.id;
+    if (!idToDelete || this.deleteState.loading) return;
+
+    this.deleteState.loading = true;
+    this.notificationService.show({
+      title:   'Eliminando propuesta',
+      message: 'Se está eliminando la propuesta...',
+      type:    NotificationType.INFO
+    });
+
+    this.proposalService.deleteProposalMock(idToDelete).subscribe({
       next: () => {
-        this.showDeleteSuccessNotification();
+        this.notificationService.show({
+          title:   'Propuesta eliminada',
+          message: 'La propuesta fue eliminada correctamente.',
+          type:    NotificationType.CONFIRMATION
+        });
         this.resetDeleteState();
       },
       error: () => {
-        this.showDeleteErrorNotification();
-        this.isDeleting = false;
+        this.notificationService.show({
+          title:   'Error',
+          message: 'No se pudo eliminar la propuesta.',
+          type:    NotificationType.ERROR
+        });
+        this.deleteState.loading = false;
       }
-    })
-  }
-
-  cancelDelete() {
-    this.showDeleteConfirmation = false;
-    this.proposalIdToDelete = null;
-    this.proposalTitleToDelete = '';
-  }
-
-  private resetDeleteState() {
-    this.isDeleting = false;
-    this.showDeleteConfirmation = false;
-    this.proposalIdToDelete = null;
-    this.proposalTitleToDelete = '';
-  }
-
-  private showDeleteInfoNotification() {
-    this.notificationService.show({
-      title: 'Eliminando propuesta',
-      message: 'Se está eliminando la propuesta...',
-      type: NotificationType.INFO
-    })
-  }
-
-  private prepareDelete(row: any){
-    this.proposalIdToDelete = row.id;
-    this.proposalTitleToDelete = row.title;
-    this.showDeleteConfirmation = true;
-  }
-
-  private showDeleteSuccessNotification() {
-    this.notificationService.show({
-      title: 'Propuesta eliminada',
-      message: 'La propuesta fue eliminada correctamente.',
-      type: NotificationType.CONFIRMATION
-    })
-  }
-
-  private showDeleteErrorNotification() {
-    this.notificationService.show({
-      title: 'Error',
-      message: 'No se pudo eliminar la propuesta',
-      type: NotificationType.ERROR
     });
   }
+
+  cancelDelete(): void {
+    this.resetDeleteState();
+  }
+
+  private resetDeleteState(): void {
+    this.deleteState = { show: false, id: null, title: '', loading: false };
+  }
+
 
 }

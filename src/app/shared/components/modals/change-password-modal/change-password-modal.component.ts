@@ -3,7 +3,7 @@ import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonComponent } from '../../button-component/button-component.component';
-import { AuthService } from '../../../../modules/auth/services/auth.service';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 import { ConfirmationActionModalComponent } from "../confirmation-action-modal/confirmation-action-modal.component";
 
 export const passwordMatchValidator = (control: AbstractControl): ValidationErrors | null => {
@@ -71,9 +71,15 @@ export class ChangePasswordModalComponent {
     this.authService.changePassword(currentPassword, newPassword).subscribe({
       next: () => {
         this.isLoading = false;
+        // Podrías lanzar un toast de éxito aquí antes de cerrar
         this.closeModal();
       },
-      error: () => this.isLoading = false
+      error: (err) => {
+        this.isLoading = false;
+        // Aquí podrías asignar un mensaje de error para mostrar en el HTML
+        console.error('Error al cambiar contraseña:', err.message);
+        // Por ejemplo: this.errorMessage = 'La contraseña actual no coincide';
+      }
     });
   }
 

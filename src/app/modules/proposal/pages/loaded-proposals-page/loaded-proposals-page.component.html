@@ -1,9 +1,10 @@
 <div class="w-full">
   <div class="bg-white rounded-lg shadow-sm p-6">
+
     <div class="mb-6">
       <button (click)="goBack()" class="flex items-center gap-2 text-navy-900 font-bold group">
         <span class="material-symbols-outlined text-[#000066]">arrow_back</span>
-        <span>Regresar</span>
+        <span class="return-arrow-option">Regresar</span>
       </button>
     </div>
 
@@ -12,24 +13,24 @@
       [columns]="columns"
       [paginator]="true"
       [headerButtons]="headerButtons()"
-      (headerButtonClick)="handleHeaderButton($event)"
+      (headerButtonClick)="handleHeaderButton()"
       (actionClick)="handleTableAction($event)"
-      emptyMessage="No han sido registrados documentos de propuesta de trabajo de grado (Formato A) en el sistema"
+      emptyMessage="No han sido registrados documentos de propuesta en el sistema"
     ></app-table-component>
+
   </div>
 </div>
 
-<!-- Modales -->
 <app-file-upload-modal
-  [isOpen]="isFileModalOpen()"
+  [isOpen]="fileModalOpen()"
   description="Seleccione el archivo PDF de la propuesta corregida"
   uploadedBy="Estudiante"
   (onFileUploaded)="onFileSelected($event)"
-  (onClose)="isFileModalOpen.set(false)"
+  (onClose)="fileModalOpen.set(false)"
 ></app-file-upload-modal>
 
 <app-confirmation-action-modal
-  [isOpen]="isConfirmModalOpen()"
+  [isOpen]="confirmModalOpen()"
   description="¿Está seguro de cargar esta corrección? El estado cambiará a 'En revisión'."
   (onConfirm)="confirmUpload()"
   (onClose)="cancelUpload()"
