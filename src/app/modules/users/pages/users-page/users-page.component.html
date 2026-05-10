@@ -1,47 +1,31 @@
-
 <app-table-component
-  [headerButtons]="[
-    { label: 'Crear usuarios', variant: 'primary' }
-  ]"
+  [headerButtons]="headerButtons"
   [value]="displayValue"
-  [columns]="testColumns"
+  [columns]="columns"
   emptyMessage="No han sido registrados usuarios en el sistema"
   [paginator]="true"
   (actionClick)="handleTableAction($event)"
   (headerButtonClick)="handleHeaderButton($event)"
 ></app-table-component>
-<!--  <app-button-component label="Guardar" variant="primary"></app-button-component>
-<app-state label="No aprobado" [state]="stateList.NO_APROBADO"></app-state>
-<div class="bg-primary text-white p-4">
-  Prueba de color primario
-</div> -->
-<app-file-upload-modal
-  [isOpen]="isModalOpen"
-  [description]="'Subir documento de usuario'"
-  [uploadedBy]="'Cargado por el estudiante'"
-  (onFileUploaded)="handleFileUploaded($event)"
-  (onClose)="isModalOpen = false"
-></app-file-upload-modal>
+
+<!-- Los modales permanecen igual -->
 <app-roles-modal
   [(isOpen)]="showRolesModal"
   [username]="selectedUser"
   [roles]="rolesUser"
   (onSave)="handleSaveRoles($event)"
 ></app-roles-modal>
+
 <app-confirmation-action-modal
   [isOpen]="showConfirmation"
-  [description]="'¿Desea guardar los cambios realizados en los roles del usuario? Esta acción notificará a los actores involucrados.'"
+  [description]="'¿Desea guardar los cambios realizados en los roles del usuario?'"
   (onClose)="showConfirmation = false"
   (onConfirm)="confirmChanges()"
 ></app-confirmation-action-modal>
+
 <app-confirmation-action-modal
   [isOpen]="showDisabledConfirmation"
   [description]="confirmationMessage"
   (onClose)="showDisabledConfirmation = false"
   (onConfirm)="confirmSoftDelete()"
 ></app-confirmation-action-modal>
-
-
-<!-- Botón para abrir el modal -->
-<!--<button (click)="isModalOpen = true">Cargar archivo</button>-->
-<app-button-component label="Cargar archivos" variant="secondary" (click)="isModalOpen = true"></app-button-component>

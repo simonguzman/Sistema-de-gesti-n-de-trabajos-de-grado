@@ -1,8 +1,8 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { ProposalService } from '../../services/proposal.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
-import { Location } from '@angular/common';
 import { Proposal } from '../../interfaces/proposal.interface';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
@@ -39,7 +39,6 @@ export class ProposalEditPageComponent implements OnInit {
     this.proposalService.getProposalByIdMock(id).subscribe({
       next: (found) => {
         if (found) {
-          // Clonamos para evitar modificar la referencia del servicio accidentalmente
           this.proposalToEdit.set({ ...found });
         } else {
           this.handleNotFound();
@@ -56,13 +55,7 @@ export class ProposalEditPageComponent implements OnInit {
     const currentProposal = this.proposalToEdit();
     const dataToSave = this.confirmState.pendingData;
     if (!currentProposal?.id || !dataToSave) return;
-
-    this.notificationService.show({
-      title:   'Procesando actualización',
-      message: 'Estamos actualizando la propuesta...',
-      type:    NotificationType.INFO
-    });
-
+    this.showUpdateInfoNotification();
     this.proposalService.updateProposalMock(currentProposal.id, dataToSave).subscribe({
       next: () => this.handleUpdateSuccess(),
       error: () => this.handleUpdateError()
@@ -78,31 +71,51 @@ export class ProposalEditPageComponent implements OnInit {
   }
 
   private handleUpdateSuccess(): void {
-    this.notificationService.show({
-      title:   '¡Actualización exitosa!',
-      message: 'La propuesta fue actualizada correctamente.',
-      type:    NotificationType.CONFIRMATION
-    });
+    this.showUpdateSuccessNotification();
     this.confirmState = { show: false, pendingData: null };
     this.router.navigate(['/proposal']);
   }
 
   private handleUpdateError(): void {
-    this.notificationService.show({
-      title:   'Error',
-      message: 'No se pudo actualizar la propuesta.',
-      type:    NotificationType.ERROR
-    });
+    this.showUpdateErrorNotification();
     this.confirmState.show = false;
   }
 
-  private handleNotFound(message = 'Propuesta no encontrada'): void {
+  private handleNotFound(): void {
+    this.showNotFoundNotification();
+    this.router.navigate(['/proposal']);
+  }
+
+  private showUpdateInfoNotification() {
+    this.notificationService.show({
+      title: 'Procesando actualización',
+      message: 'Estamos guardando los cambios en la propuesta...',
+      type: NotificationType.INFO
+    });
+  }
+
+  private showUpdateSuccessNotification() {
+    this.notificationService.show({
+      title: '¡Actualización exitosa!',
+      message: 'La información de la propuesta se ha modificado correctamente.',
+      type: NotificationType.CONFIRMATION
+    });
+  }
+
+  private showUpdateErrorNotification() {
+    this.notificationService.show({
+      title: 'Error de actualización',
+      message: 'No se pudieron guardar los cambios. Por favor, intente de nuevo.',
+      type: NotificationType.ERROR
+    });
+  }
+
+  private showNotFoundNotification() {
     this.notificationService.show({
       title: 'Atención',
-      message,
+      message: 'La propuesta que intenta editar no fue encontrada en el sistema.',
       type: NotificationType.ERROR
     });
     this.router.navigate(['/proposal']);
   }
-
 }

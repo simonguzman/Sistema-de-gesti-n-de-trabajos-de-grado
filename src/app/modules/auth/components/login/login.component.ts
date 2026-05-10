@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '../../../../shared/components/button-component/button-component.component';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { Router } from '@angular/router';
+import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
+import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 
 @Component({
   selector: 'app-login',
@@ -12,19 +14,19 @@ import { Router } from '@angular/router';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private authService = inject(AuthService);
+    private notificationService = inject(NotificationService);
+    private router = inject(Router);
+
   loginForm!: FormGroup;
-  // Añadimos una variable para manejar errores de autenticación en la UI
-  loginError: string | null = null;
   isLoading = false;
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
+
   ) {}
 
   ngOnInit(): void {
-    // Si ya hay sesión activa, lo mandamos directo al dashboard
     if (this.authService.isAuthenticated()) {
       this.router.navigate(['/notifications']);
     }
@@ -36,32 +38,51 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.loginForm.valid) {
-      this.isLoading = true;
-      this.loginError = null;
-
-      this.authService.login(this.loginForm.value).subscribe({
-        next: (response) => { // 1. Ahora recibimos un objeto { success, message }
-          this.isLoading = false;
-
-          if (response.success) {
-            console.log('Login exitoso');
-            this.router.navigate(['/notifications']);
-          } else {
-            // 2. LÓGICA CLAVE: Ya no hardcodeamos el mensaje.
-            // El servicio es ahora la "fuente de verdad" del motivo del fallo.
-            this.loginError = response.message || 'Error de autenticación';
-            console.error('Acceso denegado:', response.message);
-          }
-        },
-        error: (err) => {
-          this.isLoading = false;
-          this.loginError = 'Ocurrió un error técnico al intentar conectar.';
-          console.error('Error en el flujo de login', err);
-        }
-      });
-    } else {
+    if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
+      return;
     }
+
+    this.isLoading = true;
+    this.authService.login(this.loginForm.value).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        if (response.success) {
+          this.showLoginSuccess();
+          this.router.navigate(['/notifications']);
+        } else {
+          this.showLoginError(response.message || 'Credenciales inválidas');
+        }
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.showTechnicalError('Ocurrió un error técnico al intentar conectar.');
+        console.error('Error en el flujo de login', err);
+      }
+    });
+  }
+
+  private showLoginSuccess(): void{
+    this.notificationService.show({
+      title: '¡Bienvenido!',
+      message: 'Sesión iniciada correctamente.',
+      type: NotificationType.CONFIRMATION
+    });
+  }
+
+  private showLoginError(message: string): void {
+    this.notificationService.show({
+      title: 'Error',
+      message: message,
+      type: NotificationType.ERROR
+    });
+  }
+
+  private showTechnicalError(message: string): void {
+    this.notificationService.show({
+      title: 'Error del Sistema',
+      message: message,
+      type: NotificationType.SECURITY
+    });
   }
 }

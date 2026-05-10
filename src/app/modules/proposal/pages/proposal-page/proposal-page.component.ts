@@ -1,14 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { Column, TableButton, TableComponent } from '../../../../shared/components/table-component/table-component.component';
-import { DescriptionModalComponent } from '../../../../shared/components/modals/description-modal/description-modal.component';
 import { Router } from '@angular/router';
 import { ProposalService } from '../../services/proposal.service';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { Column, TableButton, TableComponent } from '../../../../shared/components/table-component/table-component.component';
+import { DescriptionModalComponent } from '../../../../shared/components/modals/description-modal/description-modal.component';
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
-import { Proposal } from '../../interfaces/proposal.interface';
-import { AuthService } from '../../../../core/services/auth/auth.service';
 import { UserRoleType } from '../../../../core/models/user-role';
+import { Proposal } from '../../interfaces/proposal.interface';
 
 const PROPOSAL_COLUMNS: Column[] = [
   { field: 'title', header: 'Titulo', type: 'text', width: '30%' },
@@ -56,7 +56,7 @@ export class ProposalPageComponent implements OnInit {
   protected headerButtons: TableButton[] = [];
 
   // Estado del modal de descripción
-  descModal = { show: false, title: '', content: '' };
+  descriptionModal = { show: false, title: '', content: '' };
 
   // Estado del flujo de eliminación
   deleteState = {
@@ -65,7 +65,6 @@ export class ProposalPageComponent implements OnInit {
     title:   '',
     loading: false
   };
-
 
   ngOnInit(): void {
     const canManage = this.authService.hasAnyRole([
@@ -95,7 +94,7 @@ export class ProposalPageComponent implements OnInit {
   handleTableAction(event: { action: string, row: Proposal }): void {
     switch (event.action) {
       case 'ver descripcion':
-        this.descModal = {
+        this.descriptionModal = {
           show:    true,
           title:   'Descripción de la propuesta',
           content: event.row.description
@@ -127,31 +126,41 @@ export class ProposalPageComponent implements OnInit {
   confirmDelete(): void {
     const idToDelete= this.deleteState.id;
     if (!idToDelete || this.deleteState.loading) return;
-
     this.deleteState.loading = true;
+    this.showDeleteProposalInfoNotification();
+    this.proposalService.deleteProposalMock(idToDelete).subscribe({
+      next: () => {
+        this.showDeleteProposalSuccessNotification();
+        this.resetDeleteState();
+      },
+      error: () => {
+        this.showDeleteProposalErrorNotification();
+        this.deleteState.loading = false;
+      }
+    });
+  }
+
+  private showDeleteProposalInfoNotification(){
     this.notificationService.show({
       title:   'Eliminando propuesta',
       message: 'Se está eliminando la propuesta...',
       type:    NotificationType.INFO
     });
+  }
 
-    this.proposalService.deleteProposalMock(idToDelete).subscribe({
-      next: () => {
-        this.notificationService.show({
-          title:   'Propuesta eliminada',
-          message: 'La propuesta fue eliminada correctamente.',
-          type:    NotificationType.CONFIRMATION
-        });
-        this.resetDeleteState();
-      },
-      error: () => {
-        this.notificationService.show({
-          title:   'Error',
-          message: 'No se pudo eliminar la propuesta.',
-          type:    NotificationType.ERROR
-        });
-        this.deleteState.loading = false;
-      }
+  private showDeleteProposalSuccessNotification(){
+    this.notificationService.show({
+      title:   'Propuesta eliminada',
+      message: 'La propuesta fue eliminada correctamente.',
+      type:    NotificationType.CONFIRMATION
+    });
+  }
+
+  private showDeleteProposalErrorNotification(){
+    this.notificationService.show({
+      title:   'Error',
+      message: 'No se pudo eliminar la propuesta.',
+      type:    NotificationType.ERROR
     });
   }
 
@@ -162,6 +171,4 @@ export class ProposalPageComponent implements OnInit {
   private resetDeleteState(): void {
     this.deleteState = { show: false, id: null, title: '', loading: false };
   }
-
-
 }

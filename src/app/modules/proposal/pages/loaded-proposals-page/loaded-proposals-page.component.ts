@@ -1,16 +1,16 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { Column, TableButton, TableComponent } from '../../../../shared/components/table-component/table-component.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Column, TableButton, TableComponent } from '../../../../shared/components/table-component/table-component.component';
+import { ProposalService } from '../../services/proposal.service';
+import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
+import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
+import { AuthService } from '../../../../core/services/auth/auth.service';
+import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { UserRoleType } from '../../../../core/models/user-role';
 import { ProposalDocument } from '../../interfaces/proposalDocument.inteface';
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
 import { stateList } from '../../../../shared/components/state/state.component';
-import { ProposalService } from '../../services/proposal.service';
-import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
-import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
-import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
-import { AuthService } from '../../../../core/services/auth/auth.service';
-import { UserRoleType } from '../../../../core/models/user-role';
 
 const DOCUMENTS_COLUMNS: Column[] = [
   { field: 'name',       header: 'Nombre de archivo', type: 'text',    width: '35%' },
@@ -95,11 +95,7 @@ export class LoadedProposalsPageComponent implements OnInit {
     if ( isDirector || isAdmin) {
       this.fileModalOpen.set(true);
     } else {
-      this.notificationService.show({
-        title: 'Acceso denegado',
-        message: 'No tienes permisos para cargar documentos en esta propuesta.',
-        type: NotificationType.INFO
-      });
+      this.showAccessDeniedNotification();
     }
   }
 
@@ -124,6 +120,7 @@ export class LoadedProposalsPageComponent implements OnInit {
     const fileData  = this.uploadState();
     const id        = this.proposalId();
     if (!fileData || !id) return;
+    this.showProcessingUploadNotification();
 
     const newDoc: ProposalDocument = {
       id:         crypto.randomUUID(),
@@ -135,9 +132,10 @@ export class LoadedProposalsPageComponent implements OnInit {
     };
 
     this.proposalService.uploadCorrectionMock(id, newDoc).subscribe({
-      next: () => {
-        this.confirmModalOpen.set(false);
-        this.uploadState.set(null);
+      next: () => this.handleUploadSuccess(),
+      error: (err) => {
+        this.showUploadErrorNotification();
+        console.error(err);
       }
     });
   }
@@ -155,7 +153,6 @@ export class LoadedProposalsPageComponent implements OnInit {
     const actions = [
       { action: 'download', label: 'Descargar propuesta', variant: 'primary', disabled: false }
     ];
-
     // Solo agregar la acción de evaluar si tiene el rol permitido
     if (this.authService.hasAnyRole([UserRoleType.COMITE, UserRoleType.ADMINISTRADOR])) {
       actions.push({
@@ -165,25 +162,70 @@ export class LoadedProposalsPageComponent implements OnInit {
         disabled: doc.status !== stateList.EN_REVISION
       });
     }
-
     return actions;
   }
 
   private handleDownload(doc: ProposalDocument): void {
     if (!doc.url?.trim()) {
-      this.notificationService.show({
-        title:   'Archivo no disponible',
-        message: 'El documento no tiene una ruta de descarga configurada.',
-        type:    NotificationType.INFO
-      });
+      this.showDownloadErrorNotification();
       return;
     }
-    this.notificationService.show({
-      title:   'Descarga iniciada',
-      message: 'Descargando archivo...',
-      type:    NotificationType.INFO
-    });
+    this.showDownloadStartedNotification();
     this.downloadService.download(doc.url, `${doc.name}.pdf`);
+  }
+
+  private handleUploadSuccess(): void {
+    this.showUploadSuccessNotification();
+    this.confirmModalOpen.set(false);
+    this.uploadState.set(null);
+  }
+
+  private showProcessingUploadNotification() {
+    this.notificationService.show({
+      title: 'Subiendo documento',
+      message: 'Estamos procesando y guardando la nueva versión de la propuesta...',
+      type: NotificationType.INFO
+    });
+  }
+
+  private showUploadSuccessNotification() {
+    this.notificationService.show({
+      title: '¡Documento cargado!',
+      message: 'La propuesta corregida ha sido enviada a revisión exitosamente.',
+      type: NotificationType.CONFIRMATION
+    });
+  }
+
+  private showUploadErrorNotification() {
+    this.notificationService.show({
+      title: 'Error de carga',
+      message: 'No se pudo subir el archivo. Verifique su conexión e intente nuevamente.',
+      type: NotificationType.ERROR
+    });
+  }
+
+  private showAccessDeniedNotification() {
+    this.notificationService.show({
+      title: 'Acceso denegado',
+      message: 'No tienes permisos para realizar cargas en esta propuesta.',
+      type: NotificationType.ERROR // Cambiado a ERROR para mayor visibilidad
+    });
+  }
+
+  private showDownloadStartedNotification() {
+    this.notificationService.show({
+      title: 'Descarga iniciada',
+      message: 'El documento se está descargando en su dispositivo.',
+      type: NotificationType.INFO
+    });
+  }
+
+  private showDownloadErrorNotification() {
+    this.notificationService.show({
+      title: 'Archivo no disponible',
+      message: 'No se encontró una ruta válida para descargar este documento.',
+      type: NotificationType.ERROR
+    });
   }
 
   private formatDate(date: Date): string {

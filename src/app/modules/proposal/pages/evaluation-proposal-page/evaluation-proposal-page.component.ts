@@ -54,16 +54,16 @@ export class EvaluationProposalPageComponent implements OnInit  {
   });
 
   displayFields = computed(() => {
-    const p = this.proposal();
-    if (!p) return [];
+    const proposal = this.proposal();
+    if (!proposal) return [];
 
     return [
-      { label: 'Título', value: p.title },
+      { label: 'Título', value: proposal.title },
       { label: 'Fecha de carga', value: this.documentUploadDate },
-      { label: 'Modalidad', value: p.modality },
-      { label: 'Estudiante(s)', value: this.userService.getAuthorsNames(p.authors) },
-      { label: 'Director', value: this.userService.getUserFullName(p.directorId) },
-      { label: 'Estado Actual', value: p.state }
+      { label: 'Modalidad', value: proposal.modality },
+      { label: 'Estudiante(s)', value: this.userService.getAuthorsNames(proposal.authors) },
+      { label: 'Director', value: this.userService.getUserFullName(proposal.directorId) },
+      { label: 'Estado Actual', value: proposal.state }
     ];
   });
 
@@ -113,56 +113,32 @@ export class EvaluationProposalPageComponent implements OnInit  {
   handleFileUploaded(event: { fileName: string; file: File }): void {
     this.signedFile.set({ name: event.fileName });
     this.modalState.upload = false;
-    this.notificationService.show({
-      title:   'Formato A firmado cargado',
-      message: 'El documento se ha adjuntado correctamente a la evaluación.',
-      type:    NotificationType.CONFIRMATION
-    });
+    this.showFileUploadSuccessNotification();
   }
 
   removeSignedFile(): void {
     this.signedFile.set(null);
-    this.notificationService.show({
-      title:   'Archivo removido',
-      message: 'El formato firmado ha sido quitado de la evaluación.',
-      type:    NotificationType.INFO
-    });
+    this.showFileRemovedNotification();
   }
 
   downloadOriginalDocument(): void {
     const doc = this.originalDocument;
     if (!doc?.url?.trim()) {
-      this.notificationService.show({
-        title:   'Error',
-        message: 'No se encontró la URL del documento para descargar.',
-        type:    NotificationType.ERROR
-      });
+      this.showDownloadErrorNotification();
       return;
     }
-    this.notificationService.show({
-      title:   'Descarga iniciada',
-      message: 'Descargando el documento...',
-      type:    NotificationType.INFO
-    });
+    this.showDownloadStartedNotification();
     this.downloadService.download(doc.url, doc.name);
   }
 
   initiateEvaluationSubmit(): void {
     if (this.evaluationForm.invalid) {
       this.evaluationForm.markAllAsTouched();
-      this.notificationService.show({
-        title:   'Formulario incompleto',
-        message: 'Por favor, seleccione un resultado y añada sus comentarios.',
-        type:    NotificationType.ERROR
-      });
+      this.showInvalidFormNotification();
       return;
     }
     if (!this.signedFile()) {
-      this.notificationService.show({
-        title:   'Archivo requerido',
-        message: 'Debe cargar el formato de evaluación firmado antes de guardar.',
-        type:    NotificationType.ERROR
-      });
+      this.showMissingFileNotification();
       return; // ← faltaba este return
     }
     this.modalState.confirm = true;
@@ -173,27 +149,23 @@ export class EvaluationProposalPageComponent implements OnInit  {
     const currentProposal = this.proposal();
     const currentUser = this.authService.currentUser();
     if (!currentProposal?.id || !currentUser) return;
-
-    const { result, comments } = this.evaluationForm.value;
-    const newState = RESULT_TO_STATE[result!] ?? currentProposal.state;
-
     // --- NUEVA VALIDACIÓN DE NEGOCIO ---
     // Antes de guardar, verificamos que el estado de la propuesta no rompa reglas
     // (útil si la evaluación implica cambios en la estructura de la propuesta)
     const validationError = this.proposalService.validateProposalRules(currentProposal);
     if (validationError) {
-      this.notificationService.show({
-        title: 'Restricción de Negocio',
-        message: validationError,
-        type: NotificationType.ERROR
-      });
+      this.showBusinessRuleNotification(validationError);
       return;
     }
+
+    const { result, comments } = this.evaluationForm.value;
+    const newState = RESULT_TO_STATE[result!] ?? currentProposal.state;
+
 
     const newEvaluation: Evaluation = {
       id: crypto.randomUUID(),
       proposalId: currentProposal.id,
-      evaluatorName: `${currentUser.firstName} ${currentUser.lastName}`, // Aquí podrías usar authService.currentUser()
+      evaluatorName: this.userService.getUserFullName(currentUser?.id), // Aquí podrías usar authService.currentUser()
       evaluatorRole: currentUser.roles[0],
       signedDocuments: this.signedFile() ? [this.signedFile()!.name] : [],
       veredict: newState,
@@ -203,20 +175,10 @@ export class EvaluationProposalPageComponent implements OnInit  {
 
     this.proposalService.addEvaluationMock(currentProposal.id, newEvaluation).subscribe({
       next: () => {
-        this.notificationService.show({
-          title:   'Evaluación registrada',
-          message: 'La evaluación se ha guardado y el estado se ha actualizado.',
-          type:    NotificationType.CONFIRMATION
-        });
+        this.showEvaluationSuccessNotification();
         this.router.navigate(['../'], { relativeTo: this.route });
       },
-      error: () => {
-        this.notificationService.show({
-          title:   'Error de actualización',
-          message: 'No se pudo guardar la evaluación. Intente nuevamente.',
-          type:    NotificationType.ERROR
-        });
-      }
+      error: () => this.showUpdateErrorNotification()
     });
   }
 
@@ -226,5 +188,77 @@ export class EvaluationProposalPageComponent implements OnInit  {
 
   goBack(): void {
     this.location.back();
+  }
+
+  private showFileUploadSuccessNotification() {
+    this.notificationService.show({
+      title: 'Formato A adjuntado',
+      message: 'El documento firmado se ha vinculado correctamente a esta evaluación.',
+      type: NotificationType.CONFIRMATION
+    });
+  }
+
+  private showFileRemovedNotification() {
+    this.notificationService.show({
+      title: 'Documento removido',
+      message: 'Se ha quitado el formato firmado. Recuerde que es obligatorio para finalizar.',
+      type: NotificationType.INFO
+    });
+  }
+
+  private showInvalidFormNotification() {
+    this.notificationService.show({
+      title: 'Formulario incompleto',
+      message: 'Por favor, asegúrese de seleccionar un veredicto y escribir sus observaciones.',
+      type: NotificationType.ERROR
+    });
+  }
+
+  private showMissingFileNotification() {
+    this.notificationService.show({
+      title: 'Documento requerido',
+      message: 'Debe cargar el Formato A firmado para poder registrar la evaluación.',
+      type: NotificationType.ERROR
+    });
+  }
+
+  private showEvaluationSuccessNotification() {
+    this.notificationService.show({
+      title: 'Evaluación registrada',
+      message: 'La decisión del comité ha sido guardada y el estado de la propuesta actualizado.',
+      type: NotificationType.CONFIRMATION
+    });
+  }
+
+  private showBusinessRuleNotification(message: string) {
+    this.notificationService.show({
+      title: 'Restricción de proceso',
+      message: message,
+      type: NotificationType.ERROR
+    });
+  }
+
+  private showDownloadStartedNotification() {
+    this.notificationService.show({
+      title: 'Descarga iniciada',
+      message: 'Descargando la propuesta original para su revisión...',
+      type: NotificationType.INFO
+    });
+  }
+
+  private showDownloadErrorNotification() {
+    this.notificationService.show({
+      title: 'Error de descarga',
+      message: 'No se pudo obtener el documento original. Contacte a soporte técnico.',
+      type: NotificationType.ERROR
+    });
+  }
+
+  private showUpdateErrorNotification() {
+    this.notificationService.show({
+      title: 'Error de servidor',
+      message: 'Hubo un problema al guardar la evaluación. Intente nuevamente en unos minutos.',
+      type: NotificationType.ERROR
+    });
   }
 }

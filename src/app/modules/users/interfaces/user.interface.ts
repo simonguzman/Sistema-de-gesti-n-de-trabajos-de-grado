@@ -2,7 +2,7 @@ import { UserRoleType } from "../../../core/models/user-role";
 export enum IdentificationType {
   CC = 'cedula de ciudadania',
   CE = 'Cedula de extranjeria',
-  PASSPORT = 'Pasaporte'
+  PASAPORTE = 'Pasaporte'
 }
 
 export enum UserState {

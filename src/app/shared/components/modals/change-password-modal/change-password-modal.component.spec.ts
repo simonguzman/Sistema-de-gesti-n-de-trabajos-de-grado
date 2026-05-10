@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChangePasswordModalComponent } from './change-password-modal.component';
 import { ReactiveFormsModule } from '@angular/forms';
-import { AuthService } from '../../../../modules/auth/services/auth.service';
 import { of, throwError } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 
 describe('ChangePasswordModalComponent', () => {
   let component: ChangePasswordModalComponent;

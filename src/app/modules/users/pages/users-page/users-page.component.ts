@@ -1,8 +1,6 @@
+import { stateList } from './../../../../shared/components/state/state.component';
 import { Component, computed, inject } from '@angular/core';
 import { TableComponent, Column, TableButton } from "../../../../shared/components/table-component/table-component.component";
-import { stateList } from '../../../../shared/components/state/state.component';
-import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
-import { ButtonComponent } from '../../../../shared/components/button-component/button-component.component';
 import { ConfirmationActionModalComponent } from '../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component';
 import { UserRole, UserRoleType } from '../../../../core/models/user-role';
 import { Router } from '@angular/router';
@@ -11,13 +9,42 @@ import { UserService } from '../../services/user.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { User, UserState } from '../../interfaces/user.interface';
+
+const USER_COLUMNS: Column[] = [
+  { field: 'identificacion', header: 'Identificación', type: 'text', width: '15%' },
+  { field: 'nombre', header: 'Nombre', type: 'text', width: '15%' },
+  { field: 'apellidos', header: 'Apellidos', type: 'text', width: '15%' },
+  { field: 'estado', header: 'Estado', type: 'text', width: '15%' },
+  {
+    field: 'roles',
+    header: 'Descripción',
+    type: 'actions',
+    actions: [
+      { action: 'ver roles asignados', label: 'Ver roles asignados', variant: 'primary', disabled: false }
+    ],
+    width: '20%'
+  },
+  {
+    field: 'acciones',
+    header: 'Acciones',
+    type: 'actions',
+    actions: [
+      { action: 'ver',    icon: 'visibility', variant: 'primary', disabled: false },
+      { action: 'editar',  icon: 'edit', variant: 'primary', disabled: false },
+      { action: 'eliminar', icon: 'delete', variant: 'primary', disabled: false }
+    ],
+    width: '20%'
+  },
+];
+
+const USER_HEADER_BUTTONS: TableButton[] = [
+  { label: 'Crear usuarios', variant: 'primary' }
+];
 @Component({
   selector: 'app-users-page',
   standalone: true,
   imports: [
     TableComponent,
-    FileUploadModalComponent,
-    ButtonComponent,
     RolesModalComponent,
     ConfirmationActionModalComponent
   ],
@@ -25,65 +52,34 @@ import { User, UserState } from '../../interfaces/user.interface';
   styleUrl: './users-page.component.css',
 })
 export class UsersPageComponent {
-  // Exponemos los Enums y tipos protegidos para el template
-  userService = inject(UserService);
-  protected stateList = stateList;
-  private router = inject(Router);
-  private notificationService = inject(NotificationService)
+  readonly userService = inject(UserService);
+  private readonly router = inject(Router);
+  private readonly notificationService = inject(NotificationService);
 
-  idUserForRoles: string | null = null;
+  protected columns: Column[] = USER_COLUMNS;
+  protected headerButtons: TableButton[] = USER_HEADER_BUTTONS;
+  protected readonly stateList = stateList;
 
-  // Variables de control para el Modal de Roles
+  selectedUser = '';
+  isModalOpen = false;
+
   showRolesModal = false;
   showConfirmation = false;
-  selectedUser = '';
+  idUserForRoles: string | null = null;
+  rolesUser: UserRole[] = [];
+  private pendingRoles: UserRole[] = [];
 
   showDisabledConfirmation = false;
   idUserToDisabled: string | null = null;
   confirmationMessage = ' ';
 
-  // Inicializamos los roles usando el Enum centralizado
-  rolesUser: UserRole[] = [];
-
-  // NUEVA VARIABLE: Para guardar los cambios antes de la confirmación final
-  private pendingRoles: UserRole[] = [];
-
-  // Variables para otros modales
-  isModalOpen = false;
-
-  // Columnas de la tabla
-  testColumns: Column[] = [
-    { field: 'identificacion', header: 'Identificación', type: 'text', width: '15%' },
-    { field: 'nombre', header: 'Nombre', type: 'text', width: '15%'},
-    { field: 'apellidos', header: 'Apellidos', type: 'text', width: '15%'},
-    { field: 'estado', header: 'Estado', type: 'text', width: '15%'},
-    {
-      field: 'roles',
-      header: 'Descripción',
-      type: 'actions',
-      actions: [
-        { action: 'ver roles asignados', label: 'Ver roles asignados', variant: 'primary', disabled: false }
-      ],
-      width: '20%'
-    },
-    {
-      field: 'acciones',
-      header: 'Acciones',
-      type: 'actions',
-      actions: [
-        { action: 'ver',    icon: 'visibility', variant: 'primary', disabled: false },
-        { action: 'editar',  icon: 'edit', variant: 'primary', disabled: false },
-        { action: 'eliminar', icon: 'delete', variant: 'primary', disabled: false }
-      ],
-      width: '20%'
-    },
-  ];
-
   usersTableData = computed(() => {
-    return this.userService.users().map(user =>
-      this.mapUserToTable(user)
-    );
+    return this.userService.users().map(user => this.mapUserToTable(user));
   });
+
+  get displayValue() {
+    return this.usersTableData();
+  }
 
   private mapUserToTable(user: User) {
     const isInactive = user.state === UserState.inactive;
@@ -98,18 +94,16 @@ export class UsersPageComponent {
     };
   }
 
-  private getTableRolesAction(isInactive: boolean){
-    return [
-      {
-        action: 'ver roles asignados',
-        label: 'Ver roles asignados',
-        variant: 'primary',
-        disabled: isInactive
-      },
-    ]
+  private getTableRolesAction(isInactive: boolean) {
+    return [{
+      action: 'ver roles asignados',
+      label: 'Ver roles asignados',
+      variant: 'primary',
+      disabled: isInactive
+    }];
   }
 
-  private getTableActions(isInactive: boolean){
+  private getTableActions(isInactive: boolean) {
     return [
       { action: 'ver', icon: 'visibility', variant: 'primary', disabled: isInactive },
       { action: 'editar', icon: 'edit', variant: 'primary', disabled: isInactive },
@@ -122,14 +116,19 @@ export class UsersPageComponent {
     ];
   }
 
-  get displayValue() {
-    return this.usersTableData();
+  handleHeaderButton(button: TableButton) {
+    if (button.label === 'Crear usuarios') {
+      this.router.navigate(['/users/create']);
+    }
   }
+
   handleTableAction(event: { action: string, row: any }) {
-    console.log('Acción disparada:', event.action); // Debug
-    console.log('Data de la fila:', event.row);      // Debug
+    console.log('Acción disparada:', event.action);
+    console.log('Data de la fila:', event.row);
+
     const user = event.row.originalData as User;
     if(!user) return;
+
     switch (event.action){
       case 'ver roles asignados':
         this.prepareRolesModal(user, event.row);
@@ -146,24 +145,32 @@ export class UsersPageComponent {
     }
   }
 
-  private prepareRolesModal(user: User, row: any){
+  handleFileUploaded(event: { fileName: string, file: File }) {
+    console.log('Archivo recibido:', event.fileName);
+  }
+
+  private prepareRolesModal(user: User, row: any) {
     this.idUserForRoles = user.id!;
     this.selectedUser = `${row.nombre} ${row.apellidos}`;
     const userRolesType = user.roles || [];
+
     this.rolesUser = Object.values(UserRoleType).map(type => ({
       type,
       assigned: userRolesType.includes(type)
     }));
+
     this.showRolesModal = true;
   }
 
-  private prepareDisabledModal(user: User, row: any){
+  private prepareDisabledModal(user: User, row: any) {
     this.idUserToDisabled = user.id!;
     this.selectedUser = `${row.nombre} ${row.apellidos}`;
     const isInactive = row.estado === UserState.inactive;
+
     this.confirmationMessage = isInactive
       ? `¿Desea habilitar nuevamente al usuario ${this.selectedUser}?`
-      : `¿Desea deshabilitar al usuario ${this.selectedUser}? Esta acción limitará sus accesos al sistema.`
+      : `¿Desea deshabilitar al usuario ${this.selectedUser}? Esta acción limitará sus accesos al sistema.`;
+
     this.showDisabledConfirmation = true;
   }
 
@@ -174,7 +181,7 @@ export class UsersPageComponent {
     this.showConfirmation = true;
   }
 
-  confirmChanges(){
+  confirmChanges() {
     if (!this.idUserForRoles) return;
 
     const finalsRoles = this.pendingRoles
@@ -199,9 +206,12 @@ export class UsersPageComponent {
 
   confirmSoftDelete() {
     if(!this.idUserToDisabled) return;
+
     const user = this.userService.users().find(user => user.id === this.idUserToDisabled);
-  const isEnabling = user?.state === 'Inactivo';
+    const isEnabling = user?.state === 'Inactivo';
+
     this.showSoftDeleteInfo(isEnabling);
+
     this.userService.softDeleteUserMock(this.idUserToDisabled).subscribe({
         next:() => {
           this.showSoftDeleteSuccess(isEnabling);
@@ -215,28 +225,31 @@ export class UsersPageComponent {
     });
   }
 
-  private showChangesRolesSuccess(){
+  private showChangesRolesSuccess() {
     this.notificationService.show({
       title:'¡Roles actualizados!',
       message: 'Los permisos del usuario se han modificado correctamente.',
       type: NotificationType.CONFIRMATION
     });
   }
-  private showChangesRolesInfo(){
+
+  private showChangesRolesInfo() {
     this.notificationService.show({
       title:'Actualizando roles y permisos',
       message: 'Guardando la nueva configuración de roles en el sistema...',
       type: NotificationType.INFO
     });
   }
-  private showChangesRolesError(){
+
+  private showChangesRolesError() {
     this.notificationService.show({
       title:'Error al asignar roles',
       message: 'No se pudieron actualizar los roles del usuario. Por favor, intente de nuevo.',
       type: NotificationType.ERROR
     });
   }
-  private showSoftDeleteSuccess(isEnabling: boolean){
+
+  private showSoftDeleteSuccess(isEnabling: boolean) {
     this.notificationService.show({
       title: isEnabling ? '¡Usuario habilitado!' : '¡Usuario deshabilitado!',
       message: isEnabling
@@ -245,7 +258,8 @@ export class UsersPageComponent {
       type: NotificationType.CONFIRMATION
     });
   }
-  private showSoftDeleteInfo(isEnabling: boolean){
+
+  private showSoftDeleteInfo(isEnabling: boolean) {
     this.notificationService.show({
       title:'Procesando acción',
       message: isEnabling
@@ -254,7 +268,8 @@ export class UsersPageComponent {
       type: NotificationType.INFO
     });
   }
-  private showSoftDeleteError(isEnabling: boolean){
+
+  private showSoftDeleteError(isEnabling: boolean) {
     this.notificationService.show({
       title: isEnabling ? 'Error al habilitar usuario' : 'Error al deshabilitar usuario',
       message: isEnabling
@@ -262,15 +277,5 @@ export class UsersPageComponent {
         : 'No se pudo deshabilitar el usuario. Intente de nuevo.',
       type: NotificationType.ERROR
     });
-  }
-
-  handleFileUploaded(event: { fileName: string, file: File }) {
-    console.log('Archivo recibido:', event.fileName);
-  }
-
-  handleHeaderButton(button: TableButton) {
-    if (button.label === 'Crear usuarios') {
-      this.router.navigate(['/users/create']); // Navega a la ruta que creamos
-    }
   }
 }

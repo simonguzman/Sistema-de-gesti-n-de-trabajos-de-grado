@@ -1,12 +1,12 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Column, TableComponent } from '../../../../shared/components/table-component/table-component.component';
-import { EvaluationModalComponent } from '../../../../shared/components/modals/evaluation-modal/evaluation-modal.component';
 import { Evaluation } from '../../interfaces/evaluation.interface';
+import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { ProposalService } from '../../services/proposal.service';
 import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
-import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { Column, TableComponent } from '../../../../shared/components/table-component/table-component.component';
+import { EvaluationModalComponent } from '../../../../shared/components/modals/evaluation-modal/evaluation-modal.component';
 
 const EVALUATIONS_COLUMNS: Column[] = [
   { field: 'evaluatorName',    header: 'Nombre',                     type: 'text',    width: '20%' },
@@ -31,7 +31,6 @@ const EVALUATIONS_COLUMNS: Column[] = [
   styleUrls: ['./evaluations-performed-page.component.css']
 })
 export class EvaluationsPerformedPageComponent implements OnInit {
-
   private route               = inject(ActivatedRoute);
   private router              = inject(Router);
   private proposalService     = inject(ProposalService);
@@ -42,7 +41,6 @@ export class EvaluationsPerformedPageComponent implements OnInit {
 
   proposalId = signal<string | null>(null);
 
-  // Estado del modal agrupado
   modalState = signal<{ open: boolean; evaluation: Evaluation | null }>({
     open: false, evaluation: null
   });
@@ -56,10 +54,15 @@ export class EvaluationsPerformedPageComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.pathFromRoot
-      .map(r => r.snapshot.paramMap.get('id'))
+      .map(route => route.snapshot.paramMap.get('id'))
       .find(id => id !== null);
 
-    if (id) this.proposalId.set(id);
+    if (id) {
+      this.proposalId.set(id);
+      if (this.evaluations().length === 0) {
+        this.showNoDataNotification();
+      }
+    }
   }
 
   handleTableAction(event: { action: string; row: Evaluation }): void {
@@ -73,16 +76,40 @@ export class EvaluationsPerformedPageComponent implements OnInit {
   }
 
   handleDownload(fileName: string): void {
-    this.notificationService.show({
-      title:   'Descarga iniciada',
-      message: 'Descargando el archivo...',
-      type:    NotificationType.INFO
-    });
+    if (!fileName) {
+      this.showDownloadErrorNotification();
+      return;
+    }
+    this.showDownloadStartedNotification();
     this.downloadService.download(`assets/evaluaciones/${fileName}`, fileName);
   }
 
   goBack(): void {
     this.router.navigate(['../'], { relativeTo: this.route });
+  }
+
+  private showDownloadStartedNotification() {
+    this.notificationService.show({
+      title: 'Descarga iniciada',
+      message: 'El documento de la evaluación se está descargando en su dispositivo.',
+      type: NotificationType.INFO
+    });
+  }
+
+  private showDownloadErrorNotification() {
+    this.notificationService.show({
+      title: 'Archivo no encontrado',
+      message: 'No se pudo localizar el documento firmado de esta evaluación.',
+      type: NotificationType.ERROR
+    });
+  }
+
+  private showNoDataNotification() {
+    this.notificationService.show({
+      title: 'Sin evaluaciones',
+      message: 'Esta propuesta aún no cuenta con registros de evaluación por parte del comité.',
+      type: NotificationType.INFO
+    });
   }
 
 }

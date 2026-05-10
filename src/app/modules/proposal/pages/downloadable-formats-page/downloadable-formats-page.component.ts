@@ -1,10 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { TabItem, TabsComponent } from '../../../../shared/components/tabs/tabs.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Column, TableComponent } from '../../../../shared/components/table-component/table-component.component';
 import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { TabItem, TabsComponent } from '../../../../shared/components/tabs/tabs.component';
+import { Column, TableComponent } from '../../../../shared/components/table-component/table-component.component';
 
 interface DownloadableFormat {
   id: string;
@@ -64,30 +64,51 @@ export class DownloadableFormatsPageComponent {
   activeTab      = signal<string>('TI');
   currentFormats = computed(() => FORMATS[this.activeTab()] ?? []);
 
-  handleTableAction(event: { action: string; row: DownloadableFormat }): void {
+  async handleTableAction(event: { action: string; row: DownloadableFormat }): Promise<void> {
     if (event.action !== 'descargar') return;
-
-    if (!event.row.url) {
-      this.notificationService.show({
-        title: 'Error de descarga',
-        message: 'La ruta del archivo no es válida.',
-        type: NotificationType.ERROR
-      });
-      return;
+    const { url, id } = event.row;
+    const formatCode = id.toUpperCase();
+    if (!url?.trim()) {
+      this.showDownloadError('La ruta del archivo no es válida o está vacía.');
+    return;
     }
-
-    this.notificationService.show({
-      title: 'Preparando descarga',
-      message: `Iniciando descarga de: ${event.row.id.toUpperCase()}`,
-      type: NotificationType.INFO
-    });
-
-    // Usamos el ID para el nombre del archivo, asegurando la extensión .pdf
-    const fileName = `${event.row.id.toUpperCase()}.pdf`;
-    this.downloadService.download(event.row.url, fileName);
+    const fileName = `${formatCode}.pdf`;
+    this.showDownloadStarted(formatCode);
+    try {
+      await this.downloadService.download(url, fileName);
+      this.showDownloadSuccess(formatCode);
+    } catch (err) {
+      this.showDownloadError(`No se pudo descargar el ${formatCode}. Intente más tarde.`);
+      console.log(err);
+    }
   }
 
   goBack(): void {
     this.router.navigate(['../'], { relativeTo: this.route });
+  }
+
+  private showDownloadStarted(formatCode: string) {
+    this.notificationService.show({
+      title: 'Descarga en curso',
+      message: `Iniciando la descarga del ${formatCode}. Revise su carpeta de descargas.`,
+      type: NotificationType.INFO
+    });
+  }
+
+  private showDownloadError(message: string) {
+    this.notificationService.show({
+      title: 'Error de descarga',
+      message: message,
+      type: NotificationType.ERROR
+    });
+  }
+
+  // Opcional: Si implementas un callback de éxito en el servicio
+  private showDownloadSuccess(formatCode: string) {
+    this.notificationService.show({
+      title: 'Archivo descargado',
+      message: `El ${formatCode} se ha guardado exitosamente.`,
+      type: NotificationType.CONFIRMATION
+    });
   }
 }

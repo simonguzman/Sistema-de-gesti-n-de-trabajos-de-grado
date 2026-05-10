@@ -329,7 +329,7 @@ export class UserService {
     const newUser: User = { ...user, id: crypto.randomUUID(), state: UserState.active };
     return of(newUser).pipe(
       delay(1000),
-      tap(saved => this._usersList.update(current => [...current, saved]))
+      tap(saved => this._usersList.update(current => [saved, ...current]))
     );
   }
 
@@ -390,11 +390,24 @@ export class UserService {
     this._usersList().filter(u => u.roles.includes(UserRoleType.DOCENTE))
   );
 
+  public currentUserFullName = computed(() => {
+    const user = this._currentUser();
+    if (!user) return 'Invitado';
+    return this.formatFullName(user);
+  });
+
+// Método privado para estandarizar el formato en todo el servicio
+  private formatFullName(user: User): string {
+    return `${user.firstName} ${user.secondName || ''} ${user.lastName} ${user.secondLastName || ''}`
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // Y actualizamos tu getUserFullName original para usar el estandarizador:
   getUserFullName(id: string | undefined): string {
     if(!id) return 'No asignado';
-    const user = this._usersList().find(user => user.id === id);
-    if(!user) return id;
-    return `${user.firstName} ${user.lastName} ${user.secondLastName || ''}`.trim();
+    const user = this._usersList().find(u => u.id === id);
+    return user ? this.formatFullName(user) : id;
   }
 
   getAuthorsNames(ids: string[] | undefined): string {
