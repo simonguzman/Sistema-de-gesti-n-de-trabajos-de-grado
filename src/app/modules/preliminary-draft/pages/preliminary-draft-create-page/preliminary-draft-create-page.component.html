@@ -1,0 +1,22 @@
+<div class="mb-4">
+  <button
+    (click)="goBack()"
+    class="flex items-center gap-2 text-navy-900 hover:text-[#000066] transition-colors font-bold group"
+  >
+    <span class="material-symbols-outlined text-[#000066] text-lg group-hover:-translate-x-1 transition-transform">
+      arrow_back
+    </span>
+    <span class="return-arrow-option">Regresar</span>
+  </button>
+</div>
+
+<app-preliminary-draft-form
+  (onSubmit)="handleCreatePreliminaryDraft($event)">
+</app-preliminary-draft-form>
+
+<app-confirmation-action-modal
+  [isOpen]="confirmState.show"
+  description="¿Está seguro de registrar este anteproyecto? Verifique que el documento adjunto corresponda a la propuesta seleccionada."
+  (onClose)="cancelCreation()"
+  (onConfirm)="confirmCreation()"
+></app-confirmation-action-modal>

@@ -1,6 +1,7 @@
-import { stateList } from "../../../shared/components/state/state.component";
-import { Evaluation } from "./evaluation.interface";
-import { ProposalDocument } from "./proposalDocument.inteface";
+import { Evaluation } from "../../../core/interfaces/evaluation.interface";
+import { Document } from "../../../core/interfaces/Document.inteface";
+import { stateList } from "../../../core/enums/state.enum";
+import { User } from "../../users/interfaces/user.interface";
 
 export enum Modality{
   TI = 'Trabajo de investigación',
@@ -14,12 +15,12 @@ export interface Proposal {
   modality: Modality;
   lineOfResearch?: string;
   authors: string[];
-  directorId: string;
-  codirector?: string;
-  advisor?: string;
+  director: User;
+  codirector?: User;
+  advisor?: User;
   state: stateList;
   createdAt: Date;
-  documents: ProposalDocument[];
+  documents: Document[];
   evaluations: Evaluation[];
   isActive?: boolean;
 }

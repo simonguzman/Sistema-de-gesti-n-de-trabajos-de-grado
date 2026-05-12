@@ -12,10 +12,11 @@ import { NotificationService } from '../../../../shared/components/notifications
 import { AuthService } from '../../../../core/services/auth/auth.service';
 
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
-import { stateList } from '../../../../shared/components/state/state.component';
+import { stateList } from '../../../../core/enums/state.enum';
 import { UserRoleType } from '../../../../core/models/user-role';
 
-import { ProposalDocument } from '../../interfaces/proposalDocument.inteface';
+import { Document } from '../../../../core/interfaces/Document.inteface';
+
 
 describe('LoadedProposalsPageComponent', () => {
   let component: LoadedProposalsPageComponent;
@@ -31,7 +32,7 @@ describe('LoadedProposalsPageComponent', () => {
   let proposalsSignal: any;
   let currentUserSignal: any;
 
-  const mockDocument: ProposalDocument = {
+  const mockDocument: Document = {
     id: 'doc-1',
     name: 'Documento Test',
     url: 'http://test.com/file.pdf',
@@ -198,7 +199,7 @@ describe('LoadedProposalsPageComponent', () => {
   });
 
   it('Debe mostrar notificación si el documento no tiene URL', () => {
-    const row: ProposalDocument = {
+    const row: Document = {
       ...mockDocument,
       url: ''
     };

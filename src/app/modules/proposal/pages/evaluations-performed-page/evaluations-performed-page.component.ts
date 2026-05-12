@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Evaluation } from '../../interfaces/evaluation.interface';
+import { Evaluation } from '../../../../core/interfaces/evaluation.interface';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { ProposalService } from '../../services/proposal.service';
 import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
@@ -38,7 +38,6 @@ export class EvaluationsPerformedPageComponent implements OnInit {
   private notificationService = inject(NotificationService);
 
   readonly columns = EVALUATIONS_COLUMNS;
-
   proposalId = signal<string | null>(null);
 
   modalState = signal<{ open: boolean; evaluation: Evaluation | null }>({
@@ -48,7 +47,7 @@ export class EvaluationsPerformedPageComponent implements OnInit {
   evaluations = computed<Evaluation[]>(() => {
     const id = this.proposalId();
     if (!id) return [];
-    const proposal = this.proposalService.proposals().find(p => p.id === id);
+    const proposal = this.proposalService.proposals().find(proposal => proposal.id === id);
     return proposal?.evaluations ?? [];
   });
 

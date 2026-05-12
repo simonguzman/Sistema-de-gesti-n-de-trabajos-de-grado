@@ -8,10 +8,11 @@ import { EvaluationsPerformedPageComponent } from './evaluations-performed-page.
 import { ProposalService } from '../../services/proposal.service';
 import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
-
+import { stateList } from '../../../../core/enums/state.enum';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
-import { stateList } from '../../../../shared/components/state/state.component';
-import { Evaluation } from '../../interfaces/evaluation.interface';
+
+import { Evaluation } from '../../../../core/interfaces/evaluation.interface';
+
 
 describe('EvaluationsPerformedPageComponent', () => {
   let component: EvaluationsPerformedPageComponent;

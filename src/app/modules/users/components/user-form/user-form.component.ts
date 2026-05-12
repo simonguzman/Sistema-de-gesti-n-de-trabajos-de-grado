@@ -1,6 +1,6 @@
 import { Component, effect, EventEmitter, inject, input, Output } from '@angular/core';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { IdentificationType, User } from '../../interfaces/user.interface';
+import { User } from '../../interfaces/user.interface';
 import { UserRole, UserRoleType } from '../../../../core/models/user-role';
 import { ButtonComponent } from "../../../../shared/components/button-component/button-component.component";
 import { RolesSelectionModalComponent } from '../../../../shared/components/modals/roles/roles-selection-modal/roles-selection-modal.component';

@@ -3,7 +3,7 @@ import { ProposalPageComponent } from './pages/proposal-page/proposal-page.compo
 import { ProposalCreatePageComponent } from './pages/proposal-create-page/proposal-create-page.component';
 import { ProposalEditPageComponent } from './pages/proposal-edit-page/proposal-edit-page.component';
 import { ProposalDetailsPageComponent } from './pages/proposal-details-page/proposal-details-page.component';
-import { DownloadableFormatsPageComponent } from './pages/downloadable-formats-page/downloadable-formats-page.component';
+import { DownloadableFormatsPageComponent } from '../../shared/pages/downloadable-formats-page/downloadable-formats-page.component';
 import { LoadedProposalsPageComponent } from './pages/loaded-proposals-page/loaded-proposals-page.component';
 import { EvaluationsPerformedPageComponent } from './pages/evaluations-performed-page/evaluations-performed-page.component';
 import { EvaluationProposalPageComponent } from './pages/evaluation-proposal-page/evaluation-proposal-page.component';

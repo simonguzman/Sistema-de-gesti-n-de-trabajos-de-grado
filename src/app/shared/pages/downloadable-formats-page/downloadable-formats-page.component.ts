@@ -1,10 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
-import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
-import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
-import { TabItem, TabsComponent } from '../../../../shared/components/tabs/tabs.component';
-import { Column, TableComponent } from '../../../../shared/components/table-component/table-component.component';
+import { FileDownloadService } from '../../../core/services/filedownload/file-download.service';
+import { NotificationService } from '../../components/notifications/services/notification.service';
+import { NotificationType } from '../../components/notifications/models/notification.model';
+import { TabItem, TabsComponent } from '../../components/tabs/tabs.component';
+import { Column, TableComponent } from '../../components/table-component/table-component.component';
 
 interface DownloadableFormat {
   id: string;

@@ -7,6 +7,8 @@ import { Proposal } from '../../interfaces/proposal.interface';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
 import { ProposalFormComponent } from "../../components/proposal-form/proposal-form.component";
+import { AuthService } from '../../../../core/services/auth/auth.service';
+import { UserRoleType } from '../../../../core/models/user-role';
 
 @Component({
   selector: 'app-proposal-edit-page',
@@ -21,6 +23,7 @@ export class ProposalEditPageComponent implements OnInit {
   private location            = inject(Location);
   private proposalService     = inject(ProposalService);     // ← minúscula
   private notificationService = inject(NotificationService);
+  private authService = inject(AuthService);
 
   proposalToEdit = signal<Proposal | null>(null);
 
@@ -39,6 +42,14 @@ export class ProposalEditPageComponent implements OnInit {
     this.proposalService.getProposalByIdMock(id).subscribe({
       next: (found) => {
         if (found) {
+          const currentUser = this.authService.currentUser();
+          const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
+          const isOwner = found.director?.id === currentUser?.id;
+          if (!isAdmin && !isOwner) {
+            this.handleUpdateError('No tienes permisos para editar esta propuesta.');
+            this.router.navigate(['/proposal']);
+            return;
+          }
           this.proposalToEdit.set({ ...found });
         } else {
           this.handleNotFound();
@@ -48,6 +59,12 @@ export class ProposalEditPageComponent implements OnInit {
   }
 
   handleUpdate(updatedData: Proposal): void {
+    const errorMessage = this.proposalService.validateProposalRules(updatedData);
+
+    if (errorMessage) {
+      this.showUpdateErrorNotification(errorMessage)
+      return;
+    }
     this.confirmState = { show: true, pendingData: updatedData };
   }
 
@@ -76,8 +93,8 @@ export class ProposalEditPageComponent implements OnInit {
     this.router.navigate(['/proposal']);
   }
 
-  private handleUpdateError(): void {
-    this.showUpdateErrorNotification();
+  private handleUpdateError(customMessage?: string): void {
+    this.showUpdateErrorNotification(customMessage);
     this.confirmState.show = false;
   }
 
@@ -102,10 +119,10 @@ export class ProposalEditPageComponent implements OnInit {
     });
   }
 
-  private showUpdateErrorNotification() {
+  private showUpdateErrorNotification(customMessage?: string) {
     this.notificationService.show({
       title: 'Error de actualización',
-      message: 'No se pudieron guardar los cambios. Por favor, intente de nuevo.',
+      message: customMessage || 'No se pudieron guardar los cambios. Por favor, intente de nuevo.',
       type: NotificationType.ERROR
     });
   }

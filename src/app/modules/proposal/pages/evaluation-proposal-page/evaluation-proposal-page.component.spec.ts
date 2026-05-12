@@ -15,10 +15,12 @@ import { FileDownloadService } from '../../../../core/services/filedownload/file
 import { UserService } from '../../../users/services/user.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 
+import { stateList } from '../../../../core/enums/state.enum';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
-import { stateList } from '../../../../shared/components/state/state.component';
+
 import { Modality } from '../../interfaces/proposal.interface';
 import { UserRoleType } from '../../../../core/models/user-role';
+
 
 describe('EvaluationProposalPageComponent', () => {
   let component: EvaluationProposalPageComponent;

@@ -8,8 +8,9 @@ import { UserService } from '../../../users/services/user.service';
 import { ProposalService } from '../../services/proposal.service';
 
 import { Modality, Proposal } from '../../interfaces/proposal.interface';
-import { stateList } from '../../../../shared/components/state/state.component';
+import { stateList } from '../../../../core/enums/state.enum';
 import { ProposalDetailsPageComponent } from './proposal-details-page.component';
+
 
 describe('ProposalDetailsPageComponent', () => {
   let component: ProposalDetailsPageComponent;

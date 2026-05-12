@@ -1,9 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { StateComponent, stateList } from '../../state/state.component';
+import { StateComponent } from '../../state/state.component';
 import { DialogModule } from 'primeng/dialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../../button-component/button-component.component';
+import { stateList } from '../../../../core/enums/state.enum';
 
 @Component({
   selector: 'app-register-information-modal',

@@ -1,15 +1,6 @@
 import { NgClass } from '@angular/common';
 import { Component, Input } from '@angular/core';
-
-export enum stateList{
-  APROBADO = 'Aprobado',
-  APROBADO_CON_OBSERVACIONES = 'Aprobado con observaciones',
-  NO_APROBADO = 'No aprobado',
-  APLAZADO = 'Aplazado',
-  EN_DESARROLLO = 'En desarrollo',
-  EVALUADO = 'Evaluado',
-  EN_REVISION = 'En revision'
-}
+import { stateList } from '../../../core/enums/state.enum';
 
 @Component({
   selector: 'app-state',

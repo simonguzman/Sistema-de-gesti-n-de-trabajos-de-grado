@@ -96,7 +96,7 @@ export class UserService {
     lastName: 'Mage',
     secondLastName: 'Imbachi',
     codeNumber: 5001,
-    roles: [UserRoleType.DOCENTE, UserRoleType.COMITE, UserRoleType.DIRECTOR], // Comité de programa
+    roles: [UserRoleType.DOCENTE, UserRoleType.COMITE], // Comité de programa
     email: 'pmage@unicauca.edu.co',
     password: 'password123',
     state: UserState.active
@@ -109,7 +109,7 @@ export class UserService {
     lastName: 'Toledo',
     secondLastName: 'Tovar',
     codeNumber: 5002,
-    roles: [UserRoleType.DOCENTE, UserRoleType.JEFE_DEP, UserRoleType.ASESOR], // Jefe de departamento
+    roles: [UserRoleType.DOCENTE, UserRoleType.ASESOR], // Jefe de departamento
     email: 'atoledo@unicauca.edu.co',
     password: 'password123',
     state: UserState.active
@@ -122,7 +122,7 @@ export class UserService {
     lastName: 'Eduardo',
     secondLastName: 'Ramírez',
     codeNumber: 5003,
-    roles: [UserRoleType.DOCENTE, UserRoleType.CODIRECTOR, UserRoleType.EVALUADOR],
+    roles: [UserRoleType.DOCENTE, UserRoleType.CODIRECTOR],
     email: 'ceramirez@unicauca.edu.co',
     password: 'password123',
     state: UserState.active
@@ -174,7 +174,7 @@ export class UserService {
     lastName: 'Pino',
     secondLastName: 'Correa',
     codeNumber: 5007,
-    roles: [UserRoleType.DOCENTE, UserRoleType.JURADO, UserRoleType.COMITE],
+    roles: [UserRoleType.DOCENTE, UserRoleType.JURADO],
     email: 'fpino@unicauca.edu.co',
     password: 'password123',
     state: UserState.active
@@ -303,15 +303,15 @@ export class UserService {
   // --- SELECTORES COMPUTADOS ---
 
   public students = computed(() =>
-    this._usersList().filter(u => u.roles.includes(UserRoleType.ESTUDIANTE))
+    this._usersList().filter(user => user.roles.includes(UserRoleType.ESTUDIANTE))
   );
 
   public teachers = computed(() =>
-    this._usersList().filter(u => u.roles.includes(UserRoleType.DOCENTE))
+    this._usersList().filter(user => user.roles.includes(UserRoleType.DOCENTE))
   );
 
   public advisors = computed(() =>
-    this._usersList().filter(u => u.roles.includes(UserRoleType.ASESOR))
+    this._usersList().filter(user => user.roles.includes(UserRoleType.ASESOR))
   );
 
   // Selector para obtener el nombre del director actual de forma reactiva
@@ -338,11 +338,11 @@ export class UserService {
       delay(800),
       tap(() => {
         this._usersList.update(users =>
-          users.map(u => u.id === id ? { ...u, ...changes } : u)
+          users.map(user => user.id === id ? { ...user, ...changes } : user)
         );
         // Si el usuario editado es el mismo de la sesión, actualizamos la sesión también
         if (this._currentUser()?.id === id) {
-          this._currentUser.update(curr => curr ? { ...curr, ...changes } : null);
+          this._currentUser.update(currentUser => currentUser ? { ...currentUser, ...changes } : null);
         }
       })
     );
@@ -350,7 +350,7 @@ export class UserService {
 
   updateUserPasswordMock(userId: string, newPassword: string): void {
     this._usersList.update(users =>
-      users.map(u => u.id === userId ? { ...u, password: newPassword } : u)
+      users.map(user => user.id === userId ? { ...user, password: newPassword } : user)
     );
   }
 
@@ -359,10 +359,10 @@ export class UserService {
       delay(800),
       tap(() => {
         this._usersList.update(users =>
-          users.map(u =>
-            u.id === id
-              ? { ...u, state: u.state === UserState.active ? UserState.inactive : UserState.active }
-              : u
+          users.map(user =>
+            user.id === id
+              ? { ...user, state: user.state === UserState.active ? UserState.inactive : UserState.active }
+              : user
           )
         );
       })
@@ -374,20 +374,20 @@ export class UserService {
       delay(500),
       tap(() => {
         this._usersList.update(users =>
-          users.map(u => u.id === userId ? { ...u, roles: [...newRoles] } : u)
+          users.map(user => user.id === userId ? { ...user, roles: [...newRoles] } : user)
         );
       })
     );
   }
 
   getUserByIdMock(id: string): Observable<User | undefined> {
-    const user = this._usersList().find(u => u.id === id);
+    const user = this._usersList().find(user => user.id === id);
     return of(user).pipe(delay(500));
   }
 
   // Un docente puede ser Director, Codirector o Asesor
   public potentialDirectors = computed(() =>
-    this._usersList().filter(u => u.roles.includes(UserRoleType.DOCENTE))
+    this._usersList().filter(user => user.roles.includes(UserRoleType.DOCENTE))
   );
 
   public currentUserFullName = computed(() => {
@@ -406,7 +406,7 @@ export class UserService {
   // Y actualizamos tu getUserFullName original para usar el estandarizador:
   getUserFullName(id: string | undefined): string {
     if(!id) return 'No asignado';
-    const user = this._usersList().find(u => u.id === id);
+    const user = this._usersList().find(user => user.id === id);
     return user ? this.formatFullName(user) : id;
   }
 
@@ -432,11 +432,11 @@ export class UserService {
 
   removeRoleFromUser(userId: string, role: UserRoleType): void {
     this._usersList.update(users =>
-      users.map(u => {
-        if (u.id === userId) {
-          return { ...u, roles: u.roles.filter(r => r !== role) };
+      users.map(user => {
+        if (user.id === userId) {
+          return { ...user, roles: user.roles.filter(userRole => userRole !== role) };
         }
-        return u;
+        return user;
       })
     );
   }

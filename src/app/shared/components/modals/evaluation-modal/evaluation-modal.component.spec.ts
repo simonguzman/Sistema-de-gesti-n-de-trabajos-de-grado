@@ -4,8 +4,9 @@ import { By } from '@angular/platform-browser';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 import { EvaluationModalComponent } from './evaluation-modal.component';
-import { StateComponent, stateList } from '../../state/state.component';
+import { StateComponent } from '../../state/state.component';
 import { ButtonComponent } from '../../button-component/button-component.component';
+import { stateList } from '../../../../core/enums/state.enum';
 
 describe('EvaluationModalComponent', () => {
   let component: EvaluationModalComponent;

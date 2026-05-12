@@ -7,6 +7,7 @@ import { NotificationService } from '../../../../shared/components/notifications
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { Proposal } from '../../interfaces/proposal.interface';
 import { ButtonComponent } from "../../../../shared/components/button-component/button-component.component";
+import { User } from '../../../users/interfaces/user.interface';
 
 @Component({
   selector: 'app-proposal-details-page',
@@ -47,8 +48,14 @@ export class ProposalDetailsPageComponent implements OnInit {
     });
   }
 
-  getMemberName(id: string | undefined): string {
-    return this.userService.getUserFullName(id);
+  getMemberName(user: User | undefined): string {
+    if (!user) return 'No asignado';
+    return [
+      user.firstName,
+      user.secondName,
+      user.lastName,
+      user.secondLastName
+    ].filter(name => !!name).join(' ');
   }
 
   getAuthors(ids: string[] | undefined): string {

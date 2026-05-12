@@ -7,8 +7,9 @@ import { NotificationType } from '../../../../shared/components/notifications/mo
 import { Column, TableButton, TableComponent } from '../../../../shared/components/table-component/table-component.component';
 import { DescriptionModalComponent } from '../../../../shared/components/modals/description-modal/description-modal.component';
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
-import { UserRoleType } from '../../../../core/models/user-role';
+
 import { Proposal } from '../../interfaces/proposal.interface';
+import { UserRoleType } from '../../../../core/models/user-role';
 
 const PROPOSAL_COLUMNS: Column[] = [
   { field: 'title', header: 'Titulo', type: 'text', width: '30%' },
@@ -51,7 +52,7 @@ export class ProposalPageComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private authService = inject(AuthService);
 
-  protected proposals     = this.proposalService.proposals;
+  protected proposals = this.proposalService.proposals;
   protected columns: Column[] = [];
   protected headerButtons: TableButton[] = [];
 
@@ -92,11 +93,25 @@ export class ProposalPageComponent implements OnInit {
   }
 
   handleTableAction(event: { action: string, row: Proposal }): void {
+    const currentUser = this.authService.currentUser();
+    const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
+
+    // Bloqueo de seguridad: Si no es Admin y no es el Director de ESTA propuesta
+    if ((event.action === 'editar' || event.action === 'eliminar') && !isAdmin) {
+      const isOwner = event.row.director?.id === currentUser?.id;
+
+      if (!isOwner) {
+        this.showRestrictedAccessNotification();
+        return; // Detenemos la ejecución aquí
+      }
+    }
+
+    // Si pasa el filtro, procedemos con la lógica normal
     switch (event.action) {
       case 'ver descripcion':
         this.descriptionModal = {
-          show:    true,
-          title:   'Descripción de la propuesta',
+          show: true,
+          title: 'Descripción de la propuesta',
           content: event.row.description
         };
         break;
@@ -137,6 +152,14 @@ export class ProposalPageComponent implements OnInit {
         this.showDeleteProposalErrorNotification();
         this.deleteState.loading = false;
       }
+    });
+  }
+
+  private showRestrictedAccessNotification(): void{
+    this.notificationService.show({
+      title: 'Acceso restringido',
+      message: 'No tienes permisos para modificar esta propuesta porque no eres el director asignado.',
+      type: NotificationType.ERROR
     });
   }
 

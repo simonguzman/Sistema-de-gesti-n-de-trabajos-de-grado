@@ -3,14 +3,15 @@ import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { Proposal } from '../../interfaces/proposal.interface';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
-import { stateList } from '../../../../shared/components/state/state.component';
+import { stateList } from '../../../../core/enums/state.enum';
 import { ButtonComponent } from "../../../../shared/components/button-component/button-component.component";
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
-import { ProposalDocument } from '../../interfaces/proposalDocument.inteface';
+import { Document } from '../../../../core/interfaces/Document.inteface';
 import { UserService } from '../../../users/services/user.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserRoleType } from '../../../../core/models/user-role';
 import { ProposalService } from '../../services/proposal.service';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-proposal-form',
@@ -23,18 +24,14 @@ export class ProposalFormComponent {
   private notificationService = inject(NotificationService);
   private proposalService = inject(ProposalService);
   private userService = inject(UserService);
+  private authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
 
-  // Señal para rastrear al estudiante 1 seleccionado y disparar la reactividad en el select 2
-  private selectedStudent1Id = signal<string>('');
-
-  protected students = this.userService.students;
-  protected teachers = this.userService.teachers;
-  protected advisors = this.userService.advisors;
-
+  // Input/Output
   proposal = input<Proposal | null>(null);
   @Output() onSubmit = new EventEmitter<Proposal>();
 
+  // Formulario
   proposalForm = this.fb.group({
     title: ['', Validators.required],
     description: ['', Validators.required],
@@ -42,60 +39,47 @@ export class ProposalFormComponent {
     student1: ['', Validators.required],
     student2: [''],
     codirector: [''],
-    advisor: ['']
+    advisor: [''],
+    document: [null as File | null]
   });
 
+  // Estado UI
+  private selectedStudent1Id = signal<string>('');
   attachedFile = { hasFile: false, name: null as string | null };
   uploadModalOpen = false;
 
-  // 1. Estudiantes que NO tienen propuestas (o son de la propuesta actual)
+  // Listas de datos
+  protected teachers = this.userService.teachers;
+  protected advisors = this.userService.advisors;
+
+  // Lógica de Estudiantes con Signals
   protected availableStudents = computed(() => {
     const allStudents = this.userService.students();
     const allProposals = this.proposalService.proposals();
-    const currentProposal = this.proposal();
+    const current = this.proposal();
 
     return allStudents.filter(student => {
-      const proposalWithStudent = allProposals.find(p => p.authors.includes(student.id));
-      if (!proposalWithStudent) return true;
-      return currentProposal ? proposalWithStudent.id === currentProposal.id : false;
+      const pWithStudent = allProposals.find(p => p.authors.includes(student.id));
+      return !pWithStudent || (current ? pWithStudent.id === current.id : false);
     });
   });
 
-  // 2. Estudiantes para el select 2 (filtramos al que ya se eligió en el select 1)
-  // Esta señal depende de 'availableStudents' y de 'selectedStudent1Id'
   protected filteredStudentsForS2 = computed(() => {
     const available = this.availableStudents();
-    const s1Id = this.selectedStudent1Id();
-    return available.filter(s => s.id !== s1Id);
+    return available.filter(s => s.id !== this.selectedStudent1Id());
   });
 
   constructor() {
+    // Sincronización reactiva cuando el input 'proposal' cambia
     effect(() => this.syncFormWithProposal());
   }
 
   ngOnInit(): void {
-    // Simulación de login para pruebas
-    const pablo = this.userService.users().find(u => u.lastName === 'Mage');
-    if (pablo) this.userService.login(pablo);
-
-    this.setupDynamicValidation();
+    this.setupDynamicLogic();
   }
 
-  get showAdvisorField(): boolean {
-    return this.proposalForm.get('modality')?.value === 'Practica profesional';
-  }
-
-  get isEditMode(): boolean {
-    return !!this.proposal();
-  }
-
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.proposalForm.get(fieldName);
-    return !!(field?.invalid && field?.touched);
-  }
-
-  private setupDynamicValidation(): void {
-    // Lógica para modalidad y asesor
+  private setupDynamicLogic(): void {
+    // 1. Validación dinámica del Asesor según modalidad
     this.proposalForm.get('modality')?.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(modality => {
@@ -109,122 +93,148 @@ export class ProposalFormComponent {
         advisorControl?.updateValueAndValidity();
       });
 
-    // Lógica para filtrar al estudiante 2 en tiempo real
+    // 2. Filtro dinámico de Estudiante 1 vs Estudiante 2
     this.proposalForm.get('student1')?.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(id => {
         const studentId = id ?? '';
-        this.selectedStudent1Id.set(studentId); // Actualizamos la Signal manual
-
-        // Si el estudiante 2 es el mismo que el 1, lo reseteamos
-        const s2Control = this.proposalForm.get('student2');
-        if (s2Control?.value === studentId) {
-          s2Control.setValue('');
+        this.selectedStudent1Id.set(studentId);
+        if (this.proposalForm.get('student2')?.value === studentId) {
+          this.proposalForm.get('student2')?.setValue('');
         }
       });
   }
 
-  submit(): void {
-    if (this.proposalForm.invalid) {
-      this.proposalForm.markAllAsTouched();
-      this.notificationService.show({
-        title: 'Formulario incorrecto',
-        message: 'Por favor, diligencie correctamente todos los campos obligatorios.',
-        type: NotificationType.ERROR
-      });
-      return;
-    }
+  // Getters de UI
+  get isEditMode(): boolean { return !!this.proposal(); }
 
-    if (!this.isEditMode && !this.attachedFile.hasFile) {
-      this.notificationService.show({
-        title: 'Archivo requerido',
-        message: 'Debe adjuntar el formato de propuesta antes de guardar.',
-        type: NotificationType.ERROR
-      });
-      return;
-    }
-
-    const raw = this.proposalForm.getRawValue();
-    if (raw.codirector) {
-      this.userService.addRoleToUser(raw.codirector, UserRoleType.CODIRECTOR);
-    }
-
-    const authorsArray = raw.student2
-      ? [raw.student1 as string, raw.student2]
-      : [raw.student1 as string];
-
-    const updatedProposal: Proposal = {
-      ...(this.proposal() ?? {}),
-      title: raw.title as string,
-      description: raw.description as string,
-      modality: raw.modality as string,
-      authors: authorsArray,
-      directorId: this.userService.currentUser()?.id || 'Usuario no encontrado',
-      codirector: raw.codirector || undefined,
-      advisor: raw.advisor || undefined,
-      state: this.proposal()?.state ?? stateList.EN_REVISION,
-      createdAt: this.proposal()?.createdAt ?? new Date(),
-      documents: this.buildInitialDocuments(),
-      evaluations: this.proposal()?.evaluations ?? []
-    } as Proposal;
-
-    this.onSubmit.emit(updatedProposal);
+  get showAdvisorField(): boolean {
+    return this.proposalForm.get('modality')?.value === 'Practica profesional';
   }
 
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.proposalForm.get(fieldName);
+    return !!(field?.invalid && field?.touched);
+  }
+
+  // Handlers de Archivos
   handleFileUploaded(event: { fileName: string; file: File }): void {
     this.attachedFile = { hasFile: true, name: event.fileName };
+    this.proposalForm.get('document')?.setValue(event.file);
+    this.proposalForm.get('document')?.markAsTouched();
     this.uploadModalOpen = false;
-    this.notificationService.show({
-      title: 'Archivo cargado',
-      message: 'El documento se ha adjuntado correctamente.',
-      type: NotificationType.CONFIRMATION
-    });
+    this.showNotification('Archivo cargado', 'Documento adjuntado correctamente.', NotificationType.CONFIRMATION);
   }
 
   removeFile(): void {
     this.attachedFile = { hasFile: false, name: null };
+    this.proposalForm.get('document')?.setValue(null);
+    this.proposalForm.get('document')?.markAsTouched();
+  }
+
+  // Acciones de Formulario
+  submit(): void {
+    this.proposalForm.markAllAsTouched();
+
+    if (this.proposalForm.invalid) {
+      this.showNotification('Formulario incorrecto', 'Diligencie todos los campos obligatorios.', NotificationType.ERROR);
+      return;
+    }
+
+    if (!this.isEditMode && !this.attachedFile.hasFile) {
+      this.showNotification('Archivo requerido', 'Debe adjuntar el formato de propuesta.', NotificationType.ERROR);
+      return;
+    }
+
+    const currentDirector = this.authService.currentUser();
+    if (!currentDirector) {
+      this.showNotification('Sesión no encontrada', 'No se pudo identificar al director.', NotificationType.ERROR);
+      return;
+    }
+
+    this.processSubmit(currentDirector);
+  }
+
+  private processSubmit(director: any): void {
+    const raw = this.proposalForm.getRawValue();
+
+    // Si hay codirector, le asignamos el rol (Lógica de negocio persistida)
+    if (raw.codirector) this.userService.addRoleToUser(raw.codirector, UserRoleType.CODIRECTOR);
+
+    const authorsArray = [raw.student1 as string];
+    if (raw.student2) authorsArray.push(raw.student2);
+
+    const result: Proposal = {
+      ...(this.proposal() ?? {}),
+      title: raw.title!,
+      description: raw.description!,
+      modality: raw.modality!,
+      authors: authorsArray,
+      director: director,
+      codirector: this.teachers().find(t => t.id === raw.codirector),
+      advisor: this.advisors().find(a => a.id === raw.advisor),
+      state: this.proposal()?.state ?? stateList.EN_REVISION,
+      createdAt: this.proposal()?.createdAt ?? new Date(),
+      documents: this.mapDocuments(),
+      evaluations: this.proposal()?.evaluations ?? []
+    } as Proposal;
+
+    this.onSubmit.emit(result);
   }
 
   private syncFormWithProposal(): void {
-    const p = this.proposal();
-    if (p) {
-      const s1 = p.authors[0] ?? '';
-      this.selectedStudent1Id.set(s1); // Sincronizamos la señal al cargar edición
-
-      this.proposalForm.patchValue({
-        title: p.title,
-        description: p.description,
-        modality: p.modality,
-        codirector: p.codirector ?? '',
-        student1: s1,
-        student2: p.authors[1] ?? '',
-        advisor: (p as any).advisor ?? ''
-      });
-
-      this.attachedFile = {
-        hasFile: p.documents.length > 0,
-        name: p.documents[0]?.name ?? null
-      };
+    const proposal = this.proposal();
+    if (proposal) {
+      this.initEditForm(proposal);
     } else {
-      this.proposalForm.reset({ modality: '', student1: '', student2: '', codirector: '', advisor: '' });
-      this.selectedStudent1Id.set('');
-      this.attachedFile = { hasFile: false, name: null };
+      this.initCreateForm();
     }
+    this.proposalForm.get('document')?.updateValueAndValidity();
   }
 
-  private buildInitialDocuments(): ProposalDocument[] {
+  private initEditForm(proposal: Proposal): void {
+    this.proposalForm.get('document')?.clearValidators();
+    const s1 = proposal.authors[0] ?? '';
+    this.selectedStudent1Id.set(s1);
+
+    this.proposalForm.patchValue({
+      title: proposal.title,
+      description: proposal.description,
+      modality: proposal.modality,
+      codirector: proposal.codirector?.id ?? '',
+      student1: s1,
+      student2: proposal.authors[1] ?? '',
+      advisor: proposal.advisor?.id ?? ''
+    });
+
+    this.attachedFile = {
+      hasFile: proposal.documents.length > 0,
+      name: proposal.documents[0]?.name ?? null
+    };
+  }
+
+  private initCreateForm(): void {
+    this.proposalForm.get('document')?.setValidators([Validators.required]);
+    this.proposalForm.reset({ modality: '', student1: '', student2: '', codirector: '', advisor: '' });
+    this.selectedStudent1Id.set('');
+    this.attachedFile = { hasFile: false, name: null };
+  }
+
+  private mapDocuments(): Document[] {
     if (this.isEditMode) return this.proposal()?.documents ?? [];
-    if (!this.attachedFile.hasFile || !this.attachedFile.name) return [];
+    if (!this.attachedFile.hasFile) return [];
 
     return [{
       id: crypto.randomUUID(),
-      name: this.attachedFile.name,
+      name: this.attachedFile.name!,
       url: '',
-      uploadDate: new Date().toLocaleDateString('es-ES', {
-        day: '2-digit', month: '2-digit', year: 'numeric'
-      }).replace(/\//g, ' - '),
+      uploadDate: new Date().toLocaleDateString('es-ES').replace(/\//g, ' - '),
       type: 'Propuesta',
       status: stateList.EN_REVISION
     }];
+  }
+
+  private showNotification(title: string, message: string, type: NotificationType): void {
+    this.notificationService.show({ title, message, type });
   }
 }

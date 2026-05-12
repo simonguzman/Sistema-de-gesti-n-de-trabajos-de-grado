@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { StateComponent, stateList } from './state.component';
+import { StateComponent } from './state.component';
+import { stateList } from '../../../core/enums/state.enum';
 
 describe('StateComponent', () => {
   let component: StateComponent;

@@ -1,4 +1,4 @@
-import { stateList } from "../../../shared/components/state/state.component";
+import { stateList } from "../enums/state.enum";
 
 export interface Evaluation {
   id: string;

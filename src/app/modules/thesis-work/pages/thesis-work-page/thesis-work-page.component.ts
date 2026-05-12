@@ -1,5 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { stateList } from '../../../../shared/components/state/state.component';
 import { Column, TableComponent } from '../../../../shared/components/table-component/table-component.component';
 import { EvaluationModalComponent } from '../../../../shared/components/modals/evaluation-modal/evaluation-modal.component';
 import { ButtonComponent } from '../../../../shared/components/button-component/button-component.component';
@@ -7,6 +6,7 @@ import { RegisterInformationModalComponent } from '../../../../shared/components
 import { ConfirmationActionModalComponent } from '../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component';
 import { NotificationContainerComponent } from '../../../../shared/components/notifications/components/notification-container/notification-container.component';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
+import { stateList } from '../../../../core/enums/state.enum';
 
 @Component({
   selector: 'app-thesis-work-page',

@@ -1,4 +1,4 @@
-import { stateList } from './../../../../shared/components/state/state.component';
+import { stateList } from '../../../../core/enums/state.enum';
 import { Component, computed, inject } from '@angular/core';
 import { TableComponent, Column, TableButton } from "../../../../shared/components/table-component/table-component.component";
 import { ConfirmationActionModalComponent } from '../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component';
@@ -9,6 +9,7 @@ import { UserService } from '../../services/user.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { User, UserState } from '../../interfaces/user.interface';
+
 
 const USER_COLUMNS: Column[] = [
   { field: 'identificacion', header: 'Identificación', type: 'text', width: '15%' },

@@ -1,11 +1,24 @@
 <app-table-component
-  [value]="testValue"
-  [columns]="testColumns"
+  [value]="tableData()"
+  [columns]="columns"
+  [headerButtons]="headerButtons"
   [paginator]="true"
-  emptyMessage="No han sido registrados anteproyectos en el sistema"
+  (actionClick)="handleTableAction($event)"
+  (headerButtonClick)="handleHeaderButton($event)"
+  emptyMessage="No se han encontrado anteproyectos registrados para su perfil."
 ></app-table-component>
-<!--  <app-button-component label="Guardar" variant="primary"></app-button-component>
-<app-state label="No aprobado" [state]="stateList.NO_APROBADO"></app-state>
-<div class="bg-primary text-white p-4">
-  Prueba de color primario
-</div> -->
+
+<app-description-modal
+  [isOpen]="descriptionModal().show"
+  [titleDescription]="descriptionModal().title"
+  [description]="descriptionModal().content"
+  (onClose)="closeDescriptionModal()"
+></app-description-modal>
+
+<app-confirmation-action-modal
+  [isOpen]="deleteState().show"
+  title="Eliminar Anteproyecto"
+  [description]="'¿Está seguro de eliminar el anteproyecto: ' + deleteState().title + '?'"
+  (onClose)="cancelDelete()"
+  (onConfirm)="confirmDelete()"
+></app-confirmation-action-modal>

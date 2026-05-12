@@ -1,8 +1,7 @@
-import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { UserService } from './user.service';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting, HttpClientTestingModule } from '@angular/common/http/testing';
-import { IdentificationType, User, UserState } from '../interfaces/user.interface';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { UserState } from '../interfaces/user.interface';
 import { UserRoleType } from '../../../core/models/user-role';
 
 describe('UserService', () => {

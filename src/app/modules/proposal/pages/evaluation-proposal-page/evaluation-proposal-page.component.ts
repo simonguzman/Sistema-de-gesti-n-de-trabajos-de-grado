@@ -5,12 +5,12 @@ import { NotificationService } from '../../../../shared/components/notifications
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Proposal } from '../../interfaces/proposal.interface';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
-import { stateList } from '../../../../shared/components/state/state.component';
+import { stateList } from '../../../../core/enums/state.enum';
 import { Location, CommonModule } from '@angular/common';
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
 import { ButtonComponent } from "../../../../shared/components/button-component/button-component.component";
-import { Evaluation } from '../../interfaces/evaluation.interface';
+import { Evaluation } from '../../../../core/interfaces/evaluation.interface';
 import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
 import { UserService } from '../../../users/services/user.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
@@ -38,15 +38,12 @@ export class EvaluationProposalPageComponent implements OnInit  {
   private fb                  = inject(FormBuilder);
 
   proposal = signal<Proposal | null>(null);
-
-  // Estado del archivo firmado agrupado
   signedFile = signal<{ name: string } | null>(null);
 
-  // Estado de modales agrupado
-  modalState = {
+  modalState = signal({
     upload:  false,
     confirm: false
-  };
+  });
 
   evaluationForm = this.fb.group({
     result:   ['', Validators.required],
@@ -62,7 +59,9 @@ export class EvaluationProposalPageComponent implements OnInit  {
       { label: 'Fecha de carga', value: this.documentUploadDate },
       { label: 'Modalidad', value: proposal.modality },
       { label: 'Estudiante(s)', value: this.userService.getAuthorsNames(proposal.authors) },
-      { label: 'Director', value: this.userService.getUserFullName(proposal.directorId) },
+      { label: 'Director', value: this.userService.getUserFullName(proposal.director.id) },
+      ...(proposal.codirector ? [{ label: 'Codirector', value: this.userService.getUserFullName(proposal.codirector.id) }] : []),
+      ...(proposal.advisor ? [{ label: 'Asesor', value: this.userService.getUserFullName(proposal.advisor.id) }] : []),
       { label: 'Estado Actual', value: proposal.state }
     ];
   });
@@ -91,11 +90,11 @@ export class EvaluationProposalPageComponent implements OnInit  {
   }
 
   get documentUploadDate(): string {
-    const date = this.originalDocument?.uploadDate;
-    if (!date) return 'Fecha no disponible';
-    return date instanceof Date
-      ? date.toLocaleDateString('es-ES')
-      : date;
+    const document = this.originalDocument?.uploadDate;
+    if (!document) return 'Fecha no disponible';
+    return document instanceof Date
+      ? document.toLocaleDateString('es-ES')
+      : document;
   }
 
   ngOnInit(): void {
@@ -105,14 +104,22 @@ export class EvaluationProposalPageComponent implements OnInit  {
     if (!id) { this.location.back(); return; }
 
     this.proposalService.getProposalByIdMock(id).subscribe({
-      next:  (data) => data ? this.proposal.set(data) : this.location.back(),
-      error: ()     => this.location.back()
+      next:  (data) => data ? this.proposal.set(data) : this.goBack(),
+      error: ()     => this.goBack()
     });
+  }
+
+  setUploadModal(isOpen: boolean): void {
+    this.modalState.update(state => ({ ...state, upload: isOpen }));
+  }
+
+  setConfirmModal(isOpen: boolean): void {
+    this.modalState.update(state => ({ ...state, confirm: isOpen }));
   }
 
   handleFileUploaded(event: { fileName: string; file: File }): void {
     this.signedFile.set({ name: event.fileName });
-    this.modalState.upload = false;
+    this.setUploadModal(false);
     this.showFileUploadSuccessNotification();
   }
 
@@ -141,49 +148,40 @@ export class EvaluationProposalPageComponent implements OnInit  {
       this.showMissingFileNotification();
       return; // ← faltaba este return
     }
-    this.modalState.confirm = true;
+    this.setConfirmModal(true);
   }
 
   confirmEvaluation(): void {
-    this.modalState.confirm = false;
     const currentProposal = this.proposal();
     const currentUser = this.authService.currentUser();
-    if (!currentProposal?.id || !currentUser) return;
-    // --- NUEVA VALIDACIÓN DE NEGOCIO ---
-    // Antes de guardar, verificamos que el estado de la propuesta no rompa reglas
-    // (útil si la evaluación implica cambios en la estructura de la propuesta)
-    const validationError = this.proposalService.validateProposalRules(currentProposal);
-    if (validationError) {
-      this.showBusinessRuleNotification(validationError);
-      return;
-    }
+    const formValues = this.evaluationForm.value;
+    if (!currentProposal?.id || !currentUser || !formValues.result) return;
+    this.setConfirmModal(false);
 
-    const { result, comments } = this.evaluationForm.value;
-    const newState = RESULT_TO_STATE[result!] ?? currentProposal.state;
-
+    const newState = RESULT_TO_STATE[formValues.result] ?? currentProposal.state;
 
     const newEvaluation: Evaluation = {
       id: crypto.randomUUID(),
       proposalId: currentProposal.id,
-      evaluatorName: this.userService.getUserFullName(currentUser?.id), // Aquí podrías usar authService.currentUser()
-      evaluatorRole: currentUser.roles[0],
+      evaluatorName: this.userService.getUserFullName(currentUser.id),
+      evaluatorRole: currentUser.roles[0] ?? 'Evaluador',
       signedDocuments: this.signedFile() ? [this.signedFile()!.name] : [],
       veredict: newState,
-      observations: comments!,
+      observations: formValues.comments ?? '',
       date: new Date()
     };
 
     this.proposalService.addEvaluationMock(currentProposal.id, newEvaluation).subscribe({
       next: () => {
         this.showEvaluationSuccessNotification();
-        this.router.navigate(['../'], { relativeTo: this.route });
+        this.router.navigate(['../../'], { relativeTo: this.route });
       },
       error: () => this.showUpdateErrorNotification()
     });
   }
 
   cancelEvaluation(): void {
-    this.modalState.confirm = false;
+    this.setConfirmModal(false);
   }
 
   goBack(): void {

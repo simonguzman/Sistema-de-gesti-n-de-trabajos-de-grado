@@ -152,15 +152,19 @@
 
     <section class="mt-2">
       <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2">Formato de propuesta (Formato A)</h3>
-
       <div class="flex flex-wrap justify-between items-center mt-4 gap-4">
+        @if (isFieldInvalid('document')) {
+          <span class="text-textbox-alert">
+            Debe adjuntar el documento de la propuesta
+          </span>
+        }
         <div class="flex items-center">
           @if (attachedFile.hasFile) {
-            <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-white shadow-sm min-w-[300px]">
+            <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-white shadow-sm min-w-75">
               <div class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-[#DB141C] text-3xl">picture_as_pdf</span>
                 <div class="flex flex-col">
-                  <span class="text-sm font-semibold text-gray-700 max-w-[200px] truncate" [title]="attachedFile.name">{{ attachedFile.name }}</span>
+                  <span class="text-sm font-semibold text-gray-700 max-w-50 truncate" [title]="attachedFile.name">{{ attachedFile.name }}</span>
                   <span class="text-xs text-gray-500">Cargado por el estudiante</span>
                 </div>
               </div>

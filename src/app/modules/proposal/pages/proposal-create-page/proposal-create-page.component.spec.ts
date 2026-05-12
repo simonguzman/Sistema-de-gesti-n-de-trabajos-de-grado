@@ -5,7 +5,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProposalCreatePageComponent } from './proposal-create-page.component';
 
 import { Modality, Proposal } from '../../interfaces/proposal.interface';
-import { stateList } from '../../../../shared/components/state/state.component';
+import { stateList } from '../../../../core/enums/state.enum';
 
 import { of, throwError } from 'rxjs';
 
@@ -17,6 +17,7 @@ import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+
 
 @Component({
   selector: 'app-proposal-form',

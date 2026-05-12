@@ -5,10 +5,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { DownloadableFormatsPageComponent } from './downloadable-formats-page.component';
 
-import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
-import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
+import { FileDownloadService } from '../../../core/services/filedownload/file-download.service';
+import { NotificationService } from '../../components/notifications/services/notification.service';
 
-import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { NotificationType } from '../../components/notifications/models/notification.model';
 
 describe('DownloadableFormatsPageComponent', () => {
   let component: DownloadableFormatsPageComponent;

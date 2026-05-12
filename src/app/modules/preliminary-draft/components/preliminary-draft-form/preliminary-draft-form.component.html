@@ -1,0 +1,287 @@
+<div class="p-6 bg-white rounded-lg">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-8">
+
+    @if (!isEditMode) {
+      <section class="animate-fade-in">
+        <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2">
+          Selección de Propuesta
+        </h3>
+
+        <div class="flex flex-col gap-1">
+          <label for="proposalId" class="font-display font-semibold text-size-section title-textbox">
+            Propuestas aprobadas <span class="text-[#ED7D31]">*</span>
+          </label>
+
+          <div class="relative flex items-center">
+            <select
+              id="proposalId"
+              formControlName="proposalId"
+              class="font-sans font-normal text-size-body custom-select p-2 border rounded-md w-full bg-gray-50 pr-10 focus:ring-1 focus:ring-primary"
+              [class.border-orange-500]="isFieldInvalid('proposalId')"
+              [class.text-gray-400]="!form.get('proposalId')?.value"
+              [class.text-textbox]="form.get('proposalId')?.value"
+              [class.input-success]="form.get('proposalId')?.valid && form.get('proposalId')?.touched"
+            >
+              <option value="" disabled selected>
+                Seleccione una de las propuestas aprobadas
+              </option>
+
+              @for (prop of availableProposals(); track prop.id) {
+                <option [value]="prop.id">
+                  {{ prop.title }}
+                </option>
+              }
+            </select>
+
+            <span class="material-symbols-outlined select-arrow">
+              arrow_forward_ios
+            </span>
+
+            @if (form.get('proposalId')?.valid && form.get('proposalId')?.touched) {
+              <span class="material-symbols-outlined success-icon mr-8">
+                check_circle
+              </span>
+            }
+          </div>
+
+          @if (isFieldInvalid('proposalId')) {
+            <span class="text-textbox-alert">
+              Debe seleccionar una propuesta
+            </span>
+          }
+        </div>
+      </section>
+    }
+
+    @if (selectedProposal(); as proposal) {
+      <section class="animate-fade-in bg-gray-50/50 p-6 rounded-xl border border-gray-100">
+
+        <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2 border-gray-200">
+          {{ isEditMode ? 'Editar Información de la Propuesta' : 'Información de la propuesta' }}
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+
+          <!-- TITULO -->
+          <div class="flex flex-col gap-1 md:col-span-2">
+            <label class="font-display font-semibold text-size-section title-textbox">
+              Título <span class="text-[#ED7D31]">*</span>
+            </label>
+
+            @if (isEditMode) {
+
+              <div class="relative flex items-center">
+                <input
+                  type="text"
+                  formControlName="title"
+                  class="w-full p-2 border rounded-md font-sans text-size-body text-textbox focus:ring-1 focus:ring-primary outline-none bg-white"
+                  [class.border-orange-500]="isFieldInvalid('title')"
+                  [class.input-success]="form.get('title')?.valid && form.get('title')?.touched"
+                  placeholder="Ingrese el título del anteproyecto"
+                >
+
+                @if (form.get('title')?.valid && form.get('title')?.touched) {
+                  <span class="material-symbols-outlined success-icon">
+                    check_circle
+                  </span>
+                }
+              </div>
+
+              @if (isFieldInvalid('title')) {
+                <span class="text-textbox-alert">
+                  El título no puede estar vacío
+                </span>
+              }
+
+            } @else {
+
+              <div class="information-block w-full p-2 rounded-md font-normal font-sans text-size-section text-[#777680] min-h-10 flex items-center">
+                {{ proposal.title }}
+              </div>
+
+            }
+          </div>
+
+          <!-- DESCRIPCION -->
+          <div class="flex flex-col gap-1 md:col-span-2">
+
+            <label class="font-display font-semibold text-size-section title-textbox">
+              Descripción de la propuesta <span class="text-[#ED7D31]">*</span>
+            </label>
+
+            @if (isEditMode) {
+
+              <div class="relative flex items-center">
+                <textarea
+                  formControlName="description"
+                  rows="4"
+                  class="w-full p-2 border rounded-md font-sans text-size-body text-textbox focus:ring-1 focus:ring-primary outline-none bg-white"
+                  [class.border-orange-500]="isFieldInvalid('description')"
+                  [class.input-success]="form.get('description')?.valid && form.get('description')?.touched"
+                  placeholder="Ingrese la descripción o resumen"
+                ></textarea>
+
+                @if (form.get('description')?.valid && form.get('description')?.touched) {
+                  <span class="material-symbols-outlined success-icon">
+                    check_circle
+                  </span>
+                }
+              </div>
+
+              @if (isFieldInvalid('description')) {
+                <span class="text-textbox-alert">
+                  La descripción es obligatoria
+                </span>
+              }
+
+            } @else {
+
+              <div class="information-block w-full p-2 rounded-md font-normal font-sans text-size-section text-[#777680] min-h-10 flex items-center">
+                {{ proposal.description || 'Sin descripción disponible' }}
+              </div>
+
+            }
+          </div>
+
+          <!-- TEMPLATE SOLO LECTURA -->
+          <ng-template #readOnlyField let-label="label" let-value="value" let-fullWidth="fullWidth">
+            <div class="flex flex-col gap-1" [class.md:col-span-2]="fullWidth">
+
+              <label class="font-display font-semibold text-size-section title-textbox">
+                {{ label }}
+              </label>
+
+              <div class="information-block w-full p-2 rounded-md font-normal font-sans text-size-section text-[#777680] min-h-10 flex items-center">
+                {{ value }}
+              </div>
+            </div>
+          </ng-template>
+
+          <ng-container
+            *ngTemplateOutlet="readOnlyField; context: { label: 'Modalidad', value: proposal.modality }">
+          </ng-container>
+
+          <ng-container
+            *ngTemplateOutlet="readOnlyField; context: { label: 'Estado de la propuesta', value: proposal.state }">
+          </ng-container>
+
+          <ng-container
+            *ngTemplateOutlet="readOnlyField; context: { label: 'Estudiante(s)', value: getAuthorsNames(proposal.authors), fullWidth: true }">
+          </ng-container>
+
+          <ng-container
+            *ngTemplateOutlet="readOnlyField; context: { label: 'Director', value: getMemberName(proposal.director) }">
+          </ng-container>
+
+          @if (proposal.codirector) {
+            <ng-container
+              *ngTemplateOutlet="readOnlyField; context: { label: 'Codirector', value: getMemberName(proposal.codirector) }">
+            </ng-container>
+          }
+
+          @if (proposal.advisor) {
+            <ng-container
+              *ngTemplateOutlet="readOnlyField; context: { label: 'Asesor', value: getMemberName(proposal.advisor) }">
+            </ng-container>
+          }
+
+        </div>
+      </section>
+    }
+
+    <!-- DOCUMENTO -->
+    <section class="mt-2">
+
+      <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2">
+        Documento de Anteproyecto
+      </h3>
+
+      <div class="flex flex-col gap-2">
+
+        @if (isFieldInvalid('document')) {
+          <span class="text-textbox-alert">
+            Debe adjuntar el documento del anteproyecto
+          </span>
+        }
+
+        <div class="flex flex-wrap justify-between items-center mt-4 gap-4">
+
+          <div class="flex items-center">
+
+            @if (attachedFile.hasFile) {
+
+              <div
+                class="flex items-center justify-between p-3 border rounded-lg bg-white shadow-sm min-w-75"
+                [class.border-red-300]="isFieldInvalid('document')"
+                [class.border-gray-200]="!isFieldInvalid('document')"
+              >
+
+                <div class="flex items-center gap-3">
+
+                  <span class="material-symbols-outlined text-[#DB141C] text-3xl">
+                    picture_as_pdf
+                  </span>
+
+                  <div class="flex flex-col">
+
+                    <span
+                      class="text-sm font-semibold text-gray-700 max-w-50 truncate"
+                      [title]="attachedFile.name"
+                    >
+                      {{ attachedFile.name }}
+                    </span>
+
+                    <span class="text-xs text-[#777680] font-sans">
+                      Cargado por el director
+                    </span>
+
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  (click)="removeFile()"
+                  class="text-gray-400 hover:text-red-500 transition-colors ml-4 flex items-center justify-center"
+                >
+                  <span class="material-symbols-outlined text-xl">
+                    close
+                  </span>
+                </button>
+
+              </div>
+            }
+          </div>
+
+          <div class="flex items-center gap-2">
+
+            @if (!attachedFile.hasFile) {
+
+              <app-button-component
+                label="Cargar anteproyecto"
+                variant="secondary"
+                type="button"
+                (click)="uploadModalOpen = true"
+              ></app-button-component>
+
+            }
+
+            <app-button-component
+              [label]="isEditMode ? 'Actualizar anteproyecto' : 'Registrar anteproyecto'"
+              variant="primary"
+              type="submit"
+            ></app-button-component>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </form>
+</div>
+
+<app-file-upload-modal
+  [isOpen]="uploadModalOpen"
+  [description]="'Subir anteproyecto de trabajo de grado'"
+  [uploadedBy]="'Cargado por el director'"
+  (onFileUploaded)="handleFileUploaded($event)"
+  (onClose)="uploadModalOpen = false"
+></app-file-upload-modal>

@@ -7,10 +7,10 @@ import { NotificationService } from '../../../../shared/components/notifications
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { UserRoleType } from '../../../../core/models/user-role';
-import { ProposalDocument } from '../../interfaces/proposalDocument.inteface';
+import { Document } from '../../../../core/interfaces/Document.inteface';
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
-import { stateList } from '../../../../shared/components/state/state.component';
+import { stateList } from '../../../../core/enums/state.enum';
 
 const DOCUMENTS_COLUMNS: Column[] = [
   { field: 'name',       header: 'Nombre de archivo', type: 'text',    width: '35%' },
@@ -34,10 +34,8 @@ export class LoadedProposalsPageComponent implements OnInit {
   private authService = inject(AuthService);
 
   readonly columns = DOCUMENTS_COLUMNS;
-
   proposalId = signal<string | null>(null);
 
-  // Estado del flujo de carga agrupado
   uploadState = signal<{ fileName: string; file: File } | null>(null);
   fileModalOpen    = signal(false);
   confirmModalOpen = signal(false);
@@ -48,9 +46,7 @@ export class LoadedProposalsPageComponent implements OnInit {
   })
 
   documentsTableData = computed(() => {
-    const id = this.proposalId();
-    if (!id) return [];
-    const proposal = this.proposalService.proposals().find(p => p.id === id);
+    const proposal = this.currentProposal();
     if (!proposal) return [];
     return proposal.documents.map(doc => ({
       ...doc,
@@ -63,13 +59,12 @@ export class LoadedProposalsPageComponent implements OnInit {
     const user = this.authService.currentUser();
     if (!proposal || !user) return [];
 
-    // Validar si es Autor, Director o Admin
-    const isDirector = proposal.directorId === user.id;
+    const isDirector = proposal.director.id === user.id;
     const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
 
     if ( !isDirector && !isAdmin) return [];
-
-    const latest = this.documentsTableData()[0];
+    const documents = this.documentsTableData();
+    const latest = documents[documents.length - 1];
     const isApproved = latest?.status === stateList.APROBADO ||
                       latest?.status === stateList.APROBADO_CON_OBSERVACIONES;
 
@@ -89,7 +84,7 @@ export class LoadedProposalsPageComponent implements OnInit {
     const proposal = this.currentProposal();
     const user = this.authService.currentUser();
 
-    const isDirector = proposal?.directorId === user?.id;
+    const isDirector = proposal?.director.id === user?.id;
     const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
 
     if ( isDirector || isAdmin) {
@@ -99,7 +94,7 @@ export class LoadedProposalsPageComponent implements OnInit {
     }
   }
 
-  handleTableAction(event: { action: string; row: ProposalDocument }): void {
+  handleTableAction(event: { action: string; row: Document }): void {
     switch (event.action) {
       case 'download':
         this.handleDownload(event.row);
@@ -117,12 +112,12 @@ export class LoadedProposalsPageComponent implements OnInit {
   }
 
   confirmUpload(): void {
-    const fileData  = this.uploadState();
-    const id        = this.proposalId();
-    if (!fileData || !id) return;
+    const fileData = this.uploadState();
+    const proposal = this.currentProposal();
+    if (!fileData || !proposal?.id) return;
     this.showProcessingUploadNotification();
 
-    const newDoc: ProposalDocument = {
+    const newDoc: Document = {
       id:         crypto.randomUUID(),
       name:       fileData.fileName.replace('.pdf', ''),
       url:        '',
@@ -131,7 +126,7 @@ export class LoadedProposalsPageComponent implements OnInit {
       status:     stateList.EN_REVISION
     };
 
-    this.proposalService.uploadCorrectionMock(id, newDoc).subscribe({
+    this.proposalService.uploadCorrectionMock(proposal.id, newDoc).subscribe({
       next: () => this.handleUploadSuccess(),
       error: (err) => {
         this.showUploadErrorNotification();
@@ -149,12 +144,13 @@ export class LoadedProposalsPageComponent implements OnInit {
     this.router.navigate(['../'], { relativeTo: this.route });
   }
 
-  private buildDocumentActions(doc: ProposalDocument) {
+  private buildDocumentActions(doc: Document) {
     const actions = [
       { action: 'download', label: 'Descargar propuesta', variant: 'primary', disabled: false }
     ];
     // Solo agregar la acción de evaluar si tiene el rol permitido
-    if (this.authService.hasAnyRole([UserRoleType.COMITE, UserRoleType.ADMINISTRADOR])) {
+    const canEvaluate = this.authService.hasAnyRole([UserRoleType.COMITE, UserRoleType.ADMINISTRADOR]);
+    if (canEvaluate) {
       actions.push({
         action: 'evaluate',
         label: 'Evaluar propuesta',
@@ -165,7 +161,7 @@ export class LoadedProposalsPageComponent implements OnInit {
     return actions;
   }
 
-  private handleDownload(doc: ProposalDocument): void {
+  private handleDownload(doc: Document): void {
     if (!doc.url?.trim()) {
       this.showDownloadErrorNotification();
       return;

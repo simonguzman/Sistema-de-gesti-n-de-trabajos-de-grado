@@ -6,7 +6,8 @@ import { DebugElement } from '@angular/core';
 import { RegisterInformationModalComponent } from './register-information-modal.component';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { ButtonComponent } from '../../button-component/button-component.component';
-import { StateComponent, stateList } from '../../state/state.component';
+import { StateComponent } from '../../state/state.component';
+import { stateList } from '../../../../core/enums/state.enum';
 
 describe('RegisterInformationModalComponent', () => {
   let component: RegisterInformationModalComponent;

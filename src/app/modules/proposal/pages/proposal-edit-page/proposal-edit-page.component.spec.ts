@@ -3,7 +3,7 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { Location } from '@angular/common';
 import { ProposalEditPageComponent } from './proposal-edit-page.component';
 import { Modality, Proposal } from '../../interfaces/proposal.interface';
-import { stateList } from '../../../../shared/components/state/state.component';
+import { stateList } from '../../../../core/enums/state.enum';
 import { ProposalService } from '../../services/proposal.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +12,7 @@ import { NotificationType } from '../../../../shared/components/notifications/mo
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { UserService } from '../../../users/services/user.service';
+
 
 describe('ProposalEditPageComponent', () => {
   let component: ProposalEditPageComponent;

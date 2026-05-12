@@ -16,7 +16,7 @@
     </div>
   }
 
-  @if (proposal(); as p) {
+  @if (proposal(); as proposal) {
 
     <!-- SECCIÓN 1: Información de solo lectura -->
     <section class="mb-10">
@@ -27,10 +27,10 @@
     <div class="flex flex-col gap-4">
 
       @for (field of [
-        { label: 'Título',                         value: p.title                    },
+        { label: 'Título',                         value: proposal.title                    },
         { label: 'Fecha de carga',                 value: documentUploadDate         },
-        { label: 'Modalidad del trabajo de grado', value: p.modality                 },
-        { label: 'Estudiante',                     value: getStudentNames(p.authors) }
+        { label: 'Modalidad del trabajo de grado', value: proposal.modality                 },
+        { label: 'Estudiante',                     value: getStudentNames(proposal.authors) }
       ]; track field.label) {
         <div class="flex flex-col gap-1">
           <label class="font-display font-semibold text-primary text-size-section">{{ field.label }}</label>
@@ -41,29 +41,29 @@
 
       <div class="flex flex-col gap-1">
         <label class="font-display font-semibold text-primary text-size-section">Director</label>
-        <input type="text" [value]="getDirectorName(p.directorId)" disabled
+        <input type="text" [value]="getDirectorName(proposal.director.id)" disabled
               class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
       </div>
 
-      @if (p.codirector) {
+      @if (proposal.codirector) {
         <div class="flex flex-col gap-1">
           <label class="font-display font-semibold text-primary text-size-section">Codirector</label>
-          <input type="text" [value]="getCodirectorName(p.codirector)" disabled
+          <input type="text" [value]="getCodirectorName(proposal.codirector.id)" disabled
                 class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
         </div>
       }
 
-      @if (p.advisor) {
+      @if (proposal.advisor) {
         <div class="flex flex-col gap-1">
           <label class="font-display font-semibold text-primary text-size-section">Asesor</label>
-          <input type="text" [value]="getAdvisorName(p.advisor)" disabled
+          <input type="text" [value]="getAdvisorName(proposal.advisor.id)" disabled
                 class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
         </div>
       }
 
       <div class="flex flex-col gap-1">
         <label class="font-display font-semibold text-primary text-size-section">Estado</label>
-        <input type="text" [value]="p.state" disabled
+        <input type="text" [value]="proposal.state" disabled
               class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
       </div>
 
@@ -87,7 +87,7 @@
             <label class="flex items-center gap-2 cursor-pointer">
               <input type="radio" formControlName="result" [value]="option.value"
                      class="w-4 h-4 focus:ring-[#000066]">
-              <span class="text-sm font-sans text-gray-700">{{ option.value }}</span>
+              <span class="text-sm font-sans text-[#777680]">{{ option.value }}</span>
             </label>
           }
         </div>
@@ -118,12 +118,12 @@
             <!-- Documento original -->
             <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
               <div class="flex items-center gap-3 overflow-hidden">
-                <span class="material-symbols-outlined text-red-600 text-4xl flex-shrink-0">picture_as_pdf</span>
+                <span class="material-symbols-outlined text-[#DB141C] text-4xl shrink-0">picture_as_pdf</span>
                 <div class="flex flex-col overflow-hidden">
                   <span class="text-sm font-bold text-primary truncate">
                     {{ originalDocument?.name ?? 'Documento no disponible' }}
                   </span>
-                  <span class="text-xs text-gray-500 font-sans">Aprobado por el jefe de departamento</span>
+                  <span class="text-xs text-[#777680] font-sans">Aprobado por el jefe de departamento</span>
                 </div>
               </div>
               <app-button-component
@@ -138,14 +138,14 @@
             @if (signedFile(); as signed) {
               <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
                 <div class="flex items-center gap-3 overflow-hidden">
-                  <span class="material-symbols-outlined text-red-600 text-4xl flex-shrink-0">picture_as_pdf</span>
+                  <span class="material-symbols-outlined text-[#DB141C] text-4xl shrink-0">picture_as_pdf</span>
                   <div class="flex flex-col overflow-hidden">
                     <span class="text-sm font-bold text-primary truncate pr-10">{{ signed.name }}</span>
-                    <span class="text-xs text-gray-500 font-sans">Cargado por el evaluador</span>
+                    <span class="text-xs text-[#777680] font-sans">Cargado por el evaluador</span>
                   </div>
                 </div>
                 <button type="button" (click)="removeSignedFile()"
-                        class="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0 ml-4">
+                        class="text-gray-400 hover:text-red-500 transition-colors shrink-0 ml-4">
                   <span class="material-symbols-outlined text-2xl font-bold">close</span>
                 </button>
               </div>
@@ -159,7 +159,7 @@
             [label]="signedFile() ? 'Actualizar formato' : 'Cargar formato firmado'"
             variant="secondary"
             type="button"
-            (onClick)="modalState.upload = true"
+            (onClick)="setUploadModal(true)"
           ></app-button-component>
           <app-button-component
             label="Guardar"
@@ -174,15 +174,15 @@
 </div>
 
 <app-file-upload-modal
-  [isOpen]="modalState.upload"
+  [isOpen]="modalState().upload"
   description="Subir formato de evaluación firmado"
   uploadedBy="Cargado por el evaluador"
   (onFileUploaded)="handleFileUploaded($event)"
-  (onClose)="modalState.upload = false"
+  (onClose)="setUploadModal(true)"
 ></app-file-upload-modal>
 
 <app-confirmation-action-modal
-  [isOpen]="modalState.confirm"
+  [isOpen]="modalState().confirm"
   description="¿Está seguro de guardar esta evaluación? Se notificará al estudiante y se actualizará el estado de la propuesta."
   (onClose)="cancelEvaluation()"
   (onConfirm)="confirmEvaluation()"

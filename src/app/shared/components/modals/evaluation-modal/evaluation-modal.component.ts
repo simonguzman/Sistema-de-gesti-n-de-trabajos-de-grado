@@ -1,9 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
-import { StateComponent, stateList } from '../../state/state.component';
+import { StateComponent } from '../../state/state.component';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../../button-component/button-component.component';
 import { TooltipModule } from 'primeng/tooltip';
+import { stateList } from '../../../../core/enums/state.enum';
 
 @Component({
   selector: 'app-evaluation-modal',
