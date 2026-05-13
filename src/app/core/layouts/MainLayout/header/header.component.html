@@ -43,14 +43,14 @@
   <app-confirmation-action-modal
     [isOpen]="isLogoutModal"
     [description]="'¿Está seguro de que desea cerrar su sesión en el Sistema de Gestión? Asegúrese de haber guardado cualquier cambio pendiente en sus acciones o documentos.'"
-    (onClose)="cancelLogout()"
-    (onConfirm)="confirmLogout()"
+    (closed)="cancelLogout()"
+    (confirm)="confirmLogout()"
   ></app-confirmation-action-modal>
 
   @if (isChangePasswordModal) {
     <app-change-password-modal
       [isOpen]="isChangePasswordModal"
-      (onClose)="closeChangePasswordModal()"
+      (closed)="closeChangePasswordModal()"
     ></app-change-password-modal>
   }
 </header>

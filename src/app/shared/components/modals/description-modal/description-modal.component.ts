@@ -13,10 +13,10 @@ export class DescriptionModalComponent {
   @Input() titleDescription: string = ''
   @Input() description: string = ''
 
-  @Output() onClose = new EventEmitter<void>;
+  @Output() closed = new EventEmitter<void>;
 
   closeModal(){
-    this.onClose.emit()
+    this.closed.emit()
   }
 
 }

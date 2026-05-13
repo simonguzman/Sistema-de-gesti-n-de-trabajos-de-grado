@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProposalService } from '../../services/proposal.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
@@ -47,19 +47,31 @@ const HEADER_BUTTONS: TableButton[] = [
   styleUrl: './proposal-page.component.css',
 })
 export class ProposalPageComponent implements OnInit {
-  private router            = inject(Router);
-  private proposalService   = inject(ProposalService);
-  private notificationService = inject(NotificationService);
-  private authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly proposalService = inject(ProposalService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly authService = inject(AuthService);
 
-  protected proposals = this.proposalService.proposals;
-  protected columns: Column[] = [];
+  private readonly rawProposals = this.proposalService.proposals;
+  protected columns: Column[] = PROPOSAL_COLUMNS;
   protected headerButtons: TableButton[] = [];
 
-  // Estado del modal de descripción
-  descriptionModal = { show: false, title: '', content: '' };
+  protected proposalsWithPermissions = computed(() => {
+    const currentUser = this.authService.currentUser();
+    const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
 
-  // Estado del flujo de eliminación
+    return this.rawProposals().map(proposal => {
+      const isOwner = proposal.director?.id === currentUser?.id;
+      return {
+        ...proposal,
+        allowedActions: (isAdmin || isOwner)
+          ? ['ver descripcion', 'ver', 'editar', 'eliminar']
+          : ['ver descripcion', 'ver']
+      };
+    });
+  });
+
+  descriptionModal = { show: false, title: '', content: '' };
   deleteState = {
     show:    false,
     id:      null as string | null,
@@ -68,45 +80,27 @@ export class ProposalPageComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    const canManage = this.authService.hasAnyRole([
-      UserRoleType.ADMINISTRADOR,
-      UserRoleType.DIRECTOR
-    ]);
+    this.initHeaderButtons();
+  }
+
+  private initHeaderButtons(): void {
     const canRegister = this.authService.hasAnyRole([
       UserRoleType.ADMINISTRADOR,
       UserRoleType.DIRECTOR
     ]);
+
     this.headerButtons = canRegister
       ? [...HEADER_BUTTONS]
       : HEADER_BUTTONS.filter(btn => btn.label !== 'Registrar propuesta');
-    this.columns = PROPOSAL_COLUMNS.map(col => {
-      if (col.field === 'acciones') {
-        return {
-          ...col,
-          actions: canManage
-            ? col.actions
-            : col.actions?.filter(a => a.action === 'ver')
-        };
-      }
-      return { ...col };
-    });
   }
 
-  handleTableAction(event: { action: string, row: Proposal }): void {
-    const currentUser = this.authService.currentUser();
-    const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
-
-    // Bloqueo de seguridad: Si no es Admin y no es el Director de ESTA propuesta
-    if ((event.action === 'editar' || event.action === 'eliminar') && !isAdmin) {
-      const isOwner = event.row.director?.id === currentUser?.id;
-
-      if (!isOwner) {
-        this.showRestrictedAccessNotification();
-        return; // Detenemos la ejecución aquí
-      }
+  handleTableAction(event: { action: string, row: any }): void {
+    // Validamos que la acción esté permitida para esta fila (doble check de seguridad)
+    if (event.row.allowedActions && !event.row.allowedActions.includes(event.action)) {
+      this.showRestrictedAccessNotification();
+      return;
     }
 
-    // Si pasa el filtro, procedemos con la lógica normal
     switch (event.action) {
       case 'ver descripcion':
         this.descriptionModal = {
@@ -122,7 +116,12 @@ export class ProposalPageComponent implements OnInit {
         this.router.navigate(['/proposal/edit', event.row.id]);
         break;
       case 'eliminar':
-        this.deleteState = { show: true, id: event.row.id!, title: event.row.title, loading: false };
+        this.deleteState = {
+          show: true,
+          id: event.row.id!,
+          title: event.row.title,
+          loading: false
+        };
         break;
     }
   }
@@ -139,10 +138,12 @@ export class ProposalPageComponent implements OnInit {
   }
 
   confirmDelete(): void {
-    const idToDelete= this.deleteState.id;
+    const idToDelete = this.deleteState.id;
     if (!idToDelete || this.deleteState.loading) return;
+
     this.deleteState.loading = true;
     this.showDeleteProposalInfoNotification();
+
     this.proposalService.deleteProposalMock(idToDelete).subscribe({
       next: () => {
         this.showDeleteProposalSuccessNotification();
@@ -155,43 +156,43 @@ export class ProposalPageComponent implements OnInit {
     });
   }
 
-  private showRestrictedAccessNotification(): void{
-    this.notificationService.show({
-      title: 'Acceso restringido',
-      message: 'No tienes permisos para modificar esta propuesta porque no eres el director asignado.',
-      type: NotificationType.ERROR
-    });
-  }
-
-  private showDeleteProposalInfoNotification(){
-    this.notificationService.show({
-      title:   'Eliminando propuesta',
-      message: 'Se está eliminando la propuesta...',
-      type:    NotificationType.INFO
-    });
-  }
-
-  private showDeleteProposalSuccessNotification(){
-    this.notificationService.show({
-      title:   'Propuesta eliminada',
-      message: 'La propuesta fue eliminada correctamente.',
-      type:    NotificationType.CONFIRMATION
-    });
-  }
-
-  private showDeleteProposalErrorNotification(){
-    this.notificationService.show({
-      title:   'Error',
-      message: 'No se pudo eliminar la propuesta.',
-      type:    NotificationType.ERROR
-    });
-  }
-
   cancelDelete(): void {
     this.resetDeleteState();
   }
 
   private resetDeleteState(): void {
     this.deleteState = { show: false, id: null, title: '', loading: false };
+  }
+
+  private showRestrictedAccessNotification(): void {
+    this.notificationService.show({
+      title: 'Acceso restringido',
+      message: 'No tienes permisos para realizar esta acción sobre esta propuesta.',
+      type: NotificationType.ERROR
+    });
+  }
+
+  private showDeleteProposalInfoNotification() {
+    this.notificationService.show({
+      title: 'Eliminando propuesta',
+      message: 'Se está procesando la solicitud...',
+      type: NotificationType.INFO
+    });
+  }
+
+  private showDeleteProposalSuccessNotification() {
+    this.notificationService.show({
+      title: 'Propuesta eliminada',
+      message: 'La propuesta fue eliminada correctamente.',
+      type: NotificationType.CONFIRMATION
+    });
+  }
+
+  private showDeleteProposalErrorNotification() {
+    this.notificationService.show({
+      title: 'Error',
+      message: 'No se pudo completar la eliminación.',
+      type: NotificationType.ERROR
+    });
   }
 }

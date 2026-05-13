@@ -12,7 +12,7 @@
   <app-roles-selection-modal
     [(isOpen)]="isOpen"
     [roles]="roles"
-    (onSave)="handleSave($event)"
+    (onSaved)="handleSave($event)"
     (isOpenChange)="closeAll()"
   ></app-roles-selection-modal>
 }

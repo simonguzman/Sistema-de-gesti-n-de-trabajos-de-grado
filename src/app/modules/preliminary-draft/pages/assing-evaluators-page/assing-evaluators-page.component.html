@@ -1,0 +1,22 @@
+<div class="w-full max-w-5xl mx-auto p-4 md:p-8 bg-[#F8F9FA] min-h-screen">
+
+  <button
+    (click)="goBack()"
+    class="flex items-center gap-1 text-primary font-bold text-sm mb-6 hover:opacity-80 transition-opacity"
+  >
+    <span class="material-symbols-outlined text-size-section font-bold">arrow_back</span>
+    Regresar
+  </button>
+
+  @if (isLoading()) {
+    <div class="flex justify-center items-center h-60">
+      <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+    </div>
+  } @else if (draft()) {
+    <app-assign-evaluators-form
+      [draft]="draft()!"
+      (onSave)="handleAssign($event)"
+    ></app-assign-evaluators-form>
+  }
+
+</div>

@@ -11,12 +11,12 @@
 </div>
 
 <app-preliminary-draft-form
-  (onSubmit)="handleCreatePreliminaryDraft($event)">
+  (onSave)="handleCreatePreliminaryDraft($event)">
 </app-preliminary-draft-form>
 
 <app-confirmation-action-modal
   [isOpen]="confirmState.show"
   description="¿Está seguro de registrar este anteproyecto? Verifique que el documento adjunto corresponda a la propuesta seleccionada."
-  (onClose)="cancelCreation()"
-  (onConfirm)="confirmCreation()"
+  (closed)="cancelCreation()"
+  (confirm)="confirmCreation()"
 ></app-confirmation-action-modal>

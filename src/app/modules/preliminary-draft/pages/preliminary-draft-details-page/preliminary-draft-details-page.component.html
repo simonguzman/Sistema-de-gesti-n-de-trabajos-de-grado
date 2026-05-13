@@ -21,7 +21,7 @@
         <app-button-component
           label="Documentos cargados"
           variant="primary"
-          (onClick)="router.navigate(['loaded_proposals'], { relativeTo: route })"
+          (onClick)="router.navigate(['loaded_documents'], { relativeTo: route })"
         ></app-button-component>
       </div>
     }
@@ -41,7 +41,7 @@
 
     <div class="space-y-3">
       @for (item of [
-        { label: 'Título',      value: draft.proposalData.title },
+        { label: 'Título',     value: draft.proposalData.title },
         { label: 'Descripción', value: draft.proposalData.description },
         { label: 'Modalidad',   value: draft.proposalData.modality },
         { label: 'Estado',      value: draft.state }
@@ -91,10 +91,10 @@
         <div class="flex items-center gap-3 overflow-hidden">
           <span class="material-symbols-outlined text-[#DB141C] text-4xl shrink-0">picture_as_pdf</span>
           <div class="flex flex-col overflow-hidden">
-            <span class="text-sm font-bold text-primary truncate">
-              {{ draft.preliminaryDraftDocument?.name || 'Documento_Anteproyecto.pdf' }}
+            <span class="text-size-body font-bold text-primary truncate">
+              {{ mainDocument()?.name || 'Documento_Anteproyecto.pdf' }}
             </span>
-            <span class="text-xs text-gray-500 font-sans">Documento original del anteproyecto</span>
+            <span class="text-size-role-footer text-[#777680] font-sans">Documento original del anteproyecto</span>
           </div>
         </div>
 

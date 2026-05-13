@@ -164,8 +164,8 @@
               <div class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-[#DB141C] text-3xl">picture_as_pdf</span>
                 <div class="flex flex-col">
-                  <span class="text-sm font-semibold text-gray-700 max-w-50 truncate" [title]="attachedFile.name">{{ attachedFile.name }}</span>
-                  <span class="text-xs text-gray-500">Cargado por el estudiante</span>
+                  <span class="text-size-body font-bold text-primary max-w-50 truncate" [title]="attachedFile.name">{{ attachedFile.name }}</span>
+                  <span class="text-size-role-footer text-[#777680] font-sans">Cargado por el estudiante</span>
                 </div>
               </div>
               <button type="button" (click)="removeFile()" class="text-gray-400 hover:text-red-500 transition-colors ml-4 flex items-center justify-center">
@@ -200,5 +200,5 @@
   [description]="'Subir formato A de propuesta de grado'"
   [uploadedBy]="'Cargado por el estudiante'"
   (onFileUploaded)="handleFileUploaded($event)"
-  (onClose)="uploadModalOpen = false"
+  (closed)="uploadModalOpen = false"
 ></app-file-upload-modal>

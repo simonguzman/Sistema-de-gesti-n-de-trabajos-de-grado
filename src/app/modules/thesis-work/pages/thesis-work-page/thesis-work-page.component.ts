@@ -120,7 +120,7 @@ descargarDesdeRegistro(file: string) {
   miFuncionDeGuardado() { this.mostrarConfirmacion = true}
 
   // Simular confirmación aceptada desde el modal de confirmación
-  onConfirmacionAceptada() {
+  confirmacionAceptada() {
     this.mostrarConfirmacion = false;
     this.notifService.success(
       'Acción confirmada',
@@ -129,7 +129,7 @@ descargarDesdeRegistro(file: string) {
   }
 
   // Simular error (por ejemplo, fallo en una llamada HTTP)
-  onConfirmacionRechazada() {
+  confirmacionRechazada() {
     this.mostrarConfirmacion = false;
     this.notifService.error(
       'Solicitud no guardada',

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PreliminaryDraftService } from '../../services/preliminary-draft.service';
 import { UserService } from '../../../users/services/user.service';
@@ -17,12 +17,17 @@ import { ButtonComponent } from "../../../../shared/components/button-component/
 export class PreliminaryDraftDetailsPageComponent implements OnInit {
   protected route = inject(ActivatedRoute);
   protected router = inject(Router);
-  private preliminaryDraftService = inject(PreliminaryDraftService);
-  private userService = inject(UserService);
-  private notificationService = inject(NotificationService);
-  private dowloadService = inject(FileDownloadService);
+  private readonly preliminaryDraftService = inject(PreliminaryDraftService);
+  private readonly userService = inject(UserService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly dowloadService = inject(FileDownloadService);
 
   preliminaryDraft = signal<PreliminaryDraft | null>(null);
+  mainDocument = computed(() => {
+    const draft = this.preliminaryDraft();
+    if (!draft) return null;
+    return draft.documents.find(doc => doc.type === 'Anteproyecto') || draft.documents[0] || null;
+  });
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if(!id){
@@ -55,7 +60,7 @@ export class PreliminaryDraftDetailsPageComponent implements OnInit {
   }
 
   downloadDocument(): void {
-    const document = this.preliminaryDraft()?.preliminaryDraftDocument;
+    const document = this.mainDocument();
     if(!document?.url){
       this.showDownloadFileErrorNotification();
       return;

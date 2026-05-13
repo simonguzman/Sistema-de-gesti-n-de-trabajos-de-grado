@@ -13,8 +13,12 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
+    "lib": [
+      "ES2023",
+      "dom"
+    ],
     "module": "preserve",
-    "esModuleInterop": true 
+    "esModuleInterop": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

@@ -13,19 +13,19 @@
   [(isOpen)]="showRolesModal"
   [username]="selectedUser"
   [roles]="rolesUser"
-  (onSave)="handleSaveRoles($event)"
+  (onSaved)="handleSaveRoles($event)"
 ></app-roles-modal>
 
 <app-confirmation-action-modal
   [isOpen]="showConfirmation"
   [description]="'¿Desea guardar los cambios realizados en los roles del usuario?'"
-  (onClose)="showConfirmation = false"
-  (onConfirm)="confirmChanges()"
+  (closed)="showConfirmation = false"
+  (confirm)="confirmChanges()"
 ></app-confirmation-action-modal>
 
 <app-confirmation-action-modal
   [isOpen]="showDisabledConfirmation"
   [description]="confirmationMessage"
-  (onClose)="showDisabledConfirmation = false"
-  (onConfirm)="confirmSoftDelete()"
+  (closed)="showDisabledConfirmation = false"
+  (confirm)="confirmSoftDelete()"
 ></app-confirmation-action-modal>

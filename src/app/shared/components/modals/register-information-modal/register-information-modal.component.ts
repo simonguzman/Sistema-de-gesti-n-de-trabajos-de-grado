@@ -28,14 +28,14 @@ export class RegisterInformationModalComponent  {
   @Input() state?:stateList;
   @Input() documents: string[] = [];
 
-  @Output() onClose = new EventEmitter<void>()
-  @Output() onDownloadFile = new EventEmitter<string>()
+  @Output() closed = new EventEmitter<void>()
+  @Output() downloadRequested = new EventEmitter<string>()
 
   closeModal() {
-    this.onClose.emit()
+    this.closed.emit()
   }
 
   downloadFile (fileName: string){
-    this.onDownloadFile.emit(fileName);
+    this.downloadRequested.emit(fileName);
   }
 }

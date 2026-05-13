@@ -16,7 +16,7 @@ export class RolesSelectionModalComponent implements OnChanges {
   @Input() roles: UserRole[] = [];
 
   @Output() isOpenChange = new EventEmitter<boolean>();
-  @Output() onSave = new EventEmitter<UserRole[]>();
+  @Output() onSaved = new EventEmitter<UserRole[]>();
 
   editableRoles: UserRole[] = [];
 
@@ -43,7 +43,7 @@ export class RolesSelectionModalComponent implements OnChanges {
   }
 
   save() {
-    this.onSave.emit(this.editableRoles);
+    this.onSaved.emit(this.editableRoles);
     this.isOpenChange.emit(false);
   }
 

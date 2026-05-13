@@ -29,7 +29,7 @@ describe('ConfirmationActionModalComponent', () => {
   });
 
   it('El modal permite cancelar la acción', () => {
-    const cancelSpy = jest.spyOn(component.onClose, 'emit');
+    const cancelSpy = jest.spyOn(component.closed, 'emit');
     component.isOpen = true;
     fixture.detectChanges();
     const buttons = fixture.debugElement.queryAll(By.directive(ButtonComponent));
@@ -39,8 +39,8 @@ describe('ConfirmationActionModalComponent', () => {
   })
 
   it('El modal permite aceptar la acción', () => {
-    const confirmSpy = jest.spyOn(component.onConfirm, 'emit');
-    const closeSpy = jest.spyOn(component.onClose, 'emit');
+    const confirmSpy = jest.spyOn(component.confirm, 'emit');
+    const closeSpy = jest.spyOn(component.closed, 'emit');
     fixture.detectChanges();
     component.confirmAction();
     expect(confirmSpy).toHaveBeenCalled();
@@ -48,8 +48,8 @@ describe('ConfirmationActionModalComponent', () => {
   })
 
   it('confirmAction debe emitir confirm y cerrar', () => {
-    const confirmSpy = jest.spyOn(component.onConfirm, 'emit');
-    const closeSpy = jest.spyOn(component.onClose, 'emit');
+    const confirmSpy = jest.spyOn(component.confirm, 'emit');
+    const closeSpy = jest.spyOn(component.closed, 'emit');
 
     component.confirmAction();
 

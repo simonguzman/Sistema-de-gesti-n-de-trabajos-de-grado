@@ -53,15 +53,15 @@ const FORMATS: Record<string, DownloadableFormat[]> = {
   styleUrls: ['./downloadable-formats-page.component.css']
 })
 export class DownloadableFormatsPageComponent {
-  private route               = inject(ActivatedRoute);
-  private router              = inject(Router);
-  private downloadService     = inject(FileDownloadService);
-  private notificationService = inject(NotificationService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly downloadService = inject(FileDownloadService);
+  private readonly notificationService = inject(NotificationService);
 
-  readonly tabs    = TABS;
+  readonly tabs = TABS;
   readonly columns = COLUMNS;
 
-  activeTab      = signal<string>('TI');
+  activeTab = signal<string>('TI');
   currentFormats = computed(() => FORMATS[this.activeTab()] ?? []);
 
   async handleTableAction(event: { action: string; row: DownloadableFormat }): Promise<void> {

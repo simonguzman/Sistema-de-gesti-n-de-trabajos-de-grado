@@ -31,7 +31,7 @@ describe('DescriptionModalComponent', () => {
   })
 
   it('Debe emitir un evento cuando el modal se cierra', () => {
-    const emitSpy = jest.spyOn(component.onClose, 'emit');
+    const emitSpy = jest.spyOn(component.closed, 'emit');
     component.isOpen = true;
     fixture.detectChanges();
     const dialog = fixture.debugElement.query(By.css('p-dialog'));
@@ -39,8 +39,8 @@ describe('DescriptionModalComponent', () => {
     expect(emitSpy).toHaveBeenCalled();
   });
 
-  it('closeModal debe emitir el evento onClose', () => {
-    const emitSpy = jest.spyOn(component.onClose, 'emit');
+  it('closeModal debe emitir el evento closed', () => {
+    const emitSpy = jest.spyOn(component.closed, 'emit');
     component.closeModal();
     expect(emitSpy).toHaveBeenCalled();
   })

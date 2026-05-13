@@ -11,7 +11,7 @@
     </div>
 
     <app-table-component
-      [value]="evaluations()"
+      [value]="evaluationsWithPermissions()"
       [columns]="columns"
       [paginator]="true"
       (actionClick)="handleTableAction($event)"
@@ -30,7 +30,7 @@
     [state]="evaluation.veredict"
     [comments]="evaluation.observations"
     [documents]="evaluation.signedDocuments || []"
-    (onClose)="closeModal()"
+    (closed)="closeModal()"
     (onDownloadFile)="handleDownload($event)"
   ></app-evaluation-modal>
 }

@@ -6,7 +6,7 @@ import { NotificationType } from '../../../../shared/components/notifications/mo
 import { stateList } from '../../../../core/enums/state.enum';
 import { ButtonComponent } from "../../../../shared/components/button-component/button-component.component";
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
-import { Document } from '../../../../core/interfaces/Document.inteface';
+import { Document } from '../../../../core/interfaces/Document.interface';
 import { UserService } from '../../../users/services/user.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserRoleType } from '../../../../core/models/user-role';
@@ -20,18 +20,16 @@ import { AuthService } from '../../../../core/services/auth/auth.service';
   styleUrls: ['./proposal-form.component.css']
 })
 export class ProposalFormComponent {
-  private fb = inject(FormBuilder);
-  private notificationService = inject(NotificationService);
-  private proposalService = inject(ProposalService);
-  private userService = inject(UserService);
-  private authService = inject(AuthService);
-  private destroyRef = inject(DestroyRef);
+  private readonly fb = inject(FormBuilder);
+  private readonly notificationService = inject(NotificationService);
+  private readonly proposalService = inject(ProposalService);
+  private readonly userService = inject(UserService);
+  private readonly authService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  // Input/Output
   proposal = input<Proposal | null>(null);
   @Output() onSubmit = new EventEmitter<Proposal>();
 
-  // Formulario
   proposalForm = this.fb.group({
     title: ['', Validators.required],
     description: ['', Validators.required],
@@ -43,16 +41,13 @@ export class ProposalFormComponent {
     document: [null as File | null]
   });
 
-  // Estado UI
   private selectedStudent1Id = signal<string>('');
   attachedFile = { hasFile: false, name: null as string | null };
   uploadModalOpen = false;
 
-  // Listas de datos
   protected teachers = this.userService.teachers;
   protected advisors = this.userService.advisors;
 
-  // Lógica de Estudiantes con Signals
   protected availableStudents = computed(() => {
     const allStudents = this.userService.students();
     const allProposals = this.proposalService.proposals();
@@ -70,7 +65,6 @@ export class ProposalFormComponent {
   });
 
   constructor() {
-    // Sincronización reactiva cuando el input 'proposal' cambia
     effect(() => this.syncFormWithProposal());
   }
 
@@ -79,7 +73,6 @@ export class ProposalFormComponent {
   }
 
   private setupDynamicLogic(): void {
-    // 1. Validación dinámica del Asesor según modalidad
     this.proposalForm.get('modality')?.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(modality => {
@@ -92,8 +85,6 @@ export class ProposalFormComponent {
         }
         advisorControl?.updateValueAndValidity();
       });
-
-    // 2. Filtro dinámico de Estudiante 1 vs Estudiante 2
     this.proposalForm.get('student1')?.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(id => {
@@ -105,7 +96,6 @@ export class ProposalFormComponent {
       });
   }
 
-  // Getters de UI
   get isEditMode(): boolean { return !!this.proposal(); }
 
   get showAdvisorField(): boolean {
@@ -117,7 +107,6 @@ export class ProposalFormComponent {
     return !!(field?.invalid && field?.touched);
   }
 
-  // Handlers de Archivos
   handleFileUploaded(event: { fileName: string; file: File }): void {
     this.attachedFile = { hasFile: true, name: event.fileName };
     this.proposalForm.get('document')?.setValue(event.file);
@@ -132,7 +121,6 @@ export class ProposalFormComponent {
     this.proposalForm.get('document')?.markAsTouched();
   }
 
-  // Acciones de Formulario
   submit(): void {
     this.proposalForm.markAllAsTouched();
 
@@ -157,8 +145,6 @@ export class ProposalFormComponent {
 
   private processSubmit(director: any): void {
     const raw = this.proposalForm.getRawValue();
-
-    // Si hay codirector, le asignamos el rol (Lógica de negocio persistida)
     if (raw.codirector) this.userService.addRoleToUser(raw.codirector, UserRoleType.CODIRECTOR);
 
     const authorsArray = [raw.student1 as string];

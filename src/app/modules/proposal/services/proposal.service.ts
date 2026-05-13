@@ -4,7 +4,7 @@ import { Modality, Proposal } from '../interfaces/proposal.interface';
 import { delay, map, Observable, of, tap } from 'rxjs';
 import { stateList } from '../../../core/enums/state.enum';
 import { Evaluation } from '../../../core/interfaces/evaluation.interface';
-import { Document } from '../../../core/interfaces/Document.inteface';
+import { Document } from '../../../core/interfaces/Document.interface';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { UserRoleType } from '../../../core/models/user-role';
 import { UserService } from '../../users/services/user.service';
@@ -133,13 +133,13 @@ private http = inject(HttpClient);
 
     return of(newProposal).pipe(
       delay(1000),
-      tap(saved => {
-        this._proposalsList.update(current => [saved, ...current]);
+      tap(onSaved => {
+        this._proposalsList.update(current => [onSaved, ...current]);
 
         // Gestión de roles basada en objetos
-        if (saved.director) this.userService.addRoleToUser(saved.director.id, UserRoleType.DIRECTOR);
-        if (saved.codirector) this.userService.addRoleToUser(saved.codirector.id, UserRoleType.CODIRECTOR);
-        if (saved.advisor) this.userService.addRoleToUser(saved.advisor.id, UserRoleType.ASESOR);
+        if (onSaved.director) this.userService.addRoleToUser(onSaved.director.id, UserRoleType.DIRECTOR);
+        if (onSaved.codirector) this.userService.addRoleToUser(onSaved.codirector.id, UserRoleType.CODIRECTOR);
+        if (onSaved.advisor) this.userService.addRoleToUser(onSaved.advisor.id, UserRoleType.ASESOR);
       })
     );
   }

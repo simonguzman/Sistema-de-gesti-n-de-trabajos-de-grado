@@ -3,7 +3,7 @@ import { Notification, NotificationType } from '../models/notification.model';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  private _notifications = signal<Notification[]>([]);
+  private readonly _notifications = signal<Notification[]>([]);
   readonly notifications = this._notifications.asReadonly();
 
   private readonly DEFAULT_DURATION = 5000;

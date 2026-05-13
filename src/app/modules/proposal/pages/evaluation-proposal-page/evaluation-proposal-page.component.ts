@@ -27,15 +27,15 @@ const RESULT_TO_STATE: Record<string, stateList> = {
   styleUrls: ['./evaluation-proposal-page.component.css'],
 })
 export class EvaluationProposalPageComponent implements OnInit  {
-  private route               = inject(ActivatedRoute);
-  private router              = inject(Router);
-  private location            = inject(Location);
-  private proposalService     = inject(ProposalService);
-  private downloadService     = inject(FileDownloadService);
-  private notificationService = inject(NotificationService);
-  private userService = inject(UserService);
-  private authService = inject(AuthService);
-  private fb                  = inject(FormBuilder);
+  private readonly route               = inject(ActivatedRoute);
+  private readonly router              = inject(Router);
+  private readonly location            = inject(Location);
+  private readonly proposalService     = inject(ProposalService);
+  private readonly downloadService     = inject(FileDownloadService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly userService = inject(UserService);
+  private readonly authService = inject(AuthService);
+  private readonly fb                  = inject(FormBuilder);
 
   proposal = signal<Proposal | null>(null);
   signedFile = signal<{ name: string } | null>(null);
@@ -89,12 +89,28 @@ export class EvaluationProposalPageComponent implements OnInit  {
     return this.proposal()?.documents?.[0] ?? null;
   }
 
+  get currentDocument() {
+    const docs = this.proposal()?.documents || [];
+    const evaluableDocs = docs.filter(doc =>
+      doc.type === 'Propuesta' || doc.type === 'Correccion'
+    );
+
+    if (evaluableDocs.length === 0) return null;
+
+    // Creamos una copia con [...] y luego ordenamos
+    return [...evaluableDocs].sort((a, b) => {
+      const dateA = new Date(a.uploadDate).getTime();
+      const dateB = new Date(b.uploadDate).getTime();
+      return dateB - dateA;
+    })[0];
+  }
+
   get documentUploadDate(): string {
-    const document = this.originalDocument?.uploadDate;
-    if (!document) return 'Fecha no disponible';
-    return document instanceof Date
-      ? document.toLocaleDateString('es-ES')
-      : document;
+    const documentDate = this.currentDocument?.uploadDate;
+    if (!documentDate) return 'Fecha no disponible';
+    return documentDate instanceof Date
+      ? documentDate.toLocaleDateString('es-ES')
+      : documentDate;
   }
 
   ngOnInit(): void {
@@ -155,7 +171,14 @@ export class EvaluationProposalPageComponent implements OnInit  {
     const currentProposal = this.proposal();
     const currentUser = this.authService.currentUser();
     const formValues = this.evaluationForm.value;
-    if (!currentProposal?.id || !currentUser || !formValues.result) return;
+
+    const targetDocument = this.currentDocument;
+
+    if (!currentProposal?.id || !currentUser || !formValues.result || !targetDocument) {
+      this.showUpdateErrorNotification();
+      return;
+    }
+
     this.setConfirmModal(false);
 
     const newState = RESULT_TO_STATE[formValues.result] ?? currentProposal.state;
@@ -163,6 +186,7 @@ export class EvaluationProposalPageComponent implements OnInit  {
     const newEvaluation: Evaluation = {
       id: crypto.randomUUID(),
       proposalId: currentProposal.id,
+      documentId: targetDocument.id, // <-- SOLUCIÓN: Vinculamos el ID del documento
       evaluatorName: this.userService.getUserFullName(currentUser.id),
       evaluatorRole: currentUser.roles[0] ?? 'Evaluador',
       signedDocuments: this.signedFile() ? [this.signedFile()!.name] : [],

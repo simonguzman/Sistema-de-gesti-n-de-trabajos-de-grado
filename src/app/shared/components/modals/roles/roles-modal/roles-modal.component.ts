@@ -18,7 +18,7 @@ export class RolesModalComponent {
   @Input() roles: UserRole[] = [];
 
   @Output() isOpenChange = new EventEmitter<boolean>();
-  @Output() onSave = new EventEmitter<UserRole[]>();
+  @Output() onSaved = new EventEmitter<UserRole[]>();
 
   isEditing: boolean = false;
 
@@ -28,7 +28,7 @@ export class RolesModalComponent {
   }
 
   handleSave(updatedRoles: UserRole[]) {
-    this.onSave.emit(updatedRoles);
+    this.onSaved.emit(updatedRoles);
     this.closeAll();
   }
 

@@ -17,7 +17,7 @@
   [state]="mockState"
   [comments]="mockComments"
   [documents]="mockDocs"
-  (onClose)="cerrarModal()"
+  (closed)="cerrarModal()"
 ></app-evaluation-modal>
 <app-button-component label="Cargar archivos" variant="secondary" (click)="mostrarModalEvaluacion = true"></app-button-component>
 
@@ -34,15 +34,15 @@
   [chargeDate]="mockRegistro.fecha"
   [state]="mockRegistro.estado"
   [documents]="mockRegistro.docs"
-  (onClose)="cerrarRegistro()"
-  (onDownloadFile)="descargarDesdeRegistro($event)"
+  (closed)="cerrarRegistro()"
+  (downloadRequested)="descargarDesdeRegistro($event)"
 ></app-register-information-modal>
 <app-button-component label="Cargar archivos" variant="secondary" (click)="mostrarModalRegistro = true"></app-button-component>
 <app-confirmation-action-modal
   [isOpen]="mostrarConfirmacion"
   [description]="'Usted a seleccionado la opción de guardar la evaluación de los avances registrados, esto notificara a los actores involucrados sobre la evaluación para realizar las acciones pertinentes ¿Desea guardar la evaluación?'"
-  (onClose)="mostrarConfirmacion = false"
-  (onConfirm)="miFuncionDeGuardado()"
+  (closed)="mostrarConfirmacion = false"
+  (confirm)="miFuncionDeGuardado()"
 ></app-confirmation-action-modal>
 <app-button-component label="confirmar accion" variant="primary" (onClick)="mostrarConfirmacion = true"></app-button-component>
 <!-- Al final del div principal, antes del cierre -->

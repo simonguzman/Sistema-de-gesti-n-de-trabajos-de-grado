@@ -1,5 +1,5 @@
 import { Evaluation } from "../../../core/interfaces/evaluation.interface";
-import { Document } from "../../../core/interfaces/Document.inteface";
+import { Document } from "../../../core/interfaces/Document.interface";
 import { stateList } from "../../../core/enums/state.enum";
 import { User } from "../../users/interfaces/user.interface";
 

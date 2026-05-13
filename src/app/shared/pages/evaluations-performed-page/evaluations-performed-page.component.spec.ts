@@ -5,13 +5,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { EvaluationsPerformedPageComponent } from './evaluations-performed-page.component';
 
-import { ProposalService } from '../../services/proposal.service';
-import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
-import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
-import { stateList } from '../../../../core/enums/state.enum';
-import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { ProposalService } from '../../../modules/proposal/services/proposal.service';
+import { FileDownloadService } from '../../../core/services/filedownload/file-download.service';
+import { NotificationService } from '../../components/notifications/services/notification.service';
+import { stateList } from '../../../core/enums/state.enum';
+import { NotificationType } from '../../components/notifications/models/notification.model';
 
-import { Evaluation } from '../../../../core/interfaces/evaluation.interface';
+import { Evaluation } from '../../../core/interfaces/evaluation.interface';
 
 
 describe('EvaluationsPerformedPageComponent', () => {

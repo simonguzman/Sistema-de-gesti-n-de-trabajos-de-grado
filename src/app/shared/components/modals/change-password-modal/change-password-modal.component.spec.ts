@@ -118,8 +118,8 @@ describe('ChangePasswordModalComponent', () => {
     });
   });
 
-  it('debe resetear el formulario y emitir onClose al cerrar el modal', () => {
-    const emitSpy = jest.spyOn(component.onClose, 'emit');
+  it('debe resetear el formulario y emitir closed al cerrar el modal', () => {
+    const emitSpy = jest.spyOn(component.closed, 'emit');
     component.passwordForm.get('currentPassword')?.setValue('algo');
 
     component.closeModal();

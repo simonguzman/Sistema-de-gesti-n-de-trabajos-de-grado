@@ -26,12 +26,12 @@
   description="Seleccione el archivo PDF de la propuesta corregida"
   uploadedBy="Estudiante"
   (onFileUploaded)="onFileSelected($event)"
-  (onClose)="fileModalOpen.set(false)"
+  (closed)="fileModalOpen.set(false)"
 ></app-file-upload-modal>
 
 <app-confirmation-action-modal
   [isOpen]="confirmModalOpen()"
   description="¿Está seguro de cargar esta corrección? El estado cambiará a 'En revisión'."
-  (onConfirm)="confirmUpload()"
-  (onClose)="cancelUpload()"
+  (confirm)="confirmUpload()"
+  (closed)="cancelUpload()"
 ></app-confirmation-action-modal>

@@ -17,11 +17,11 @@ import { PreliminaryDraft } from '../../interfaces/preliminary-draft.interface';
   imports: [PreliminaryDraftFormComponent, ConfirmationActionModalComponent]
 })
 export class PreliminaryDraftCreatePageComponent implements OnInit {
-  private preliminaryDraftService = inject(PreliminaryDraftService);
-  private notificationService = inject(NotificationService);
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private location = inject(Location);
+  private readonly preliminaryDraftService = inject(PreliminaryDraftService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
 
   confirmState = {
     show: false,

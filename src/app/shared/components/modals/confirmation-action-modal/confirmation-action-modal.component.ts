@@ -13,15 +13,15 @@ export class ConfirmationActionModalComponent {
   @Input() isOpen: boolean = false;
   @Input() description: string = '';
 
-  @Output() onClose = new EventEmitter<void>()
-  @Output() onConfirm = new EventEmitter<void>()
+  @Output() closed = new EventEmitter<void>()
+  @Output() confirm = new EventEmitter<void>()
 
   closeModal() {
-    this.onClose.emit()
+    this.closed.emit()
   }
 
   confirmAction(){
-    this.onConfirm.emit();
+    this.confirm.emit();
     this.closeModal();
   }
 }

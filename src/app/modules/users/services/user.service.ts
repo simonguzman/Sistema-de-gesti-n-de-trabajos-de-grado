@@ -8,8 +8,6 @@ import { UserRoleType } from '../../../core/models/user-role';
   providedIn: 'root'
 })
 export class UserService {
-  private http = inject(HttpClient);
-
   // Llaves para LocalStorage
   private readonly USERS_KEY = 'sgtg_users';
   private readonly SESSION_KEY = 'sgtg_current_session';
@@ -122,7 +120,7 @@ export class UserService {
     lastName: 'Eduardo',
     secondLastName: 'Ramírez',
     codeNumber: 5003,
-    roles: [UserRoleType.DOCENTE, UserRoleType.CODIRECTOR],
+    roles: [UserRoleType.DOCENTE, UserRoleType.CODIRECTOR, UserRoleType.JEFE_DEP],
     email: 'ceramirez@unicauca.edu.co',
     password: 'password123',
     state: UserState.active
@@ -251,7 +249,7 @@ export class UserService {
   // --- SIGNALS DE ESTADO ---
 
   // 1. Lista global de usuarios
-  private _usersList = signal<User[]>(this.getStoredUsers());
+  private readonly _usersList = signal<User[]>(this.getStoredUsers());
   public users = this._usersList.asReadonly();
 
   // 2. Sesión activa (Usuario logueado)
@@ -329,7 +327,7 @@ export class UserService {
     const newUser: User = { ...user, id: crypto.randomUUID(), state: UserState.active };
     return of(newUser).pipe(
       delay(1000),
-      tap(saved => this._usersList.update(current => [saved, ...current]))
+      tap(onSaved => this._usersList.update(current => [onSaved, ...current]))
     );
   }
 

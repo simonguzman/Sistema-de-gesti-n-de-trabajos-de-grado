@@ -5,20 +5,19 @@
   [paginator]="true"
   (actionClick)="handleTableAction($event)"
   (headerButtonClick)="handleHeaderButton($event)"
-  emptyMessage="No se han encontrado anteproyectos registrados para su perfil."
+  emptyMessage="No hay anteproyectos registrados en el sistema"
 ></app-table-component>
 
 <app-description-modal
   [isOpen]="descriptionModal().show"
   [titleDescription]="descriptionModal().title"
   [description]="descriptionModal().content"
-  (onClose)="closeDescriptionModal()"
+  (closed)="descriptionModal.set({show: false, title: '', content: ''})"
 ></app-description-modal>
 
 <app-confirmation-action-modal
   [isOpen]="deleteState().show"
-  title="Eliminar Anteproyecto"
   [description]="'¿Está seguro de eliminar el anteproyecto: ' + deleteState().title + '?'"
-  (onClose)="cancelDelete()"
-  (onConfirm)="confirmDelete()"
+  (closed)="cancelDelete()"
+  (confirm)="confirmDelete()"
 ></app-confirmation-action-modal>

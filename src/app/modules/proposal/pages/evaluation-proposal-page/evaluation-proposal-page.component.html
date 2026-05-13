@@ -33,21 +33,21 @@
         { label: 'Estudiante',                     value: getStudentNames(proposal.authors) }
       ]; track field.label) {
         <div class="flex flex-col gap-1">
-          <label class="font-display font-semibold text-primary text-size-section">{{ field.label }}</label>
+          <span class="font-display font-semibold text-primary text-size-section">{{ field.label }}</span>
           <input type="text" [value]="field.value" disabled
                 class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
         </div>
       }
 
       <div class="flex flex-col gap-1">
-        <label class="font-display font-semibold text-primary text-size-section">Director</label>
+        <span class="font-display font-semibold text-primary text-size-section">Director</span>
         <input type="text" [value]="getDirectorName(proposal.director.id)" disabled
               class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
       </div>
 
       @if (proposal.codirector) {
         <div class="flex flex-col gap-1">
-          <label class="font-display font-semibold text-primary text-size-section">Codirector</label>
+          <span class="font-display font-semibold text-primary text-size-section">Codirector</span>
           <input type="text" [value]="getCodirectorName(proposal.codirector.id)" disabled
                 class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
         </div>
@@ -55,14 +55,14 @@
 
       @if (proposal.advisor) {
         <div class="flex flex-col gap-1">
-          <label class="font-display font-semibold text-primary text-size-section">Asesor</label>
+          <span class="font-display font-semibold text-primary text-size-section">Asesor</span>
           <input type="text" [value]="getAdvisorName(proposal.advisor.id)" disabled
                 class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
         </div>
       }
 
       <div class="flex flex-col gap-1">
-        <label class="font-display font-semibold text-primary text-size-section">Estado</label>
+        <span class="font-display font-semibold text-primary text-size-section">Estado</span>
         <input type="text" [value]="proposal.state" disabled
               class="information-block p-2 border rounded-md text-[#777680] w-full cursor-not-allowed">
       </div>
@@ -99,7 +99,7 @@
         }
 
         <div class="flex flex-col gap-1">
-          <label class="font-display font-semibold text-primary text-size-section">Comentarios</label>
+          <span class="font-display font-semibold text-primary text-size-section">Comentarios</span>
           <textarea formControlName="comments" rows="4"
             class="font-sans font-normal text-size-section text-[#777680] p-3 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-[#000066]"
             [class.border-red-500]="evaluationForm.get('comments')?.invalid && evaluationForm.get('comments')?.touched"
@@ -112,7 +112,7 @@
 
         <!-- Archivos adjuntos -->
         <div class="flex flex-col gap-4 mt-4">
-          <label class="font-display font-semibold text-primary text-size-section">Archivos adjuntos</label>
+          <span class="font-display font-semibold text-primary text-size-section">Archivos adjuntos</span>
           <div class="flex flex-col gap-3 w-full">
 
             <!-- Documento original -->
@@ -178,12 +178,12 @@
   description="Subir formato de evaluación firmado"
   uploadedBy="Cargado por el evaluador"
   (onFileUploaded)="handleFileUploaded($event)"
-  (onClose)="setUploadModal(true)"
+  (closed)="setUploadModal(false)"
 ></app-file-upload-modal>
 
 <app-confirmation-action-modal
   [isOpen]="modalState().confirm"
   description="¿Está seguro de guardar esta evaluación? Se notificará al estudiante y se actualizará el estado de la propuesta."
-  (onClose)="cancelEvaluation()"
-  (onConfirm)="confirmEvaluation()"
+  (closed)="cancelEvaluation()"
+  (confirm)="confirmEvaluation()"
 ></app-confirmation-action-modal>

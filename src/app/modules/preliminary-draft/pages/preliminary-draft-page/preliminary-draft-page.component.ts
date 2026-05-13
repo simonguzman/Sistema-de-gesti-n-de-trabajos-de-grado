@@ -1,6 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Column, TableButton, TableComponent } from '../../../../shared/components/table-component/table-component.component';
-import { stateList } from '../../../../core/enums/state.enum';
 import { Router } from '@angular/router';
 import { PreliminaryDraftService } from '../../services/preliminary-draft.service';
 import { UserService } from '../../../users/services/user.service';
@@ -49,96 +48,78 @@ const HEADER_BUTTONS: TableButton[] = [
   styleUrl: './preliminary-draft-page.component.css',
 })
 export class PreliminaryDraftPageComponent implements OnInit {
-  private router = inject(Router);
-  private preliminaryDraftService = inject(PreliminaryDraftService);
-  private userService = inject(UserService);
-  private authService = inject(AuthService);
-  private notificationService = inject(NotificationService);
+  private readonly router = inject(Router);
+  private readonly preliminaryDraftService = inject(PreliminaryDraftService);
+  private readonly userService = inject(UserService);
+  private readonly authService = inject(AuthService);
+  private readonly notificationService = inject(NotificationService);
 
-  protected columns: Column[] = [];
+  protected columns: Column[] = PRELIMINARY_DRAFT_COLUMNS;
   protected headerButtons: TableButton[] = [];
-  protected stateList = stateList;
+
   protected tableData = computed(() => {
-    return this.preliminaryDraftService.preliminaryDrafts().map(preliminaryDraft => ({
-      id: preliminaryDraft.preliminaryDraftId,
-      title: preliminaryDraft.proposalData?.title || 'Sin título',
-      description: preliminaryDraft.proposalData?.description,
-      modality: preliminaryDraft.proposalData?.modality || 'No definida',
-      director: this.userService.getUserFullName(preliminaryDraft.proposalData?.director.id),
-      directorId: preliminaryDraft.proposalData?.director.id,
-      authors: this.userService.getAuthorsNames(preliminaryDraft.proposalData?.authors),
-      state: preliminaryDraft.state,
-      raw: preliminaryDraft,
-    }));
+    const currentUser = this.authService.currentUser();
+    const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
+    const isJefe = this.authService.hasAnyRole([UserRoleType.JEFE_DEP]);
+    const isEvaluador = this.authService.hasAnyRole([UserRoleType.EVALUADOR]);
+
+    return this.preliminaryDraftService.preliminaryDrafts().map(draft => {
+      const isOwner = draft.proposalData?.director.id === currentUser?.id;
+      let allowed: string[] = ['ver descripción', 'ver'];
+      if (isAdmin || isOwner) {
+        allowed = ['ver descripción', 'ver', 'editar', 'eliminar'];
+      } else if (isJefe || isEvaluador) {
+        allowed = ['ver descripción', 'ver'];
+      }
+      return {
+        id: draft.preliminaryDraftId,
+        title: draft.proposalData?.title || 'Sin título',
+        description: draft.proposalData?.description,
+        modality: draft.proposalData?.modality || 'No definida',
+        directorId: draft.proposalData?.director.id,
+        state: draft.state,
+        allowedActions: allowed
+      };
+    });
   });
 
-  descriptionModal = signal({
-    show: false,
-    title: '',
-    content: ''
-  });
-
-  deleteState = signal({
-    show: false,
-    id: null as string | null,
-    title: '',
-    loading: false
-  });
+  descriptionModal = signal({ show: false, title: '', content: '' });
+  deleteState = signal({ show: false, id: null as string | null, title: '', loading: false });
 
   ngOnInit(): void {
-    this.configurePremissions();
+    this.initHeaderButtons();
   }
 
-  private configurePremissions(): void {
-    const isDirector = this.authService.hasAnyRole([UserRoleType.DIRECTOR]);
-    const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR, UserRoleType.JEFE_DEP]);
-    if(isDirector || isAdmin){
-      this.headerButtons = [
-        { label: 'Formatos descargables', variant:'primary' },
-        { label: 'Registrar anteproyecto', variant:'primary' }
-      ]
-    } else {
-      this.headerButtons = [
-        { label: 'Formatos descargables', variant:'primary' },
-      ]
-    }
-    this.columns = PRELIMINARY_DRAFT_COLUMNS.map(column => {
-      if(column.field === 'acciones'){
-        return{
-          ...column,
-          actions: column.actions?.filter(columnAction => {
-            if(isAdmin) return true;
-            if(this.authService.hasAnyRole([UserRoleType.EVALUADOR])) return columnAction.action === 'ver';
-            return true;
-          })
-        };
-      }
-      return column;
-    });
+  private initHeaderButtons(): void {
+    const canRegister = this.authService.hasAnyRole([
+      UserRoleType.ADMINISTRADOR,
+      UserRoleType.DIRECTOR
+    ]);
+
+    this.headerButtons = canRegister
+      ? [...HEADER_BUTTONS]
+      : HEADER_BUTTONS.filter(btn => btn.label !== 'Registrar anteproyecto');
   }
 
   handleTableAction(event: { action: string, row: any }): void {
-    const currentUser = this.authService.currentUser();
-    const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR, UserRoleType.JEFE_DEP]);
-    if((event.action === 'editar' || event.action === 'eliminar') && !isAdmin){
-      if(event.row.directorId !== currentUser?.id){
-        this.showRestrictedNotification()
-        return;
-      }
+    if (event.row.allowedActions && !event.row.allowedActions.includes(event.action)) {
+      this.showRestrictedNotification();
+      return;
     }
-    switch (event.action){
+
+    switch (event.action) {
       case 'ver descripción':
         this.descriptionModal.set({
           show: true,
           title: 'Descripción del anteproyecto',
           content: event.row.description || 'Sin descripción disponible.'
-        })
+        });
         break;
       case 'ver':
         this.router.navigate(['/preliminary-draft/details', event.row.id]);
         break;
       case 'editar':
-        this.router.navigate(['/preliminary-draft/edit', event.row.id])
+        this.router.navigate(['/preliminary-draft/edit', event.row.id]);
         break;
       case 'eliminar':
         this.deleteState.set({
@@ -152,8 +133,10 @@ export class PreliminaryDraftPageComponent implements OnInit {
   }
 
   handleHeaderButton(button: TableButton): void {
-    if(button.label === 'Registrar anteproyecto'){
+    if (button.label === 'Registrar anteproyecto') {
       this.router.navigate(['/preliminary-draft/create']);
+    } else {
+      this.router.navigate(['/preliminary-draft/downloadable_formats']);
     }
   }
 
@@ -161,9 +144,7 @@ export class PreliminaryDraftPageComponent implements OnInit {
     const state = this.deleteState();
     if (!state.id || state.loading) return;
 
-    this.deleteState.update(s => ({ ...s, loading: true }));
-
-    // Notificación de inicio (Igual que en propuestas)
+    this.deleteState.update(state => ({ ...state, loading: true }));
     this.showDeleteInfoNotification();
 
     this.preliminaryDraftService.deleteDraftMock(state.id).subscribe({
@@ -172,21 +153,14 @@ export class PreliminaryDraftPageComponent implements OnInit {
         this.cancelDelete();
       },
       error: () => {
-        this.deleteState.update(s => ({ ...s, loading: false }));
+        this.deleteState.update(state => ({ ...state, loading: false }));
         this.showDeleteErrorNotification();
       }
     });
   }
 
   cancelDelete(): void {
-    this.deleteState.set({ show: false, id: null, title: '', loading: false});
-  }
-
-  closeDescriptionModal(): void {
-    this.descriptionModal.update(state => ({
-      ...state,
-      show: false
-    }))
+    this.deleteState.set({ show: false, id: null, title: '', loading: false });
   }
 
   private showDeleteInfoNotification(): void {
@@ -208,7 +182,7 @@ export class PreliminaryDraftPageComponent implements OnInit {
   private showDeleteErrorNotification(): void {
     this.notificationService.show({
       title: 'Error',
-      message: 'No se pudo eliminar el anteproyecto. Intente de nuevo.',
+      message: 'No se pudo eliminar el anteproyecto.',
       type: NotificationType.ERROR
     });
   }
@@ -216,9 +190,8 @@ export class PreliminaryDraftPageComponent implements OnInit {
   private showRestrictedNotification(): void {
     this.notificationService.show({
       title: 'Acceso denegado',
-      message: 'Solo el director asignado puede realizar esta acción.',
+      message: 'No tienes permisos para realizar esta acción.',
       type: NotificationType.ERROR
     });
   }
-
 }

@@ -5,7 +5,7 @@ import { ProposalEditPageComponent } from './pages/proposal-edit-page/proposal-e
 import { ProposalDetailsPageComponent } from './pages/proposal-details-page/proposal-details-page.component';
 import { DownloadableFormatsPageComponent } from '../../shared/pages/downloadable-formats-page/downloadable-formats-page.component';
 import { LoadedProposalsPageComponent } from './pages/loaded-proposals-page/loaded-proposals-page.component';
-import { EvaluationsPerformedPageComponent } from './pages/evaluations-performed-page/evaluations-performed-page.component';
+import { EvaluationsPerformedPageComponent } from '../../shared/pages/evaluations-performed-page/evaluations-performed-page.component';
 import { EvaluationProposalPageComponent } from './pages/evaluation-proposal-page/evaluation-proposal-page.component';
 import { roleGuard } from '../../core/guards/role.guard';
 import { UserRoleType } from '../../core/models/user-role';

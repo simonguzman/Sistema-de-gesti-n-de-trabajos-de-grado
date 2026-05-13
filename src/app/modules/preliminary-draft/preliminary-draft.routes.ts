@@ -6,6 +6,9 @@ import { UserRoleType } from '../../core/models/user-role';
 import { PreliminaryDraftCreatePageComponent } from './pages/preliminary-draft-create-page/preliminary-draft-create-page.component';
 import { PreliminaryDraftDetailsPageComponent } from './pages/preliminary-draft-details-page/preliminary-draft-details-page.component';
 import { PreliminaryDraftEditPageComponent } from './pages/preliminary-draft-edit-page/preliminary-draft-edit-page.component';
+import { EvaluationsPerformedPageComponent } from '../../shared/pages/evaluations-performed-page/evaluations-performed-page.component';
+import { LoadedDocumetsPreliminaryDraftPageComponent } from './pages/loaded-documets-preliminary-draft-page/loaded-documets-preliminary-draft-page.component';
+import { AssingEvaluatorsPageComponent } from './pages/assing-evaluators-page/assing-evaluators-page.component';
 
 export const preliminaryDraftRoutes: Routes = [
   {
@@ -46,7 +49,7 @@ export const preliminaryDraftRoutes: Routes = [
       },
       {
         path: 'details/:id',
-        data: { breadcrumb: 'Información del anteoryecto' },
+        data: { breadcrumb: 'Información del anteproyecto' },
         children:[
           {
             path: '',
@@ -65,7 +68,64 @@ export const preliminaryDraftRoutes: Routes = [
                 UserRoleType.EVALUADOR,
                 UserRoleType.CONSEJO
               ]
-            },
+            }
+          },
+          {
+            path: 'evaluations_performed',
+            component: EvaluationsPerformedPageComponent,
+            canActivate: [roleGuard],
+            title: 'Evaluaciones realizadas',
+            data: {
+              breadcrumb: 'Evaluaciones realizadas',
+              roles: [
+                UserRoleType.ADMINISTRADOR,
+                UserRoleType.DIRECTOR,
+                UserRoleType.CODIRECTOR,
+                UserRoleType.ASESOR,
+                UserRoleType.ESTUDIANTE,
+                UserRoleType.JEFE_DEP,
+                UserRoleType.EVALUADOR,
+                UserRoleType.CONSEJO
+              ]
+            }
+          },
+          {
+            path: 'loaded_documents',
+            data: { breadcrumb: 'Documentos cargados' },
+            children: [
+              {
+                path: '',
+                component: LoadedDocumetsPreliminaryDraftPageComponent,
+                canActivate: [roleGuard],
+                title: 'Documentos cargados',
+                data: {
+                  breadcrumb: null,
+                  roles: [
+                    UserRoleType.ADMINISTRADOR,
+                    UserRoleType.DIRECTOR,
+                    UserRoleType.CODIRECTOR,
+                    UserRoleType.ASESOR,
+                    UserRoleType.ESTUDIANTE,
+                    UserRoleType.JEFE_DEP,
+                    UserRoleType.EVALUADOR,
+                    UserRoleType.CONSEJO
+                  ]
+                }
+              },
+              {
+                path: 'assign_evaluators',
+                component: AssingEvaluatorsPageComponent,
+                canActivate: [roleGuard],
+                title: 'Asignar evaluadores',
+                data: {
+                  breadcrumb: 'Asignar evaluadores',
+                  roles: [
+                    UserRoleType.ADMINISTRADOR,
+                    UserRoleType.JEFE_DEP,
+                  ]
+                }
+              },
+            ]
           },
         ]
       },

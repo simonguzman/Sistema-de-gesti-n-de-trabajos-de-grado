@@ -14,6 +14,6 @@
 <app-confirmation-action-modal
   [isOpen]="isConfirmModalOpen"
   [description]="'¿Está seguro de que desea registrar a este usuario en el sistema? Verifique que la información ingresada sea correcta antes de proceder?'"
-  (onClose)="cancelCreation()"
-  (onConfirm)="confirmCreation()"
+  (closed)="cancelCreation()"
+  (confirm)="confirmCreation()"
 ></app-confirmation-action-modal>

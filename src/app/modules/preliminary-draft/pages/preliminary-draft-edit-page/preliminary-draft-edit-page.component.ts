@@ -17,12 +17,12 @@ import { ConfirmationActionModalComponent } from "../../../../shared/components/
   imports: [PreliminaryDraftFormComponent, ConfirmationActionModalComponent]
 })
 export class PreliminaryDraftEditPageComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private location = inject(Location);
-  private preliminaryDraftService = inject(PreliminaryDraftService);
-  private notificationService = inject(NotificationService);
-  private authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  private readonly preliminaryDraftService = inject(PreliminaryDraftService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly authService = inject(AuthService);
 
   preliminaryDraftToEdit = signal<PreliminaryDraft | null>(null);
 

@@ -1,5 +1,5 @@
 <app-table-component
-  [value]="proposals()"
+  [value]="proposalsWithPermissions()"
   [headerButtons]="headerButtons"
   [columns]="columns"
   [paginator]="true"
@@ -12,12 +12,12 @@
   [isOpen]="descriptionModal.show"
   [titleDescription]="descriptionModal.title"
   [description]="descriptionModal.content"
-  (onClose)="descriptionModal.show = false"
+  (closed)="descriptionModal.show = false"
 ></app-description-modal>
 
 <app-confirmation-action-modal
   [isOpen]="deleteState.show"
   [description]="'¿Está seguro de eliminar la propuesta: ' + deleteState.title + '?'"
-  (onClose)="cancelDelete()"
-  (onConfirm)="confirmDelete()"
+  (closed)="cancelDelete()"
+  (confirm)="confirmDelete()"
 ></app-confirmation-action-modal>
