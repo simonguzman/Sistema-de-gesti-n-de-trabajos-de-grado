@@ -200,5 +200,5 @@
   [description]="'Subir formato A de propuesta de grado'"
   [uploadedBy]="'Cargado por el estudiante'"
   (onFileUploaded)="handleFileUploaded($event)"
-  (closed)="uploadModalOpen = false"
+  (onClose)="uploadModalOpen = false"
 ></app-file-upload-modal>

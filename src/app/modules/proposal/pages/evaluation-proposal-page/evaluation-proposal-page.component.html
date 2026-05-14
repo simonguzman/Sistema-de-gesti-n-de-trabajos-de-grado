@@ -178,12 +178,12 @@
   description="Subir formato de evaluación firmado"
   uploadedBy="Cargado por el evaluador"
   (onFileUploaded)="handleFileUploaded($event)"
-  (closed)="setUploadModal(false)"
+  (onClose)="setUploadModal(false)"
 ></app-file-upload-modal>
 
 <app-confirmation-action-modal
   [isOpen]="modalState().confirm"
   description="¿Está seguro de guardar esta evaluación? Se notificará al estudiante y se actualizará el estado de la propuesta."
-  (closed)="cancelEvaluation()"
+  (onClose)="cancelEvaluation()"
   (confirm)="confirmEvaluation()"
 ></app-confirmation-action-modal>

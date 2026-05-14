@@ -15,6 +15,6 @@
 <app-confirmation-action-modal
   [isOpen]="confirmState.show"
   description="¿Está seguro de registrar esta propuesta? Verifique que el formato adjunto y los participantes sean correctos."
-  (closed)="cancelCreation()"
+  (onClose)="cancelCreation()"
   (confirm)="confirmCreation()"
 ></app-confirmation-action-modal>

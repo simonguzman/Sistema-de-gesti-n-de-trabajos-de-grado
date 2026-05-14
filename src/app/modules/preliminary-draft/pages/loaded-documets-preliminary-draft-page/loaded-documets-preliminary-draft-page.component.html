@@ -38,9 +38,9 @@
   [description]="activeTab() === 'ANTEPROYECTOS'
     ? 'Seleccione el archivo PDF del anteproyecto'
     : 'Seleccione el archivo PDF de la presentación'"
-  uploadedBy="Estudiante"
+  [uploadedBy]="activeTab() === 'ANTEPROYECTOS' ? 'Estudiante' : 'Jefe de Departamento'"
   (onFileUploaded)="onFileSelected($event)"
-  (closed)="fileModalOpen.set(false)"
+  (onClose)="fileModalOpen.set(false)"
 ></app-file-upload-modal>
 
 <app-confirmation-action-modal
@@ -49,5 +49,5 @@
     ? '¿Está seguro de cargar este anteproyecto? El estado cambiará a \'En revisión\'.'
     : '¿Está seguro de cargar esta presentación al consejo?'"
   (confirm)="confirmUpload()"
-  (closed)="cancelUpload()"
+  (onClose)="cancelUpload()"
 ></app-confirmation-action-modal>

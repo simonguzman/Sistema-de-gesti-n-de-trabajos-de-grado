@@ -30,7 +30,7 @@
     [state]="evaluation.veredict"
     [comments]="evaluation.observations"
     [documents]="evaluation.signedDocuments || []"
-    (closed)="closeModal()"
+    (onClose)="closeModal()"
     (onDownloadFile)="handleDownload($event)"
   ></app-evaluation-modal>
 }

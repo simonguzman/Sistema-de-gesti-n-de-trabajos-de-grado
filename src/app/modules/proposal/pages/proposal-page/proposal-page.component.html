@@ -12,12 +12,12 @@
   [isOpen]="descriptionModal.show"
   [titleDescription]="descriptionModal.title"
   [description]="descriptionModal.content"
-  (closed)="descriptionModal.show = false"
+  (onClose)="descriptionModal.show = false"
 ></app-description-modal>
 
 <app-confirmation-action-modal
   [isOpen]="deleteState.show"
   [description]="'¿Está seguro de eliminar la propuesta: ' + deleteState.title + '?'"
-  (closed)="cancelDelete()"
+  (onClose)="cancelDelete()"
   (confirm)="confirmDelete()"
 ></app-confirmation-action-modal>

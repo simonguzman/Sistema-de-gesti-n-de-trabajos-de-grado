@@ -26,7 +26,7 @@ export const passwordMatchValidator = (control: AbstractControl): ValidationErro
 export class ChangePasswordModalComponent {
 
   @Input() isOpen: boolean = false;
-  @Output() closed = new EventEmitter<void>();
+  @Output() onClose = new EventEmitter<void>();
 
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
@@ -45,7 +45,7 @@ export class ChangePasswordModalComponent {
 
   closeModal() {
     this.passwordForm.reset();
-    this.closed.emit();
+    this.onClose.emit();
   }
 
   togglePasswordVisibility(field: 'current' | 'new' | 'confirm') {

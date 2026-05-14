@@ -16,11 +16,11 @@ import { User } from '../../../users/interfaces/user.interface';
   styleUrls: ['./proposal-details-page.component.css']
 })
 export class ProposalDetailsPageComponent implements OnInit {
-  protected route           = inject(ActivatedRoute);
-  protected router          = inject(Router);
-  private proposalService = inject(ProposalService);
-  private userService = inject(UserService)
-  private notificationService = inject(NotificationService);
+  protected route = inject(ActivatedRoute);
+  protected router = inject(Router);
+  private readonly proposalService = inject(ProposalService);
+  private readonly userService = inject(UserService)
+  private readonly notificationService = inject(NotificationService);
 
   proposal = signal<Proposal | null>(null);
 

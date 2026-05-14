@@ -93,27 +93,84 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
     const preliminaryDraft = this.currentPreliminaryDraft();
     const user = this.authService.currentUser();
     const tab = this.activeTab();
+
     if (!preliminaryDraft?.documents || !user) return [];
+
     const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
     const isAssignedEvaluator = preliminaryDraft.evaluators?.some((ev: any) => ev.id === user.id);
     const isConsejo = this.authService.hasAnyRole([UserRoleType.CONSEJO]);
-    return preliminaryDraft.documents
+    const totalEvaluators = preliminaryDraft.evaluators?.length || 0;
+
+    const sortedDocs = [...preliminaryDraft.documents];
+    const latestAnteproyectoId = sortedDocs.find(d => d.type === 'Anteproyecto' || d.type === 'Correccion')?.id;
+    const latestPresentacionId = sortedDocs.find(d => d.type === 'Formato')?.id;
+
+    return sortedDocs
       .filter((doc: Document) => {
         if (tab === 'ANTEPROYECTOS') return doc.type === 'Anteproyecto' || doc.type === 'Correccion';
         return doc.type === 'Formato';
       })
       .map((doc: Document) => {
-        const allowed = ['download'];
-        const isInRevision = doc.status === stateList.EN_REVISION;
-        if (tab === 'ANTEPROYECTOS' && (isAssignedEvaluator || isAdmin) && isInRevision) {
-          allowed.push('evaluate');
-        } else if (tab === 'PRESENTACIONES' && (isConsejo || isAdmin) && isInRevision) {
-          allowed.push('evaluate-presentation');
+        let displayStatus: stateList;
+        let isLatestDoc = false;
+
+        // --- LÓGICA PARA PESTAÑA ANTEPROYECTOS ---
+        if (tab === 'ANTEPROYECTOS') {
+          isLatestDoc = doc.id === latestAnteproyectoId;
+          const technicalStatus = this.preliminaryDraftService.calculateDocumentStatus(
+            doc.id, preliminaryDraft.evaluations || [], totalEvaluators
+          );
+
+          if (isLatestDoc) {
+            if (preliminaryDraft.state === stateList.APROBADO) displayStatus = stateList.APROBADO;
+            else if (preliminaryDraft.state === stateList.NO_APROBADO) displayStatus = stateList.NO_APROBADO;
+            else displayStatus = technicalStatus === stateList.APROBADO ? stateList.EVALUADO : technicalStatus;
+          } else {
+            displayStatus = technicalStatus === stateList.APROBADO ? stateList.NO_APROBADO : technicalStatus;
+          }
+
+        // --- LÓGICA PARA PESTAÑA PRESENTACIONES (Independencia Total) ---
+        } else {
+          isLatestDoc = doc.id === latestPresentacionId;
+
+          // Buscamos si ESTE documento específico ya tiene una decisión del consejo
+          const presentationStatus = this.preliminaryDraftService.calculateDocumentStatus(
+            doc.id, preliminaryDraft.evaluations || [], 1
+          );
+
+          if (isLatestDoc) {
+            // Si el flujo general terminó en éxito, mostramos Aprobado
+            if (preliminaryDraft.state === stateList.APROBADO) {
+              displayStatus = stateList.APROBADO;
+            } else {
+              // Si no, mostramos el estado real del documento (No Aprobado o En Revisión)
+              // Esto persiste aunque el estado global cambie por nuevas correcciones de anteproyectos
+              displayStatus = presentationStatus;
+            }
+          } else {
+            displayStatus = presentationStatus;
+          }
         }
-        return {
-          ...doc,
-          allowedActions: allowed
-        };
+
+        // --- LÓGICA DE ACCIONES ---
+        const allowed = ['download'];
+        if (isLatestDoc) {
+          const userFullName = `${user.firstName} ${user.lastName}`.trim();
+          const userAlreadyEvaluated = preliminaryDraft.evaluations?.some(
+            (evalu) => evalu.documentId === doc.id && evalu.evaluatorName.trim() === userFullName
+          );
+
+          if (tab === 'ANTEPROYECTOS') {
+            const canEvaluate = (isAssignedEvaluator || isAdmin) && !userAlreadyEvaluated &&
+                              ![stateList.APROBADO, stateList.NO_APROBADO].includes(preliminaryDraft.state as stateList);
+            if (canEvaluate) allowed.push('evaluate');
+          } else {
+            const canCouncil = (isConsejo || isAdmin) && displayStatus === stateList.EN_REVISION;
+            if (canCouncil) allowed.push('evaluate-presentation');
+          }
+        }
+
+        return { ...doc, status: displayStatus, allowedActions: allowed };
       });
   });
 
@@ -121,11 +178,18 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
     const draft = this.currentPreliminaryDraft();
     const user = this.authService.currentUser();
     if (!draft || !user) return [];
+
+    // REGLA DE CIERRE: Si el proyecto fue Aprobado, desaparecen las acciones de carga superior
+    if (draft.state === stateList.APROBADO) {
+      return [];
+    }
+
     const isAdmin    = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
     const isJefe     = this.authService.hasAnyRole([UserRoleType.JEFE_DEP]);
     const isDirector = draft.proposalData?.director?.id === user.id;
     const hasReviewers = this.areEvaluatorsAssigned();
     const buttons: TableButton[] = [];
+
     if (this.activeTab() === 'ANTEPROYECTOS') {
       if (isJefe) {
         buttons.push({
@@ -135,12 +199,14 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
         });
       }
       else if (isDirector || isAdmin) {
+        // Este botón seguirá activo si está EN_REVISION o si fue NO_APROBADO (para el reinicio)
         buttons.push({
           label: 'Cargar anteproyecto corregido',
           variant: 'primary'
         });
       }
     }
+
     if (this.activeTab() === 'PRESENTACIONES') {
       if (isJefe || isAdmin) {
         buttons.push({
@@ -160,7 +226,7 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
   handleHeaderButton(button: TableButton): void {
     const label = button.label;
 
-    if (label?.includes('Cargar anteproyecto corregido')) {
+    if (label?.includes('Cargar anteproyecto corregido') || label?.includes('Cargar formato de presentación')) {
       this.fileModalOpen.set(true);
     }
     else if (label?.includes('Asignar evaluadores')) {
@@ -177,10 +243,10 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
         this.handleDownload(event.row);
         break;
       case 'evaluate':
-        this.router.navigate(['evaluate'], { relativeTo: this.route });
+        this.router.navigate(['review_preliminary_draft'], { relativeTo: this.route });
         break;
       case 'evaluate-presentation':
-        this.router.navigate(['evaluate-presentation'], { relativeTo: this.route });
+        this.router.navigate(['evaluate_presentation'], { relativeTo: this.route });
         break;
     }
   }
@@ -239,7 +305,7 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
 
     if (isAssignedEvaluator || isAdmin) {
       actions.push({
-        action: 'evaluate-draft',
+        action: 'review_preliminary_draft',
         label: 'Evaluar anteproyecto',
         variant: 'primary',
         disabled: false
@@ -255,7 +321,7 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
     const isConsejo = this.authService.hasAnyRole([UserRoleType.CONSEJO, UserRoleType.ADMINISTRADOR]);
     if (isConsejo) {
       actions.push({
-        action: 'evaluate-presentation',
+        action: 'evaluate_presentation',
         label: 'Evaluar presentación',
         variant: 'primary',
         disabled: false

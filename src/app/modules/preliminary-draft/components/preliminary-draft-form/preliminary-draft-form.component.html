@@ -268,5 +268,5 @@
   [description]="'Subir anteproyecto de trabajo de grado'"
   [uploadedBy]="'Cargado por el director'"
   (onFileUploaded)="handleFileUploaded($event)"
-  (closed)="uploadModalOpen = false"
+  (onClose)="uploadModalOpen = false"
 ></app-file-upload-modal>

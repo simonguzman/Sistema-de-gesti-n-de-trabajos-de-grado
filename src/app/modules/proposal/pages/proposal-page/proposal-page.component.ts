@@ -7,8 +7,6 @@ import { NotificationType } from '../../../../shared/components/notifications/mo
 import { Column, TableButton, TableComponent } from '../../../../shared/components/table-component/table-component.component';
 import { DescriptionModalComponent } from '../../../../shared/components/modals/description-modal/description-modal.component';
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
-
-import { Proposal } from '../../interfaces/proposal.interface';
 import { UserRoleType } from '../../../../core/models/user-role';
 
 const PROPOSAL_COLUMNS: Column[] = [

@@ -9,6 +9,8 @@ import { PreliminaryDraftEditPageComponent } from './pages/preliminary-draft-edi
 import { EvaluationsPerformedPageComponent } from '../../shared/pages/evaluations-performed-page/evaluations-performed-page.component';
 import { LoadedDocumetsPreliminaryDraftPageComponent } from './pages/loaded-documets-preliminary-draft-page/loaded-documets-preliminary-draft-page.component';
 import { AssingEvaluatorsPageComponent } from './pages/assing-evaluators-page/assing-evaluators-page.component';
+import { ReviewPreliminaryDraftPageComponent } from './pages/review-preliminary-draft-page/review-preliminary-draft-page.component';
+import { ReviewPresentationsFacultyCouncilPageComponent } from './pages/review-presentations-faculty-council-page/review-presentations-faculty-council-page.component';
 
 export const preliminaryDraftRoutes: Routes = [
   {
@@ -18,8 +20,21 @@ export const preliminaryDraftRoutes: Routes = [
       {
         path: '',
         component: PreliminaryDraftPageComponent,
+        canActivate: [roleGuard],
         title: 'Anteproyectos de trabajo de grado',
-        data: { breadcrumb: null }
+        data: {
+          breadcrumb: null,
+          roles: [
+            UserRoleType.ADMINISTRADOR,
+            UserRoleType.DIRECTOR,
+            UserRoleType.CODIRECTOR,
+            UserRoleType.ASESOR,
+            UserRoleType.ESTUDIANTE,
+            UserRoleType.JEFE_DEP,
+            UserRoleType.EVALUADOR,
+            UserRoleType.CONSEJO
+          ]
+        }
       },
       {
         path: 'downloadable_formats',
@@ -125,6 +140,26 @@ export const preliminaryDraftRoutes: Routes = [
                   ]
                 }
               },
+              {
+                path: 'review_preliminary_draft',
+                component: ReviewPreliminaryDraftPageComponent,
+                canActivate: [roleGuard],
+                title: 'Evaluar anteproyecto',
+                data: {
+                  breadcrumb: 'Evaluar anteproyecto',
+                  roles: [UserRoleType.ADMINISTRADOR, UserRoleType.EVALUADOR]
+                }
+              },
+               {
+                path: 'evaluate_presentation',
+                component: ReviewPresentationsFacultyCouncilPageComponent,
+                canActivate: [roleGuard],
+                title: 'Evaluar presentación',
+                data: {
+                  breadcrumb: 'Evaluar presentación',
+                  roles: [UserRoleType.ADMINISTRADOR, UserRoleType.CONSEJO]
+                }
+              }
             ]
           },
         ]

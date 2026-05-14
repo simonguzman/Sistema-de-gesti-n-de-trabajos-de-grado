@@ -107,7 +107,7 @@ describe('RegisterInformationModalComponent', () => {
   })
 
   it('Debe emitir un evento al descargar un archivo', () => {
-    const spy = jest.spyOn(component.downloadRequested, 'emit');
+    const spy = jest.spyOn(component.onDownloadFile, 'emit');
     component.isOpen = true;
     component.documents = ['archivo1.pdf'];
     fixture.detectChanges();
@@ -118,8 +118,8 @@ describe('RegisterInformationModalComponent', () => {
     expect(spy).toHaveBeenCalledWith('archivo1.pdf');
   })
 
-  it('closeModal debe emitir closed', () => {
-    const spy = jest.spyOn(component.closed, 'emit');
+  it('closeModal debe emitir onClose', () => {
+    const spy = jest.spyOn(component.onClose, 'emit');
     component.closeModal();
     expect(spy).toHaveBeenCalled();
   });

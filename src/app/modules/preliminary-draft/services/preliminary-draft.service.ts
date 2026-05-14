@@ -1,6 +1,6 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { PreliminaryDraft } from '../interfaces/preliminary-draft.interface';
-import { delay, Observable, of, tap } from 'rxjs';
+import { delay, map, Observable, of, tap } from 'rxjs';
 import { stateList } from '../../../core/enums/state.enum';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { UserService } from '../../users/services/user.service';
@@ -28,7 +28,8 @@ export class PreliminaryDraftService {
     if (this.authService.hasAnyRole([
       UserRoleType.ADMINISTRADOR,
       UserRoleType.COMITE,
-      UserRoleType.JEFE_DEP
+      UserRoleType.JEFE_DEP,
+      UserRoleType.CONSEJO
     ])) {
       return allDrafts;
     }
@@ -51,27 +52,38 @@ export class PreliminaryDraftService {
     return stored ? JSON.parse(stored) : [];
   }
 
-  private canUserAccessDraft(preliminaryDraft: PreliminaryDraft,userId: string): boolean {
+  private updateDraftInList(updatedDraft: PreliminaryDraft) {
+    this._draftsList.update(list =>
+      list.map(draft =>
+        draft.preliminaryDraftId === updatedDraft.preliminaryDraftId
+          ? updatedDraft
+          : draft
+      )
+    );
+  }
+
+  private canUserAccessDraft(preliminaryDraft: PreliminaryDraft, userId: string): boolean {
     if (!preliminaryDraft.proposalData) return false;
     const proposal = preliminaryDraft.proposalData;
+
     const isDirector = proposal.director?.id === userId;
     const isCodirector = proposal.codirector?.id === userId;
     const isAdvisor = proposal.advisor?.id === userId;
     const isAuthor = proposal.authors?.some(author =>
-      typeof author === 'string'
-        ? author === userId
-        : (author as any)?.id === userId
+      typeof author === 'string' ? author === userId : (author as any)?.id === userId
     ) ?? false;
-    const isEvaluator = preliminaryDraft.evaluations?.some(
-      evaluation => evaluation?.id === userId
+
+    // CORRECCIÓN AQUÍ: Verificar en 'evaluators' que es donde se guardan al asignar
+    const isAssignedEvaluator = preliminaryDraft.evaluators?.some(
+      evaluator => evaluator.id === userId
     ) ?? false;
-    return (
-      isDirector ||
-      isCodirector ||
-      isAdvisor ||
-      isAuthor ||
-      isEvaluator
-    );
+
+    // También dejamos el check de evaluaciones por si ya empezó el proceso
+    const hasEvaluation = preliminaryDraft.evaluations?.some(
+      evaluation => evaluation?.id === userId // O la propiedad que uses para el ID del evaluador en la nota
+    ) ?? false;
+
+    return isDirector || isCodirector || isAdvisor || isAuthor || isAssignedEvaluator || hasEvaluation;
   }
 
   validateReviewersRules(original: Proposal,evaluator1Id: string,evaluator2Id: string): string | null {
@@ -134,31 +146,21 @@ export class PreliminaryDraftService {
     );
   }
 
-  addEvaluationMock(preliminaryDraftId: string,evaluation: Evaluation): Observable<void> {
+  addEvaluationMock(preliminaryDraftId: string, evaluation: Evaluation): Observable<void> {
     return of(undefined).pipe(
       delay(1000),
       tap(() => {
         this._draftsList.update(list =>
-          list.map(preliminaryDraft => {
-            if (
-              preliminaryDraft.preliminaryDraftId !== preliminaryDraftId
-            ) {
-              return preliminaryDraft;
-            }
-            const newEvaluations = [
-              {
-                ...evaluation,
-                id: crypto.randomUUID()
-              },
-              ...(preliminaryDraft.evaluations || [])
-            ];
+          list.map(draft => {
+            if (draft.preliminaryDraftId !== preliminaryDraftId) return draft;
+
+            const newEvaluations = [evaluation, ...(draft.evaluations || [])];
+
             return {
-              ...preliminaryDraft,
+              ...draft,
               evaluations: newEvaluations,
-              state: this.calculateDraftState(
-                preliminaryDraft.state,
-                newEvaluations
-              )
+              // Enviamos el 'draft' para que la lógica sepa cuál es el último documento
+              state: this.calculateDraftState(draft, newEvaluations)
             };
           })
         );
@@ -166,16 +168,22 @@ export class PreliminaryDraftService {
     );
   }
 
-  private calculateDraftState(currentState: stateList,evaluations: Evaluation[]): stateList {
-    if (evaluations.length < 2) {
-      return currentState;
-    }
-    const allPassed = evaluations.every(
-      evaluation => this.isApprovedEvaluation(evaluation)
+  private calculateDraftState(preliminaryDraft: PreliminaryDraft, evaluations: Evaluation[]): stateList {
+    // Al usar [doc, ...currentDocs] en la carga, el índice 0 siempre es el más reciente
+    const lastDocumentId = preliminaryDraft.documents[0]?.id;
+
+    if (!lastDocumentId) return stateList.EN_REVISION;
+
+    const currentVersionEvaluations = evaluations.filter(e => e.documentId === lastDocumentId);
+
+    const hasRejection = currentVersionEvaluations.some(
+      e => e.veredict === stateList.NO_APROBADO
     );
-    return allPassed
-      ? stateList.APROBADO
-      : stateList.NO_APROBADO;
+
+    if (hasRejection) return stateList.NO_APROBADO;
+
+    // Se mantiene EN_REVISION para permitir la decisión final del Consejo
+    return stateList.EN_REVISION;
   }
 
   private isApprovedEvaluation(evaluation: Evaluation): boolean {
@@ -185,23 +193,23 @@ export class PreliminaryDraftService {
     ].includes(evaluation.veredict);
   }
 
-  uploadCouncilResolutionMock(preliminaryDraftId: string,doc: Document,finalState: stateList): Observable<void> {
-    return of(undefined).pipe(
-      delay(1000),
-      tap(() => {
-        this._draftsList.update(list =>
-          list.map(draft =>
-            draft.preliminaryDraftId === preliminaryDraftId ? {
-                  ...draft,
-                  councilResolution: doc,
-                  state: finalState
-                }
-              : draft
-          )
-        );
-      })
-    );
-  }
+  uploadCouncilResolutionMock(id: string, doc: Document, state: stateList, evaluation: any) {
+  return this.getDraftByIdMock(id).pipe(
+    map(draft => {
+      if (draft) {
+        draft.documents.push(doc);
+        draft.state = state;
+
+        // Guardamos la evaluación para que la independencia sea persistente
+        if (!draft.evaluations) draft.evaluations = [];
+        draft.evaluations.push(evaluation);
+
+        this.updateDraftInList(draft);
+      }
+      return draft;
+    })
+  );
+}
 
   createPreliminaryDraftMock(preliminaryDraft: PreliminaryDraft): Observable<PreliminaryDraft> {
     return of(preliminaryDraft).pipe(
@@ -265,27 +273,45 @@ export class PreliminaryDraftService {
     );
   }
 
-  uploadDocumentMock(preliminaryDraftId: string,doc: Document): Observable<void> {
+  uploadDocumentMock(preliminaryDraftId: string, doc: Document): Observable<void> {
     return of(undefined).pipe(
       delay(1000),
       tap(() => {
         this._draftsList.update(list =>
-          list.map(preliminaryDraft => {
-            if (preliminaryDraft.preliminaryDraftId !== preliminaryDraftId) {
-              return preliminaryDraft;
-            }
-            const currentDocs =preliminaryDraft.documents || [];
+          list.map(draft => {
+            if (draft.preliminaryDraftId !== preliminaryDraftId) return draft;
+
+            const currentDocs = draft.documents || [];
             return {
-              ...preliminaryDraft,
-              documents: [...currentDocs, doc],
-              state:
-                doc.type === 'Correccion'
-                  ? stateList.EN_REVISION
-                  : preliminaryDraft.state
+              ...draft,
+              documents: [doc, ...currentDocs],
+              // REINICIO DE ESTADO: Cualquier nuevo documento cargado reinicia el ciclo a "En revisión"
+              state: stateList.EN_REVISION
             };
           })
         );
       })
     );
+  }
+
+  public calculateDocumentStatus(docId: string, evaluations: Evaluation[], totalEvaluators: number): stateList {
+    const documentEvaluations = evaluations?.filter(e => e.documentId === docId) || [];
+
+    // 1. Si no hay evaluaciones aún, está en revisión
+    if (documentEvaluations.length === 0) return stateList.EN_REVISION;
+
+    // 2. Si hay AL MENOS un veredicto "NO_APROBADO", el documento completo se marca así
+    if (documentEvaluations.some(e => e.veredict === stateList.NO_APROBADO)) {
+      return stateList.NO_APROBADO;
+    }
+
+    // 3. Si ya evaluaron todos los jurados asignados y nadie rechazó, está APROBADO
+    // (Esto es lo que hará que en tu captura se vea verde)
+    if (totalEvaluators > 0 && documentEvaluations.length >= totalEvaluators) {
+      return stateList.APROBADO;
+    }
+
+    // 4. Si faltan evaluadores por calificar, sigue en revisión
+    return stateList.EN_REVISION;
   }
 }

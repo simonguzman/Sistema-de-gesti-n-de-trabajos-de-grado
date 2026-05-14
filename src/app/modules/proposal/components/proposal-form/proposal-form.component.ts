@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, effect, EventEmitter, inject, input, Output, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, EventEmitter, inject, input, OnInit, Output, signal } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { Proposal } from '../../interfaces/proposal.interface';
@@ -19,7 +19,7 @@ import { AuthService } from '../../../../core/services/auth/auth.service';
   templateUrl: './proposal-form.component.html',
   styleUrls: ['./proposal-form.component.css']
 })
-export class ProposalFormComponent {
+export class ProposalFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly notificationService = inject(NotificationService);
   private readonly proposalService = inject(ProposalService);
@@ -41,7 +41,7 @@ export class ProposalFormComponent {
     document: [null as File | null]
   });
 
-  private selectedStudent1Id = signal<string>('');
+  private readonly selectedStudent1Id = signal<string>('');
   attachedFile = { hasFile: false, name: null as string | null };
   uploadModalOpen = false;
 
@@ -214,7 +214,7 @@ export class ProposalFormComponent {
       id: crypto.randomUUID(),
       name: this.attachedFile.name!,
       url: '',
-      uploadDate: new Date().toLocaleDateString('es-ES').replace(/\//g, ' - '),
+      uploadDate: new Date().toLocaleDateString('es-ES').replaceAll('/', ' - '),
       type: 'Propuesta',
       status: stateList.EN_REVISION
     }];

@@ -17,11 +17,11 @@ import { ConfirmationActionModalComponent } from '../../../../shared/components/
   styleUrls: ['./proposal-create-page.component.css']
 })
 export class ProposalCreatePageComponent implements OnInit {
-  private proposalService     = inject(ProposalService);
-  private notificationService = inject(NotificationService);
-  private authService = inject(AuthService);
-  private router              = inject(Router);
-  private location            = inject(Location);
+  private readonly proposalService = inject(ProposalService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
 
   confirmState = {
     show:        false,

@@ -18,12 +18,12 @@ import { UserRoleType } from '../../../../core/models/user-role';
 })
 export class ProposalEditPageComponent implements OnInit {
 
-  private route               = inject(ActivatedRoute);
-  private router              = inject(Router);
-  private location            = inject(Location);
-  private proposalService     = inject(ProposalService);     // ← minúscula
-  private notificationService = inject(NotificationService);
-  private authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  private readonly proposalService = inject(ProposalService);     // ← minúscula
+  private readonly notificationService = inject(NotificationService);
+  private readonly authService = inject(AuthService);
 
   proposalToEdit = signal<Proposal | null>(null);
 

@@ -4,7 +4,7 @@
   [description]="'Subir documento de usuario'"
   [uploadedBy]="'Cargado por el estudiante'"
   (onFileUploaded)="handleFileUploaded($event)"
-  (closed)="isModalOpen = false"
+  (onClose)="isModalOpen = false"
 ></app-file-upload-modal>
 
 <!-- Botón para abrir el modal -->

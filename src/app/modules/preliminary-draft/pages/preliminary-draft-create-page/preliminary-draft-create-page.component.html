@@ -17,6 +17,6 @@
 <app-confirmation-action-modal
   [isOpen]="confirmState.show"
   description="¿Está seguro de registrar este anteproyecto? Verifique que el documento adjunto corresponda a la propuesta seleccionada."
-  (closed)="cancelCreation()"
+  (onClose)="cancelCreation()"
   (confirm)="confirmCreation()"
 ></app-confirmation-action-modal>

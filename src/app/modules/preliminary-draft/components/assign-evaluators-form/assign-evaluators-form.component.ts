@@ -40,8 +40,11 @@ export class AssignEvaluatorsFormComponent implements OnInit {
     const allUsers = this.userService.users();
     const currentDraft = this.draft();
     if (!currentDraft.proposalData) return [];
+
     const data = currentDraft.proposalData;
     const forbiddenIds = new Set<string>();
+
+    // 1. Excluir participantes directos (Director, Codirector, Asesor, Autores)
     if (data.director?.id) forbiddenIds.add(data.director.id);
     if (data.codirector?.id) forbiddenIds.add(data.codirector.id);
     if (data.advisor?.id) forbiddenIds.add(data.advisor.id);
@@ -54,9 +57,18 @@ export class AssignEvaluatorsFormComponent implements OnInit {
     });
 
     return allUsers.filter(user => {
+      // 2. Debe ser DOCENTE
       const isDocente = user.roles?.includes(UserRoleType.DOCENTE);
+
+      // 3. No debe ser participante directo
       const isNotParticipant = !forbiddenIds.has(user.id);
-      return isDocente && isNotParticipant;
+
+      // 4. NUEVA REGLA: No debe tener roles administrativos que generen conflicto de interés
+      const hasConflictRole = user.roles?.some(role =>
+        role === UserRoleType.JEFE_DEP || role === UserRoleType.CONSEJO
+      );
+
+      return isDocente && isNotParticipant && !hasConflictRole;
     });
   });
 

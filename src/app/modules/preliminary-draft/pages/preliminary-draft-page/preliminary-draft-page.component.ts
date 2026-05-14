@@ -2,13 +2,13 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Column, TableButton, TableComponent } from '../../../../shared/components/table-component/table-component.component';
 import { Router } from '@angular/router';
 import { PreliminaryDraftService } from '../../services/preliminary-draft.service';
-import { UserService } from '../../../users/services/user.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { UserRoleType } from '../../../../core/models/user-role';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
 import { DescriptionModalComponent } from "../../../../shared/components/modals/description-modal/description-modal.component";
+import { stateList } from '../../../../core/enums/state.enum';
 
 const PRELIMINARY_DRAFT_COLUMNS : Column[] = [
   { field: 'title', header: 'Titulo', type: 'text', width: '30%' },
@@ -50,41 +50,76 @@ const HEADER_BUTTONS: TableButton[] = [
 export class PreliminaryDraftPageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly preliminaryDraftService = inject(PreliminaryDraftService);
-  private readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
 
   protected columns: Column[] = PRELIMINARY_DRAFT_COLUMNS;
   protected headerButtons: TableButton[] = [];
 
+  descriptionModal = signal({ show: false, title: '', content: '' });
+  deleteState = signal({ show: false, id: null as string | null, title: '', loading: false });
+
   protected tableData = computed(() => {
     const currentUser = this.authService.currentUser();
+    const userId = currentUser?.id ? String(currentUser.id) : null;
+
+    // 1. Definición de roles de acceso total
     const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
     const isJefe = this.authService.hasAnyRole([UserRoleType.JEFE_DEP]);
-    const isEvaluador = this.authService.hasAnyRole([UserRoleType.EVALUADOR]);
+    const isConsejo = this.authService.hasAnyRole([UserRoleType.CONSEJO]);
+    const canSeeAll = isAdmin || isJefe || isConsejo;
 
-    return this.preliminaryDraftService.preliminaryDrafts().map(draft => {
-      const isOwner = draft.proposalData?.director.id === currentUser?.id;
-      let allowed: string[] = ['ver descripción', 'ver'];
-      if (isAdmin || isOwner) {
-        allowed = ['ver descripción', 'ver', 'editar', 'eliminar'];
-      } else if (isJefe || isEvaluador) {
-        allowed = ['ver descripción', 'ver'];
+    const isUser = (entity: any) => entity?.id != null && String(entity.id) === userId;
+    const isUserInArray = (arr?: any[]) => Array.isArray(arr) && arr.some(isUser);
+
+    // Los borradores ya vienen filtrados (o no) desde el servicio
+    let drafts = this.preliminaryDraftService.preliminaryDrafts();
+
+    // 2. Mapeo y permisos de acciones por fila
+    return drafts.map(draft => {
+      const proposal = draft.proposalData;
+
+      const isDirector = isUser(proposal?.director);
+      const isCodirector = isUser(proposal?.codirector);
+      const isAsesor = isUser(proposal?.advisor);
+      const isStudent = (userId != null && Array.isArray(proposal?.authors))
+        ? proposal.authors.includes(userId)
+        : false;
+      const isAssignedEvaluator = isUserInArray(draft.evaluators);
+
+      // El Consejo tiene permiso de 'ver' todas las filas que reciba
+      const hasViewPermission =
+        canSeeAll ||
+        isDirector ||
+        isCodirector ||
+        isAsesor ||
+        isStudent ||
+        isAssignedEvaluator;
+
+      const isOwnerOrAdmin = isAdmin || isDirector;
+
+      let allowed: string[] = ['ver descripción'];
+
+      if (hasViewPermission) {
+        allowed.push('ver');
       }
+
+      // --- CAMBIO AQUÍ: Regla de negocio para ocultar edición y borrado ---
+      // Solo permitimos editar y eliminar si el usuario tiene permisos Y el proyecto NO está aprobado
+      if (isOwnerOrAdmin && draft.state !== stateList.APROBADO) {
+        allowed.push('editar', 'eliminar');
+      }
+
       return {
         id: draft.preliminaryDraftId,
-        title: draft.proposalData?.title || 'Sin título',
-        description: draft.proposalData?.description,
-        modality: draft.proposalData?.modality || 'No definida',
-        directorId: draft.proposalData?.director.id,
+        title: proposal?.title || 'Sin título',
+        description: proposal?.description,
+        modality: proposal?.modality || 'No definida',
         state: draft.state,
         allowedActions: allowed
       };
     });
   });
-
-  descriptionModal = signal({ show: false, title: '', content: '' });
-  deleteState = signal({ show: false, id: null as string | null, title: '', loading: false });
 
   ngOnInit(): void {
     this.initHeaderButtons();
@@ -143,17 +178,14 @@ export class PreliminaryDraftPageComponent implements OnInit {
   confirmDelete(): void {
     const state = this.deleteState();
     if (!state.id || state.loading) return;
-
-    this.deleteState.update(state => ({ ...state, loading: true }));
-    this.showDeleteInfoNotification();
-
+    this.deleteState.update(s => ({ ...s, loading: true }));
     this.preliminaryDraftService.deleteDraftMock(state.id).subscribe({
       next: () => {
         this.showDeleteSuccessNotification();
         this.cancelDelete();
       },
       error: () => {
-        this.deleteState.update(state => ({ ...state, loading: false }));
+        this.deleteState.update(s => ({ ...s, loading: false }));
         this.showDeleteErrorNotification();
       }
     });
@@ -161,14 +193,6 @@ export class PreliminaryDraftPageComponent implements OnInit {
 
   cancelDelete(): void {
     this.deleteState.set({ show: false, id: null, title: '', loading: false });
-  }
-
-  private showDeleteInfoNotification(): void {
-    this.notificationService.show({
-      title: 'Eliminando anteproyecto',
-      message: 'Se está eliminando el registro del sistema...',
-      type: NotificationType.INFO
-    });
   }
 
   private showDeleteSuccessNotification(): void {
