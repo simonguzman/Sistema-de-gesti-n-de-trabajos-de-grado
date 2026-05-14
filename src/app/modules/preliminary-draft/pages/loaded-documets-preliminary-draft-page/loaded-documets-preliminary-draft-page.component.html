@@ -1,6 +1,7 @@
 <div class="w-full">
   <div class="bg-white rounded-lg shadow-sm p-6">
 
+    <!-- Botón de retorno -->
     <div class="mb-6">
       <button (click)="goBack()" class="flex items-center gap-2 text-navy-900 font-bold group w-fit">
         <span class="material-symbols-outlined text-[#000066] text-lg group-hover:-translate-x-1 transition-transform">
@@ -10,12 +11,14 @@
       </button>
     </div>
 
+    <!-- Navegación por pestañas -->
     <app-tabs
       [tabs]="tabs"
       [activeTab]="activeTab()"
       (tabChange)="activeTab.set($event)"
     ></app-tabs>
 
+    <!-- Tabla de documentos -->
     <div class="mt-6">
       <app-table-component
         [value]="currentTableData()"
@@ -33,18 +36,20 @@
   </div>
 </div>
 
+<!-- Modal para selección de archivos -->
 <app-file-upload-modal
-  [isOpen]="fileModalOpen()"
+  [isOpen]="isUploadModalOpen()"
   [description]="activeTab() === 'ANTEPROYECTOS'
     ? 'Seleccione el archivo PDF del anteproyecto'
     : 'Seleccione el archivo PDF de la presentación'"
   [uploadedBy]="activeTab() === 'ANTEPROYECTOS' ? 'Estudiante' : 'Jefe de Departamento'"
   (onFileUploaded)="onFileSelected($event)"
-  (onClose)="fileModalOpen.set(false)"
+  (onClose)="isUploadModalOpen.set(false)"
 ></app-file-upload-modal>
 
+<!-- Modal de confirmación de carga -->
 <app-confirmation-action-modal
-  [isOpen]="confirmModalOpen()"
+  [isOpen]="isConfirmModalOpen()"
   [description]="activeTab() === 'ANTEPROYECTOS'
     ? '¿Está seguro de cargar este anteproyecto? El estado cambiará a \'En revisión\'.'
     : '¿Está seguro de cargar esta presentación al consejo?'"

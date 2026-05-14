@@ -8,13 +8,13 @@
     Regresar
   </button>
 
-  @if (isLoading()) {
+  @if (isDataLoading()) {
     <div class="flex justify-center items-center h-60">
       <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
     </div>
-  } @else if (draft()) {
+  } @else if (selectedPreliminaryDraft()) {
     <app-assign-evaluators-form
-      [draft]="draft()!"
+      [preliminaryDraft]="selectedPreliminaryDraft()!"
       (onSave)="handleAssign($event)"
     ></app-assign-evaluators-form>
   }

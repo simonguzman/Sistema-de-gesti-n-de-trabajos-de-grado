@@ -1,10 +1,12 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
-import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
-import { AssignEvaluatorsFormComponent } from "../../components/assign-evaluators-form/assign-evaluators-form.component";
+
 import { PreliminaryDraftService } from '../../services/preliminary-draft.service';
+import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
+
+import { AssignEvaluatorsFormComponent } from "../../components/assign-evaluators-form/assign-evaluators-form.component";
 import { PreliminaryDraft } from '../../interfaces/preliminary-draft.interface';
+import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 
 @Component({
   selector: 'app-assing-evaluators-page',
@@ -15,49 +17,52 @@ import { PreliminaryDraft } from '../../interfaces/preliminary-draft.interface';
 export class AssingEvaluatorsPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly draftService = inject(PreliminaryDraftService);
+  private readonly preliminaryDraftService = inject(PreliminaryDraftService);
   private readonly notificationService = inject(NotificationService);
-
-  preliminaryDraftId = signal<string | null>(null);
-  draft = signal<PreliminaryDraft | null>(null);
-  isLoading = signal<boolean>(true);
+  // Signals con nombres descriptivos
+  targetPreliminaryDraftId = signal<string | null>(null);
+  selectedPreliminaryDraft = signal<PreliminaryDraft | null>(null);
+  isDataLoading = signal<boolean>(true);
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id') ??
-             this.route.parent?.snapshot.paramMap.get('id') ??
-             this.route.parent?.parent?.snapshot.paramMap.get('id');
-    if (!id) {
+    // Se mantiene la lógica de búsqueda en niveles superiores de la ruta (indispensable para la arquitectura actual)
+    const resolvedId = this.route.snapshot.paramMap.get('id') ??
+                      this.route.parent?.snapshot.paramMap.get('id') ??
+                      this.route.parent?.parent?.snapshot.paramMap.get('id');
+    if (!resolvedId) {
       this.showNavigationErrorNotification();
       this.goBack();
       return;
     }
-
-    this.preliminaryDraftId.set(id);
-    this.loadDraft(id);
+    this.targetPreliminaryDraftId.set(resolvedId);
+    this.loadPreliminaryDraftData(resolvedId);
   }
 
-  private loadDraft(id: string): void {
-    this.draftService.getDraftByIdMock(id).subscribe({
-      next: (data) => {
-        if (data) {
-          this.draft.set(data);
+  private loadPreliminaryDraftData(id: string): void {
+    this.preliminaryDraftService.getPreliminaryDraftByIdMock(id).subscribe({
+      next: (preliminaryDraftData) => {
+        if (preliminaryDraftData) {
+          this.selectedPreliminaryDraft.set(preliminaryDraftData);
         } else {
+          this.showDraftNotFoundNotification();
           this.goBack();
         }
-        this.isLoading.set(false);
+        this.isDataLoading.set(false);
       },
       error: () => {
-        this.isLoading.set(false);
+        this.isDataLoading.set(false);
+        this.showConnectionErrorNotification();
         this.goBack();
       }
     });
   }
 
   handleAssign(evaluators: { ev1: string; ev2: string }): void {
-    const currentDraft = this.draft();
-    if (!currentDraft?.preliminaryDraftId) return;
-    this.draftService.assignReviewersMock(
-      currentDraft.preliminaryDraftId,
+    const preliminaryDraft = this.selectedPreliminaryDraft();
+    if (!preliminaryDraft?.preliminaryDraftId) return;
+    this.showProcessingNotification();
+    this.preliminaryDraftService.assignReviewersMock(
+      preliminaryDraft.preliminaryDraftId,
       [evaluators.ev1, evaluators.ev2]
     ).subscribe({
       next: () => {
@@ -69,14 +74,33 @@ export class AssingEvaluatorsPageComponent implements OnInit {
       }
     });
   }
+
   goBack(): void {
     this.router.navigate(['../'], { relativeTo: this.route });
   }
 
-   private showNavigationErrorNotification(): void {
+  // --- MÉTODOS DE NOTIFICACIÓN ---
+
+  private showProcessingNotification(): void {
+    this.notificationService.show({
+      title: 'Procesando asignación',
+      message: 'Guardando los evaluadores asignados en el sistema...',
+      type: NotificationType.INFO
+    });
+  }
+
+  private showNavigationErrorNotification(): void {
     this.notificationService.show({
       title: 'Error de navegación',
-      message: 'No se pudo encontrar el identificador del anteproyecto.',
+      message: 'No se pudo identificar el anteproyecto para realizar la asignación.',
+      type: NotificationType.ERROR
+    });
+  }
+
+  private showDraftNotFoundNotification(): void {
+    this.notificationService.show({
+      title: 'Anteproyecto no encontrado',
+      message: 'El registro solicitado no existe o no se encuentra disponible.',
       type: NotificationType.ERROR
     });
   }
@@ -84,17 +108,16 @@ export class AssingEvaluatorsPageComponent implements OnInit {
   private showAssingEvaluatorsSuccessNotification(): void {
     this.notificationService.show({
       title: 'Asignación exitosa',
-      message: 'Los jurados evaluadores han sido guardados correctamente.',
+      message: 'Los jurados evaluadores han sido vinculados al anteproyecto correctamente.',
       type: NotificationType.CONFIRMATION
     });
   }
 
   private showConnectionErrorNotification(): void {
     this.notificationService.show({
-      title: 'Error de conexión',
-      message: 'Ocurrió un error al intentar asignar los evaluadores.',
+      title: 'Error de servicio',
+      message: 'No se pudo completar la asignación. Por favor, intente más tarde.',
       type: NotificationType.ERROR
     });
   }
-
 }

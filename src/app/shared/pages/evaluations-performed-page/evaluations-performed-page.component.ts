@@ -64,7 +64,6 @@ export class EvaluationsPerformedPageComponent implements OnInit {
         .find(d => d.preliminaryDraftId === id);
 
       if (draft) {
-        // Usamos únicamente las evaluaciones reales del historial
         rawEvaluations = [...(draft.evaluations || [])];
         allDocuments = draft.documents || [];
         defaultTitle = draft.proposalData.title;
@@ -80,11 +79,16 @@ export class EvaluationsPerformedPageComponent implements OnInit {
 
     const MAIN_DOC_TYPES = new Set(['Anteproyecto', 'Propuesta', 'Correccion', 'Formato']);
 
-    // Invertimos el arreglo para mostrar la última evaluación al principio
-    return [...rawEvaluations].reverse().map(evaluation => {
+    // CORRECCIÓN: Ordenamos explícitamente por fecha de más reciente a más antiguo
+    const sortedEvaluations = [...rawEvaluations].sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return dateB - dateA;
+    });
+
+    return sortedEvaluations.map(evaluation => {
       const targetDocument = allDocuments.find(doc => doc.id === evaluation.documentId);
 
-      // NORMALIZACIÓN: Detectar si es el Consejo para rellenar campos vacíos si es necesario
       const isCouncil = evaluation.evaluatorName?.toLowerCase().includes('consejo') ||
                         evaluation.evaluatorRole === 'Consejo';
 
@@ -103,7 +107,6 @@ export class EvaluationsPerformedPageComponent implements OnInit {
         ...evaluation,
         evaluatorName,
         evaluatorRole,
-        // CORRECCIÓN: Compatibilidad con 'observations' (nuevo) y 'comments' (viejo en LocalStorage)
         observations: evaluation.observations || (evaluation as any).comments || 'Sin observaciones registradas.',
         documentTargetName: docName || fallbackDoc?.name || defaultTitle,
         allowedActions: ['view_details']

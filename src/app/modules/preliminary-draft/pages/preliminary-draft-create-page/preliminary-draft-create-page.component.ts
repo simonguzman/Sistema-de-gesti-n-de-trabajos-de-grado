@@ -1,14 +1,17 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { Location } from '@angular/common';
+
 import { PreliminaryDraftService } from '../../services/preliminary-draft.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
-import { Router } from '@angular/router';
-import { UserRoleType } from '../../../../core/models/user-role';
-import { Location } from '@angular/common';
+
+import { PreliminaryDraft } from '../../interfaces/preliminary-draft.interface';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { UserRoleType } from '../../../../core/models/user-role';
+
 import { PreliminaryDraftFormComponent } from "../../components/preliminary-draft-form/preliminary-draft-form.component";
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
-import { PreliminaryDraft } from '../../interfaces/preliminary-draft.interface';
 
 @Component({
   selector: 'app-preliminary-draft-create-page',
@@ -23,13 +26,19 @@ export class PreliminaryDraftCreatePageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
 
-  confirmState = {
-    show: false,
-    pendingData: null as PreliminaryDraft | null
-  };
+  // Signal para manejar el flujo de confirmación y estado de carga
+  confirmState = signal({
+    isOpen: false,
+    pendingData: null as PreliminaryDraft | null,
+    isProcessing: false
+  });
 
   ngOnInit(): void {
-    if (!this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR, UserRoleType.DIRECTOR])) {
+    const hasRequiredRoles = this.authService.hasAnyRole([
+      UserRoleType.ADMINISTRADOR,
+      UserRoleType.DIRECTOR
+    ]);
+    if (!hasRequiredRoles) {
       this.showAccessDeniedNotification();
       this.router.navigate(['/preliminary-draft']);
     }
@@ -37,31 +46,30 @@ export class PreliminaryDraftCreatePageComponent implements OnInit {
 
   // Recibe los datos del FormComponent
   handleCreatePreliminaryDraft(preliminaryDraft: PreliminaryDraft): void {
-    this.confirmState = { show: true, pendingData: preliminaryDraft };
+    this.confirmState.set({
+      isOpen: true,
+      pendingData: preliminaryDraft,
+      isProcessing: false
+    });
   }
 
   confirmCreation(): void {
-    if (!this.confirmState.pendingData) return;
-
-    const data = this.confirmState.pendingData;
-    this.confirmState.show = false;
+    const { pendingData, isProcessing } = this.confirmState();
+    if (!pendingData || isProcessing) return;
+    this.confirmState.update(state => ({ ...state, isProcessing: true }));
     this.showProcessingNotification();
-
-    this.preliminaryDraftService.createPreliminaryDraftMock(data).subscribe({
+    this.preliminaryDraftService.createPreliminaryDraftMock(pendingData).subscribe({
       next: () => this.handleCreationSuccess(),
-      error: (err) => {
-        console.error(err);
-        this.notificationService.show({
-          title: 'Error',
-          message: 'No se pudo guardar el anteproyecto.',
-          type: NotificationType.ERROR
-        });
+      error: (error) => {
+        console.error('Error al registrar anteproyecto:', error);
+        this.confirmState.update(state => ({ ...state, isProcessing: false, isOpen: false }));
+        this.showCreationErrorNotification();
       }
     });
   }
 
   cancelCreation(): void {
-    this.confirmState = { show: false, pendingData: null };
+    this.confirmState.set({ isOpen: false, pendingData: null, isProcessing: false });
   }
 
   goBack(): void {
@@ -69,28 +77,42 @@ export class PreliminaryDraftCreatePageComponent implements OnInit {
   }
 
   private handleCreationSuccess(): void {
-    this.notificationService.show({
-      title: '¡Anteproyecto registrado!',
-      message: 'El anteproyecto ha sido creado exitosamente y está listo para evaluación.',
-      type: NotificationType.CONFIRMATION
-    });
-    this.confirmState = { show: false, pendingData: null };
+    this.showSuccessNotification();
+    this.confirmState.set({ isOpen: false, pendingData: null, isProcessing: false });
     this.router.navigate(['/preliminary-draft']);
   }
 
-  private showAccessDeniedNotification() {
+  // --- MÉTODOS DE NOTIFICACIÓN ---
+
+  private showSuccessNotification(): void {
     this.notificationService.show({
-      title: 'Acceso Denegado',
-      message: 'No tienes los permisos requeridos para registrar anteproyectos.',
+      title: '¡Registro exitoso!',
+      message: 'El anteproyecto ha sido creado correctamente y está listo para evaluación.',
+      type: NotificationType.CONFIRMATION
+    });
+  }
+
+  private showAccessDeniedNotification(): void {
+    this.notificationService.show({
+      title: 'Acceso restringido',
+      message: 'No cuenta con los permisos necesarios para registrar nuevos anteproyectos.',
       type: NotificationType.ERROR
     });
   }
 
-  private showProcessingNotification() {
+  private showProcessingNotification(): void {
     this.notificationService.show({
-      title: 'Procesando registro',
-      message: 'Estamos guardando la información del anteproyecto en el sistema...',
+      title: 'Procesando solicitud',
+      message: 'Guardando la información del anteproyecto en el sistema...',
       type: NotificationType.INFO
+    });
+  }
+
+  private showCreationErrorNotification(): void {
+    this.notificationService.show({
+      title: 'Error de registro',
+      message: 'Hubo un problema al intentar guardar el anteproyecto. Por favor, intente de nuevo.',
+      type: NotificationType.ERROR
     });
   }
 }

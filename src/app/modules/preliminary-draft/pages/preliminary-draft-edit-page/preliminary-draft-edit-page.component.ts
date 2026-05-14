@@ -1,12 +1,15 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
+
 import { PreliminaryDraftService } from '../../services/preliminary-draft.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
+
 import { PreliminaryDraft } from '../../interfaces/preliminary-draft.interface';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { UserRoleType } from '../../../../core/models/user-role';
-import { Location } from '@angular/common';
+
 import { PreliminaryDraftFormComponent } from "../../components/preliminary-draft-form/preliminary-draft-form.component";
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
 
@@ -24,111 +27,127 @@ export class PreliminaryDraftEditPageComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
   private readonly authService = inject(AuthService);
 
+  // Variable de estado principal renombrada para mayor claridad
   preliminaryDraftToEdit = signal<PreliminaryDraft | null>(null);
 
-  confirmState = {
-    show: false,
-    pendingData: null as PreliminaryDraft | null
-  };
+  // Signal para manejar el flujo de confirmación (reemplaza el objeto plano)
+  confirmState = signal({
+    isOpen: false,
+    pendingData: null as PreliminaryDraft | null,
+    isProcessing: false
+  });
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    id ? this.loadPreliminaryDraftData(id) : this.router.navigate(['/preliminary-draft'])
+    const draftId = this.route.snapshot.paramMap.get('id');
+    draftId ? this.loadPreliminaryDraftData(draftId) : this.router.navigate(['/preliminary-draft']);
   }
 
   private loadPreliminaryDraftData(id: string): void {
-    this.preliminaryDraftService.getDraftByIdMock(id).subscribe({
-      next: (found) => {
-        if (found) {
+    this.preliminaryDraftService.getPreliminaryDraftByIdMock(id).subscribe({
+      next: (foundDraft) => {
+        if (foundDraft) {
           const currentUser = this.authService.currentUser();
-          const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
+          const currentUserId = currentUser?.id;
 
-          const isOwner= found?.proposalData.director?.id === currentUser?.id;
+          const hasAdminPrivileges = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
+          const isDraftOwner = foundDraft.proposalData.director?.id === currentUserId;
 
-          if(!isAdmin && !isOwner){
-            this.handleUpdateError('No tienes permisos para editar este anteproyecto.');
+          if (!hasAdminPrivileges && !isDraftOwner) {
+            this.handleUpdateError('No cuenta con los permisos necesarios para editar este registro.');
             this.router.navigate(['/preliminary-draft']);
             return;
           }
-          this.preliminaryDraftToEdit.set({...found});
+
+          this.preliminaryDraftToEdit.set({ ...foundDraft });
         } else {
           this.handleNotFound();
         }
-      }
-    })
+      },
+      error: () => this.handleUpdateError('Error al cargar la información del anteproyecto.')
+    });
   }
 
   handleUpdate(updatedData: PreliminaryDraft): void {
-    this.confirmState = { show: true, pendingData: updatedData };
+    this.confirmState.set({
+      isOpen: true,
+      pendingData: updatedData,
+      isProcessing: false
+    });
   }
 
   confirmUpdate(): void {
     const currentDraft = this.preliminaryDraftToEdit();
-    const dataToSave = this.confirmState.pendingData;
+    const { pendingData, isProcessing } = this.confirmState();
 
-    if (!currentDraft?.preliminaryDraftId || !dataToSave) return;
+    if (!currentDraft?.preliminaryDraftId || !pendingData || isProcessing) return;
 
+    this.confirmState.update(state => ({ ...state, isProcessing: true }));
     this.showUpdateInfoNotification();
-    this.preliminaryDraftService.updatePreliminaryDraftMock(currentDraft.preliminaryDraftId, dataToSave).subscribe({
+
+    this.preliminaryDraftService.updatePreliminaryDraftMock(currentDraft.preliminaryDraftId, pendingData).subscribe({
       next: () => this.handleUpdateSuccess(),
-      error: () => this.handleUpdateError()
+      error: () => {
+        this.confirmState.update(state => ({ ...state, isProcessing: false }));
+        this.handleUpdateError();
+      }
     });
   }
 
   cancelUpdate(): void {
-    this.confirmState = { show: false, pendingData: null };
+    this.confirmState.set({ isOpen: false, pendingData: null, isProcessing: false });
   }
 
   goBack(): void {
     this.location.back();
   }
 
-  private handleUpdateSuccess(): void{
+  private handleUpdateSuccess(): void {
     this.showUpdateSuccessNotification();
-    this.confirmState = { show: false, pendingData: null };
-    this.router.navigate(['/preliminary-draft'])
+    this.confirmState.set({ isOpen: false, pendingData: null, isProcessing: false });
+    this.router.navigate(['/preliminary-draft']);
   }
 
   private handleUpdateError(customMessage?: string): void {
     this.showUpdateErrorNotification(customMessage);
-    this.confirmState.show = false;
+    this.confirmState.update(state => ({ ...state, isOpen: false }));
   }
 
   private handleNotFound(): void {
     this.showNotFoundNotification();
-    this.router.navigate(['/preliminary-draft'])
+    this.router.navigate(['/preliminary-draft']);
   }
+
+  // --- MÉTODOS DE NOTIFICACIÓN ---
 
   private showUpdateInfoNotification() {
     this.notificationService.show({
-      title: 'Procesando actualización',
-      message: 'Estamos guardando los cambios en el anteproyecto...',
+      title: 'Actualizando registro',
+      message: 'Procesando los cambios en el anteproyecto...',
       type: NotificationType.INFO
     });
   }
 
   private showUpdateSuccessNotification() {
     this.notificationService.show({
-      title: '¡Actualización exitosa!',
-      message: 'El anteproyecto se ha modificado correctamente.',
+      title: '¡Cambios guardados!',
+      message: 'El anteproyecto ha sido actualizado correctamente.',
       type: NotificationType.CONFIRMATION
     });
   }
 
   private showUpdateErrorNotification(customMessage?: string) {
     this.notificationService.show({
-      title: 'Error de actualización',
-      message: customMessage || 'No se pudieron guardar los cambios. Por favor, intente de nuevo.',
+      title: 'Error de guardado',
+      message: customMessage || 'No se pudieron aplicar los cambios. Verifique su conexión e intente nuevamente.',
       type: NotificationType.ERROR
     });
   }
 
   private showNotFoundNotification() {
     this.notificationService.show({
-      title: 'Atención',
-      message: 'El anteproyecto que intenta editar no fue encontrado en el sistema.',
+      title: 'Registro no encontrado',
+      message: 'El anteproyecto solicitado no existe o ha sido eliminado.',
       type: NotificationType.ERROR
     });
   }
-
 }

@@ -1,6 +1,6 @@
-@if (preliminaryDraft()) {
+@if (preliminaryDraftState()) {
   <app-review-preliminary-draft-form
-    [preliminaryDraft]="preliminaryDraft()!"
+    [preliminaryDraft]="preliminaryDraftState()!"
     (onSaveEvaluation)="handleRequestConfirmation($event)"
     (onDownloadPreliminaryDraft)="downloadCurrentDocument()">
   </app-review-preliminary-draft-form>

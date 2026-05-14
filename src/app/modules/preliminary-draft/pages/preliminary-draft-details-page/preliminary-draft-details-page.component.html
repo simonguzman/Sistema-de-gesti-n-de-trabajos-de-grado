@@ -11,7 +11,7 @@
       <span class="return-arrow-option">Regresar</span>
     </button>
 
-    @if (preliminaryDraft()) {
+    @if (preliminayDraftDetails()) {
       <div class="flex gap-4">
         <app-button-component
           label="Evaluaciones realizadas"
@@ -27,13 +27,13 @@
     }
   </div>
 
-  @if (!preliminaryDraft()) {
+  @if (!preliminayDraftDetails()) {
     <div class="text-center text-gray-500 font-display my-10">
       Cargando información del anteproyecto...
     </div>
   }
 
-  @if (preliminaryDraft(); as draft) {
+  @if (preliminayDraftDetails(); as draft) {
 
     <h3 class="font-semibold text-size-header-title font-display text-primary mb-4">
       Información del anteproyecto

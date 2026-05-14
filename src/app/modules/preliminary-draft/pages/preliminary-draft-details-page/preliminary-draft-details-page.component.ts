@@ -1,9 +1,11 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import { PreliminaryDraftService } from '../../services/preliminary-draft.service';
 import { UserService } from '../../../users/services/user.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { FileDownloadService } from '../../../../core/services/filedownload/file-download.service';
+
 import { PreliminaryDraft } from '../../interfaces/preliminary-draft.interface';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { ButtonComponent } from "../../../../shared/components/button-component/button-component.component";
@@ -20,104 +22,111 @@ export class PreliminaryDraftDetailsPageComponent implements OnInit {
   private readonly preliminaryDraftService = inject(PreliminaryDraftService);
   private readonly userService = inject(UserService);
   private readonly notificationService = inject(NotificationService);
-  private readonly dowloadService = inject(FileDownloadService);
+  private readonly downloadService = inject(FileDownloadService);
 
-  preliminaryDraft = signal<PreliminaryDraft | null>(null);
+  // Variable de estado renombrada para mayor claridad
+  preliminayDraftDetails = signal<PreliminaryDraft | null>(null);
+  // Selector reactivo para el documento principal
   mainDocument = computed(() => {
-    const draft = this.preliminaryDraft();
-    if (!draft) return null;
-    return draft.documents.find(doc => doc.type === 'Anteproyecto') || draft.documents[0] || null;
+    const currentDraft = this.preliminayDraftDetails();
+    if (!currentDraft) return null;
+    return currentDraft.documents.find(doc => doc.type === 'Anteproyecto')
+           || currentDraft.documents[0]
+           || null;
   });
+
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if(!id){
+    const draftId = this.route.snapshot.paramMap.get('id');
+    if (!draftId) {
       this.handleNavigationError();
       return;
     }
-    this.preliminaryDraftService.getDraftByIdMock(id).subscribe({
-      next: (data) => {
-        if(data) {
-          this.preliminaryDraft.set(data);
+    this.preliminaryDraftService.getPreliminaryDraftByIdMock(draftId).subscribe({
+      next: (foundData) => {
+        if (foundData) {
+          this.preliminayDraftDetails.set(foundData);
         } else {
           this.showNotFoundNotification();
           this.router.navigate(['preliminary-draft']);
         }
       },
-      error: (err) => {
+      error: (error) => {
         this.showErrorNotification();
         this.router.navigate(['/preliminary-draft']);
-        console.error(err);
+        console.error('Error al recuperar detalles:', error);
       }
-    })
+    });
   }
 
-  getMemberName(userId: string | undefined): string{
+  getMemberName(userId: string | undefined): string {
     return this.userService.getUserFullName(userId);
   }
 
-  getAuthors(ids: string[] | undefined ): string {
+  getAuthors(ids: string[] | undefined): string {
     return this.userService.getAuthorsNames(ids);
   }
 
   downloadDocument(): void {
-    const document = this.mainDocument();
-    if(!document?.url){
+    const targetDocument = this.mainDocument();
+
+    if (!targetDocument?.url) {
       this.showDownloadFileErrorNotification();
       return;
     }
-    this.showDownloadFileInfoNotification();
-    this.dowloadService.download(document.url, document.name);
-    this.showDownloadFileSuccessNotification();
 
+    this.showDownloadFileInfoNotification();
+    this.downloadService.download(targetDocument.url, targetDocument.name);
+    this.showDownloadFileSuccessNotification();
   }
 
+  // --- MÉTODOS DE NOTIFICACIÓN (MANTENIENDO NOMBRES) ---
+
   private showDownloadFileSuccessNotification(): void {
-     this.notificationService.show({
-        title: 'Descarga finalizada',
-        message: 'El anteproyecto fue descargado exitosamente.',
-        type: NotificationType.INFO
+    this.notificationService.show({
+      title: 'Descarga exitosa',
+      message: 'El archivo del anteproyecto se ha guardado en su equipo.',
+      type: NotificationType.CONFIRMATION
     });
   }
 
   private showDownloadFileInfoNotification(): void {
-     this.notificationService.show({
-        title: 'Descarga iniciada',
-        message: 'El anteproyecto se está descargando...',
-        type: NotificationType.INFO
+    this.notificationService.show({
+      title: 'Iniciando transferencia',
+      message: 'Estamos preparando el documento para la descarga...',
+      type: NotificationType.INFO
     });
   }
 
   private showDownloadFileErrorNotification(): void {
-     this.notificationService.show({
-        title: 'Error',
-        message: 'No hay un documento adjunto para descargar.',
-        type: NotificationType.ERROR
+    this.notificationService.show({
+      title: 'Archivo no disponible',
+      message: 'No se encontró un documento válido vinculado a este anteproyecto.',
+      type: NotificationType.ERROR
     });
   }
 
   private handleNavigationError(): void {
-     this.notificationService.show({
-     title: 'Acceso inválido',
-      message: 'No se proporcionó un ID válido.',
-      type: NotificationType.ERROR
-    });
-    this.router.navigate(['/preliminary-draft'])
-  }
-
-  private showNotFoundNotification() {
     this.notificationService.show({
-      title: 'No encontrado',
-      message: 'No se pudo encontrar el anteproyecto solicitado.',
+      title: 'Identificador faltante',
+      message: 'No se pudo cargar la información porque el ID del anteproyecto no es válido.',
       type: NotificationType.ERROR
     });
+    this.router.navigate(['/preliminary-draft']);
   }
 
-  private showErrorNotification() {
+  private showNotFoundNotification(): void {
     this.notificationService.show({
-      title: 'Error',
-      message: 'Error al conectar con el servidor.',
+      title: 'Registro inexistente',
+      message: 'El anteproyecto solicitado no se encuentra en nuestra base de datos.',
       type: NotificationType.ERROR
     });
   }
 
+  private showErrorNotification(): void {
+    this.notificationService.show({
+      title: 'Error de servidor',
+      message: 'Hubo un problema al intentar conectar con el servicio de datos.',
+      type: NotificationType.ERROR
+    });
+  }
 }

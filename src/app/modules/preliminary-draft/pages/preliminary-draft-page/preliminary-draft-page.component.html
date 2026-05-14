@@ -9,15 +9,15 @@
 ></app-table-component>
 
 <app-description-modal
-  [isOpen]="descriptionModal().show"
+  [isOpen]="descriptionModal().isOpen"
   [titleDescription]="descriptionModal().title"
   [description]="descriptionModal().content"
-  (onClose)="descriptionModal.set({show: false, title: '', content: ''})"
+  (onClose)="descriptionModal.set({isOpen: false, title: '', content: ''})"
 ></app-description-modal>
 
 <app-confirmation-action-modal
-  [isOpen]="deleteState().show"
-  [description]="'¿Está seguro de eliminar el anteproyecto: ' + deleteState().title + '?'"
+  [isOpen]="deleteState().isOpen"
+  [description]="'¿Está seguro de eliminar el anteproyecto: ' + deleteState().draftTitle + '?'"
   (onClose)="cancelDelete()"
   (confirm)="confirmDelete()"
 ></app-confirmation-action-modal>

@@ -15,7 +15,7 @@
 </app-preliminary-draft-form>
 
 <app-confirmation-action-modal
-  [isOpen]="confirmState.show"
+  [isOpen]="confirmState().isOpen"
   description="¿Está seguro de registrar este anteproyecto? Verifique que el documento adjunto corresponda a la propuesta seleccionada."
   (onClose)="cancelCreation()"
   (confirm)="confirmCreation()"

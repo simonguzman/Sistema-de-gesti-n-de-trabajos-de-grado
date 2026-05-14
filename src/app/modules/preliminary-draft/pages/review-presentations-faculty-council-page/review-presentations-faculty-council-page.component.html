@@ -7,7 +7,7 @@
 
 @if (preliminaryDraft()) {
   <app-review-presentations-faculty-council-form
-    [preliminaryDraft]="filteredDraft()!"
+    [preliminaryDraft]="filteredPreliminaryDraft()!"
     (onSaveEvaluation)="handleRequestConfirmation($event)"
     (onDownloadFile)="downloadFile($event)">
   </app-review-presentations-faculty-council-form>
