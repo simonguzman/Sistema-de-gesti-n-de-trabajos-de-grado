@@ -9,30 +9,29 @@ import { NotificationService } from '../../../../shared/components/notifications
 import { ActivatedRoute, Router } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
-import { UserService } from '../../../users/services/user.service';
-
+import { AuthService } from '../../../../core/services/auth/auth.service';
+import { UserRoleType } from '../../../../core/models/user-role';
 
 describe('ProposalEditPageComponent', () => {
   let component: ProposalEditPageComponent;
   let fixture: ComponentFixture<ProposalEditPageComponent>;
 
   let mockProposalService: any;
-  let mockUserService: any;
   let mockNotificationService: any;
   let mockRouter: any;
   let mockActivatedRoute: any;
   let mockLocation: any;
+  let mockAuthService: any;
 
-  const mockProposal: Proposal = {
+  const mockProposal: any = {
     id: '123',
     title: 'Propuesta Original',
     description: 'Descripción original',
     modality: Modality.TI,
     state: stateList.EN_REVISION,
     authors: ['user-1'],
-    directorId: 'doc-100',
+    director: { id: 'doc-100' }, // Corregido: estructura de objeto
     createdAt: new Date(),
     documents: [],
     evaluations: []
@@ -42,16 +41,14 @@ describe('ProposalEditPageComponent', () => {
     mockProposalService = {
       getProposalByIdMock: jest.fn().mockReturnValue(of(mockProposal)),
       updateProposalMock: jest.fn(),
+      // SOLUCIÓN AL ERROR: Agregar la función que faltaba
+      validateProposalRules: jest.fn().mockReturnValue(null),
       proposals: signal([])
     };
 
-    mockUserService = {
-      students: signal([]),
-      teachers: signal([]),
-      advisors: signal([]),
-      users: signal([]),
-      currentUser: jest.fn().mockReturnValue({ id: 'doc-100' }),
-      login: jest.fn()
+    mockAuthService = {
+      currentUser: signal({ id: 'doc-100', roles: [UserRoleType.DIRECTOR] }),
+      hasAnyRole: jest.fn().mockReturnValue(true)
     };
 
     mockNotificationService = { show: jest.fn() };
@@ -64,10 +61,10 @@ describe('ProposalEditPageComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [ProposalEditPageComponent, HttpClientTestingModule],
+      imports: [ProposalEditPageComponent],
       providers: [
         { provide: ProposalService, useValue: mockProposalService },
-        { provide: UserService, useValue: mockUserService },
+        { provide: AuthService, useValue: mockAuthService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: Router, useValue: mockRouter },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
@@ -87,7 +84,6 @@ describe('ProposalEditPageComponent', () => {
   it('Debe cargar la propuesta al iniciar', () => {
     fixture.detectChanges();
     expect(mockProposalService.getProposalByIdMock).toHaveBeenCalledWith('123');
-    // Acceso a la señal pública
     expect(component.proposalToEdit()).toEqual(mockProposal);
   });
 
@@ -97,10 +93,10 @@ describe('ProposalEditPageComponent', () => {
   });
 
   it('Debe actualizar el estado de confirmación en handleUpdate()', () => {
+    fixture.detectChanges();
     const updatedData = { ...mockProposal, title: 'Título Actualizado' };
     component.handleUpdate(updatedData);
 
-    // Verificamos el objeto confirmState
     expect(component.confirmState.show).toBe(true);
     expect(component.confirmState.pendingData).toEqual(updatedData);
   });
@@ -110,13 +106,9 @@ describe('ProposalEditPageComponent', () => {
     const updatedData = { ...mockProposal, title: 'Título Actualizado' };
     component.handleUpdate(updatedData);
 
-    const updateSubject = new Subject<void>();
-    mockProposalService.updateProposalMock.mockReturnValue(updateSubject.asObservable());
+    mockProposalService.updateProposalMock.mockReturnValue(of(undefined));
 
     component.confirmUpdate();
-
-    updateSubject.next();
-    updateSubject.complete();
     tick();
 
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/proposal']);
@@ -142,6 +134,7 @@ describe('ProposalEditPageComponent', () => {
   }));
 
   it('Debe resetear el estado al cancelar la actualización', () => {
+    fixture.detectChanges();
     component.handleUpdate(mockProposal);
     component.cancelUpdate();
 

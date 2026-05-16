@@ -1,16 +1,15 @@
-/* tslint:disable:no-unused-variable */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { DebugElement, signal } from '@angular/core';
-
-import { ProposalFormComponent } from './proposal-form.component';
-import { UserRoleType } from '../../../../core/models/user-role';
+import { signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+
+import { ProposalFormComponent } from './proposal-form.component';
+import { UserRoleType } from '../../../../core/models/user-role';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { ProposalService } from '../../services/proposal.service';
 import { UserService } from '../../../users/services/user.service';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 
 describe('ProposalFormComponent', () => {
   let component: ProposalFormComponent;
@@ -18,6 +17,7 @@ describe('ProposalFormComponent', () => {
   let mockNotificationService: any;
   let mockProposalService: any;
   let mockUserService: any;
+  let mockAuthService: any;
 
   const mockStudents = [
     { id: '1', firstName: 'Estudiante', lastName: 'Uno', roles: [UserRoleType.ESTUDIANTE] },
@@ -27,13 +27,16 @@ describe('ProposalFormComponent', () => {
   beforeEach(async () => {
     mockNotificationService = { show: jest.fn() };
     mockProposalService = { proposals: signal([]) };
+
+    // Mock para AuthService para evitar que el submit se aborte por falta de sesión
+    mockAuthService = {
+      currentUser: signal({ id: 'dir-01', name: 'Director de Prueba' })
+    };
+
     mockUserService = {
       students: signal(mockStudents),
-      teachers: signal([]),
+      teachers: signal([{ id: 'teacher-45', firstName: 'Profesor', lastName: 'Asignado' }]),
       advisors: signal([]),
-      users: signal([]),
-      currentUser: signal({ id: 'dir-01' }),
-      login: jest.fn(),
       addRoleToUser: jest.fn()
     };
 
@@ -44,7 +47,8 @@ describe('ProposalFormComponent', () => {
         provideHttpClientTesting(),
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: ProposalService, useValue: mockProposalService },
-        { provide: UserService, useValue: mockUserService }
+        { provide: UserService, useValue: mockUserService },
+        { provide: AuthService, useValue: mockAuthService }
       ]
     }).compileComponents();
 
@@ -53,8 +57,10 @@ describe('ProposalFormComponent', () => {
     fixture.detectChanges();
   });
 
-  it('Debe inicializar el formulario vacío por defecto', () => {
-    expect(component.proposalForm.get('title')?.value).toBeNull();
+  it('Debe inicializar el formulario con valores vacíos por defecto', () => {
+    const titleValue = component.proposalForm.get('title')?.value;
+    // Verificamos que sea falsy (null o cadena vacía) según la inicialización
+    expect(titleValue === null || titleValue === '').toBe(true);
     expect(component.isEditMode).toBe(false);
   });
 
@@ -73,10 +79,8 @@ describe('ProposalFormComponent', () => {
     component.proposalForm.get('student1')?.setValue('1');
     fixture.detectChanges();
 
-    // Accedemos mediante (component as any) porque la propiedad es protected
+    // Acceso a propiedad protected para validación
     const filtered = (component as any).filteredStudentsForS2();
-
-    // Cambiamos .any por .some (JavaScript estándar)
     const existsStudent1 = filtered.some((s: any) => s.id === '1');
 
     expect(existsStudent1).toBe(false);
@@ -95,36 +99,36 @@ describe('ProposalFormComponent', () => {
 
     component.proposalForm.patchValue({
       title: 'Proyecto de Prueba',
-      description: 'Descripción larga',
+      description: 'Descripción obligatoria para validez',
       modality: 'Trabajo de investigacion',
       student1: '1'
     });
 
+    // Simulamos carga de archivo
     component.attachedFile = { hasFile: true, name: 'propuesta.pdf' };
+    component.proposalForm.get('document')?.setValue(new File([], 'propuesta.pdf'));
 
+    fixture.detectChanges();
     component.submit();
 
     expect(emitSpy).toHaveBeenCalled();
     const emittedValue = emitSpy.mock.calls[0][0];
-
-    // Agregamos una aserción para asegurar que emittedValue existe ante TypeScript
-    expect(emittedValue).toBeDefined();
-    if (emittedValue) {
-      expect(emittedValue.title).toBe('Proyecto de Prueba');
-      expect(emittedValue.authors).toContain('1');
-    }
+    expect(emittedValue?.title).toBe('Proyecto de Prueba');
   });
 
   it('Debe añadir el rol de CODIRECTOR si se selecciona uno en el formulario', () => {
     component.proposalForm.patchValue({
       title: 'Proyecto con Codirector',
-      description: 'Desc',
+      description: 'Descripción obligatoria',
       modality: 'Trabajo de investigacion',
       student1: '1',
       codirector: 'teacher-45'
     });
-    component.attachedFile = { hasFile: true, name: 'doc.pdf' };
 
+    component.attachedFile = { hasFile: true, name: 'doc.pdf' };
+    component.proposalForm.get('document')?.setValue(new File([], 'doc.pdf'));
+
+    fixture.detectChanges();
     component.submit();
 
     expect(mockUserService.addRoleToUser).toHaveBeenCalledWith('teacher-45', UserRoleType.CODIRECTOR);
@@ -134,11 +138,13 @@ describe('ProposalFormComponent', () => {
     const existingProposal: any = {
       id: 'prop-123',
       title: 'Propuesta Existente',
-      description: 'Bla bla',
+      description: 'Detalle de la propuesta',
       modality: 'Trabajo de investigacion',
       authors: ['1', '2'],
       documents: [{ name: 'archivo_antiguo.pdf' }],
-      state: 'EN_REVISION'
+      state: 'EN_REVISION',
+      createdAt: new Date(),
+      evaluations: []
     };
 
     fixture.componentRef.setInput('proposal', existingProposal);

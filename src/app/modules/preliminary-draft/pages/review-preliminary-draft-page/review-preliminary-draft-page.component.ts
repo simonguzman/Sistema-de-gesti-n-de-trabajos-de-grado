@@ -27,166 +27,163 @@ export class ReviewPreliminaryDraftPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  // Signals para gestión de estado
   preliminaryDraftState = signal<PreliminaryDraft | null>(null);
   isConfirmModalOpen = signal(false);
-  pendingReviewData = signal<{ formValues: any, file: File } | null>(null);
+  pendingReviewData = signal<{ formValues: any, file: File, annotatedFile?: File } | null>(null);
 
-  /**
-   * Identifica la revisión activa (Anteproyecto o Corrección más reciente).
-   * Esto garantiza que el evaluador siempre califique el último documento cargado.
-   */
   readonly activeRevision = computed(() => {
-    const preliminaryDraft = this.preliminaryDraftState();
-    if (!preliminaryDraft?.documents || preliminaryDraft.documents.length === 0) return null;
-    return [...preliminaryDraft.documents]
+    const PreliminaryDraft = this.preliminaryDraftState();
+    if (!PreliminaryDraft?.documents) return null;
+    return [...PreliminaryDraft.documents]
       .filter(document => document.type === 'Anteproyecto' || document.type === 'Correccion')
       .sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime())[0];
   });
 
   ngOnInit() {
-    const contextId = this.route.snapshot.paramMap.get('id')
-      ?? this.route.parent?.snapshot.paramMap.get('id')
-      ?? this.route.parent?.parent?.snapshot.paramMap.get('id');
-
-    if (!contextId) {
-      this.showNavigationContextErrorNotification();
-      this.router.navigate(['/notifications']);
-      return;
+    const id = this.route.snapshot.paramMap.get('id') ?? this.route.parent?.snapshot.paramMap.get('id');
+    if (id) {
+      this.loadData(id);
+    } else {
+      this.showNavigationErrorNotification();
     }
-    this.loadPreliminaryDraftData(contextId);
   }
 
-  private loadPreliminaryDraftData(id: string) {
+  private loadData(id: string) {
     this.preliminaryDraftService.getPreliminaryDraftByIdMock(id).subscribe({
       next: (data) => {
         if (!data) {
-          this.showNotFoundInformationNotification();
+          this.showNotFoundNotification();
           return;
         }
-        const isUserAssignedAsEvaluator = data.evaluators?.some(
-          evaluator => evaluator.id === this.authService.currentUser()?.id
-        );
-        if (!isUserAssignedAsEvaluator) {
+
+        const isEvaluator = data.evaluators?.some(e => e.id === this.authService.currentUser()?.id);
+        if (!isEvaluator) {
           this.showAccessDeniedNotification();
           this.router.navigate(['/dashboard']);
           return;
         }
         this.preliminaryDraftState.set(data);
       },
-      error: () => this.showChargeServerErrorNotification()
+      error: () => this.showConnectionErrorNotification()
     });
   }
 
-  handleRequestConfirmation(data: { formValues: any, file: File }) {
+  handleRequestConfirmation(data: { formValues: any, file: File, annotatedFile?: File }) {
     this.pendingReviewData.set(data);
     this.isConfirmModalOpen.set(true);
   }
 
   processEvaluation() {
-    const assessmentData = this.pendingReviewData();
-    const preliminaryDraft = this.preliminaryDraftState();
-    const currentUser = this.authService.currentUser();
-    const currentRevision = this.activeRevision();
-    if (!assessmentData || !preliminaryDraft?.preliminaryDraftId || !currentUser || !currentRevision) {
-      this.showValidationReviewErrorNotification();
+    const data = this.pendingReviewData();
+    const PreliminaryDraft = this.preliminaryDraftState();
+    const user = this.authService.currentUser();
+    const revision = this.activeRevision();
+
+    if (!data || !PreliminaryDraft?.preliminaryDraftId || !user || !revision) {
+      this.showValidationErrorNotification();
       return;
     }
-    const isVeredictNegative = assessmentData.formValues.result !== 'Aprobado';
-    const peerReviewEvaluation: Evaluation = {
+
+    const documentsNames = [data.file.name];
+    if (data.annotatedFile) documentsNames.push(data.annotatedFile.name);
+
+    const isApproved = data.formValues.result === 'Aprobado';
+
+    const evaluation: Evaluation = {
       id: crypto.randomUUID(),
-      proposalId: preliminaryDraft.proposalId,
-      documentId: currentRevision.id, // Evaluación anclada a la revisión activa
-      evaluatorName: `${currentUser.firstName} ${currentUser.lastName}`,
+      proposalId: PreliminaryDraft.proposalId,
+      documentId: revision.id,
+      evaluatorName: `${user.firstName} ${user.lastName}`,
       evaluatorRole: 'Evaluador',
-      veredict: isVeredictNegative ? stateList.NO_APROBADO : stateList.APROBADO,
-      observations: assessmentData.formValues.comments,
-      signedDocuments: [assessmentData.file.name],
+      veredict: isApproved ? stateList.APROBADO : stateList.NO_APROBADO,
+      observations: data.formValues.comments,
+      signedDocuments: documentsNames,
       date: new Date()
     };
-    this.preliminaryDraftService.addEvaluationMock(preliminaryDraft.preliminaryDraftId, peerReviewEvaluation).subscribe({
+
+    this.preliminaryDraftService.addEvaluationMock(PreliminaryDraft.preliminaryDraftId, evaluation).subscribe({
       next: () => {
-        this.showEvaluationSuccessNotification(isVeredictNegative);
+        this.showEvaluationSuccessNotification(isApproved);
         this.isConfirmModalOpen.set(false);
         this.router.navigate(['../../'], { relativeTo: this.route });
       },
-      error: () => this.showProcessEvaluationErrorNotification()
+      error: () => this.showSaveErrorNotification()
     });
   }
 
   downloadCurrentDocument() {
-    const revision = this.activeRevision();
-    if (revision?.url) {
-      this.downloadService.download(revision.url, revision.name);
+    const rev = this.activeRevision();
+    if (rev) {
+      this.downloadService.download(rev.url, rev.name);
     } else {
-      this.showDownloadUnavailableNotification();
+      this.showDownloadErrorNotification();
     }
   }
 
   // --- MÉTODOS PRIVADOS DE NOTIFICACIÓN ---
 
-  private showNavigationContextErrorNotification() {
+  private showEvaluationSuccessNotification(isApproved: boolean) {
     this.notification.show({
-      title: 'Error de Contexto',
-      message: 'No se pudo identificar el anteproyecto en la ruta actual. Contacte a soporte.',
-      type: NotificationType.ERROR
-    });
-  }
-
-  private showNotFoundInformationNotification() {
-    this.notification.show({
-      title: 'No Encontrado',
-      message: 'El anteproyecto solicitado no existe o no se encuentra disponible.',
-      type: NotificationType.INFO
+      title: 'Evaluación Registrada',
+      message: isApproved
+        ? 'El veredicto positivo ha sido guardado exitosamente.'
+        : 'Se ha registrado el veredicto negativo y se solicitarán correcciones.',
+      type: NotificationType.CONFIRMATION
     });
   }
 
   private showAccessDeniedNotification() {
     this.notification.show({
       title: 'Acceso Denegado',
-      message: 'Usted no tiene permisos de evaluación asignados para este proyecto académico.',
+      message: 'Usted no cuenta con permisos de evaluador asignados para este proyecto.',
       type: NotificationType.ERROR
     });
   }
 
-  private showChargeServerErrorNotification() {
+  private showNavigationErrorNotification() {
     this.notification.show({
-      title: 'Error de Conexión',
-      message: 'Hubo un fallo al intentar obtener la información del servidor.',
+      title: 'Error de navegación',
+      message: 'No se pudo identificar el ID del anteproyecto en la ruta.',
       type: NotificationType.ERROR
     });
   }
 
-  private showValidationReviewErrorNotification() {
+  private showNotFoundNotification() {
     this.notification.show({
-      title: 'Validación Fallida',
-      message: 'Faltan datos del evaluador o del documento para registrar la calificación.',
+      title: 'No encontrado',
+      message: 'El anteproyecto solicitado no existe en nuestros registros.',
+      type: NotificationType.INFO
+    });
+  }
+
+  private showConnectionErrorNotification() {
+    this.notification.show({
+      title: 'Error de conexión',
+      message: 'No se pudo obtener la información del anteproyecto desde el servidor.',
       type: NotificationType.ERROR
     });
   }
 
-  private showEvaluationSuccessNotification(isReject: boolean) {
+  private showValidationErrorNotification() {
     this.notification.show({
-      title: isReject ? 'Revisión con Observaciones' : 'Evaluación Exitosa',
-      message: isReject
-        ? 'Se ha registrado el veredicto negativo. El sistema solicitará correcciones al autor.'
-        : 'Su evaluación positiva ha sido guardada. El proceso continuará hacia el Consejo de Facultad.',
-      type: isReject ? NotificationType.INFO : NotificationType.CONFIRMATION
-    });
-  }
-
-  private showProcessEvaluationErrorNotification() {
-    this.notification.show({
-      title: 'Error al Registrar',
-      message: 'Ocurrió un problema técnico al intentar guardar su evaluación en la base de datos.',
+      title: 'Datos incompletos',
+      message: 'No se pudo procesar la evaluación debido a que falta información del usuario o del documento.',
       type: NotificationType.ERROR
     });
   }
 
-  private showDownloadUnavailableNotification() {
+  private showSaveErrorNotification() {
     this.notification.show({
-      title: 'Archivo no Encontrado',
-      message: 'La revisión actual no cuenta con un enlace de descarga válido.',
+      title: 'Error al guardar',
+      message: 'Ocurrió un error técnico al intentar registrar su evaluación. Intente de nuevo.',
+      type: NotificationType.ERROR
+    });
+  }
+
+  private showDownloadErrorNotification() {
+    this.notification.show({
+      title: 'Error de descarga',
+      message: 'No se encontró un archivo válido para descargar en la revisión actual.',
       type: NotificationType.INFO
     });
   }

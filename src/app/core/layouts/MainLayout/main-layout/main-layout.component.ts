@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FooterComponent } from '../footer/footer.component';
 import { RouterModule, Router, NavigationEnd, ActivatedRoute } from "@angular/router";
 import { HeaderComponent } from "../header/header.component";
 import { SidebarComponent } from "../sidebar/sidebar.component";
 import { filter, map } from 'rxjs/operators';
 import { BreadcrumbComponent } from "../../../components/Breadcrumb/Breadcrumb.component";
+import { BreadcrumbService } from '../../../services/breadcrumb/Breadcrumb.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -16,21 +17,28 @@ export class MainLayoutComponent implements OnInit {
 
   currentPageTitle: string = '';
   currentPageBreadcrumb: string = '';
+  private readonly breadcrumbService = inject(BreadcrumbService);
 
-  constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
+  constructor(private readonly router: Router, private readonly activatedRoute: ActivatedRoute) {}
 
   ngOnInit() {
     this.router.events
       .pipe(
-          filter(event => event instanceof NavigationEnd),
-          map(() => {
-            let route = this.activatedRoute;
-            while(route.firstChild) route = route.firstChild;
-            return route.snapshot.title ?? 'Inicio'
-          })
-        )
-      .subscribe((title) => {
-        this.currentPageTitle = title;
+        filter(event => event instanceof NavigationEnd),
+        map(() => {
+          let route = this.activatedRoute;
+          while(route.firstChild) route = route.firstChild;
+          return route.snapshot.title ?? 'Inicio';
+        })
+      )
+      .subscribe((routeTitle) => {
+        this.currentPageTitle = routeTitle;
       });
+
+    this.breadcrumbService.dynamicTitle$.subscribe(dynamicTitle => {
+      if (dynamicTitle) {
+        this.currentPageTitle = dynamicTitle;
+      }
+    });
   }
 }

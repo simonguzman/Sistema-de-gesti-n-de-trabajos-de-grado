@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { PreliminaryDraftService } from '../../services/preliminary-draft.service';
@@ -15,6 +15,8 @@ import { Document } from '../../../../core/interfaces/Document.interface';
 import { stateList } from '../../../../core/enums/state.enum';
 import { UserRoleType } from '../../../../core/models/user-role';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { BreadcrumbService } from '../../../../core/services/breadcrumb/Breadcrumb.service';
+import { Title } from '@angular/platform-browser';
 
 const DOCUMENT_TABS_CONFIG: TabItem[] = [
   { label: 'Anteproyectos', value: 'ANTEPROYECTOS' },
@@ -67,17 +69,19 @@ interface DocumentEvaluationContext {
 
 @Component({
   selector: 'app-loaded-documets-preliminary-draft-page',
-  templateUrl: './loaded-documets-preliminary-draft-page.component.html',
-  styleUrls: ['./loaded-documets-preliminary-draft-page.component.css'],
+  templateUrl: './loaded-documents-preliminary-draft-page.component.html',
+  styleUrls: ['./loaded-documents-preliminary-draft-page.component.css'],
   imports: [FileUploadModalComponent, ConfirmationActionModalComponent, TableComponent, TabsComponent]
 })
-export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
+export class LoadedDocumentsPreliminaryDraftPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly preliminaryDraftService = inject(PreliminaryDraftService);
   private readonly downloadService = inject(FileDownloadService);
   private readonly notificationService = inject(NotificationService);
   private readonly authService = inject(AuthService);
+  private readonly breadcrumbService = inject(BreadcrumbService);
+  private readonly titleService = inject(Title);
 
   readonly tabs = DOCUMENT_TABS_CONFIG;
   activeTab = signal<string>('ANTEPROYECTOS');
@@ -87,6 +91,28 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
   isUploadModalOpen = signal(false);
   isConfirmModalOpen = signal(false);
 
+  constructor() {
+    effect(() => {
+      const tab = this.activeTab();
+      const tabLabel = tab === 'ANTEPROYECTOS'
+        ? 'Anteproyectos'
+        : 'Presentaciones al consejo de facultad';
+      this.breadcrumbService.setDynamicBreadcrumb(tabLabel);
+      this.breadcrumbService.setDynamicTitle(`Documentos cargados - ${tabLabel}`);
+      this.titleService.setTitle(`Documentos cargados - ${tabLabel}`);
+    });
+  }
+
+  ngOnInit(): void {
+    const preliminaryDraftId = this.route.snapshot.paramMap.get('id') || this.route.parent?.snapshot.paramMap.get('id');
+    if (preliminaryDraftId) this.preliminaryDraftId.set(preliminaryDraftId);
+  }
+
+  ngOnDestroy(): void {
+    this.breadcrumbService.clearDynamicBreadcrumb();
+    this.breadcrumbService.setDynamicTitle(null);
+  }
+
   private readonly currentPreliminaryDraft = computed(() => {
     const id = this.preliminaryDraftId();
     if (!id) return null;
@@ -94,9 +120,10 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
   });
 
   readonly areEvaluatorsAssigned = computed(() => {
-    const draft = this.currentPreliminaryDraft();
-    return !!(draft?.evaluators && draft.evaluators.length > 0);
+    const preliminaryDraft = this.currentPreliminaryDraft();
+    return !!(preliminaryDraft?.evaluators && preliminaryDraft.evaluators.length > 0);
   });
+
 
   currentColumns = computed(() => {
     return this.activeTab() === 'ANTEPROYECTOS' ? ANTEPROYECTOS_COLUMNS : PRESENTACIONES_COLUMNS;
@@ -106,13 +133,10 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
     const preliminaryDraft = this.currentPreliminaryDraft();
     const currentUser = this.authService.currentUser();
     const currentTab = this.activeTab();
-
     if (!preliminaryDraft?.documents || !currentUser) return [];
-
     const allDocuments = [...preliminaryDraft.documents];
     const filteredDocuments = this.filterDocumentsByTab(allDocuments, currentTab);
     const { latestAnteproyectoId, latestPresentacionId } = this.getLatestDocumentIds(allDocuments);
-
     // Agrupamos el contexto para no saturar los métodos con parámetros
     const context: DocumentEvaluationContext = {
       preliminaryDraft,
@@ -125,57 +149,49 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
       latestAnteproyectoId,
       latestPresentacionId
     };
-
     return filteredDocuments.map((document: Document) => {
       const status = this.determineDocumentStatus(document, context);
       const allowedActions = this.determineAllowedActions(document, status, context);
-
       return { ...document, status, allowedActions };
     });
   });
 
   private filterDocumentsByTab(documents: Document[], tab: string): Document[] {
-    return documents.filter(doc =>
+    return documents.filter(document =>
       tab === 'ANTEPROYECTOS'
-        ? (doc.type === 'Anteproyecto' || doc.type === 'Correccion')
-        : doc.type === 'Formato'
+        ? (document.type === 'Anteproyecto' || document.type === 'Correccion')
+        : document.type === 'Formato'
     );
   }
 
   private getLatestDocumentIds(documents: Document[]): { latestAnteproyectoId?: string, latestPresentacionId?: string } {
     return {
-      latestAnteproyectoId: documents.find(d => d.type === 'Anteproyecto' || d.type === 'Correccion')?.id,
-      latestPresentacionId: documents.find(d => d.type === 'Formato')?.id
+      latestAnteproyectoId: documents.find(document => document.type === 'Anteproyecto' || document.type === 'Correccion')?.id,
+      latestPresentacionId: documents.find(document => document.type === 'Formato')?.id
     };
   }
 
   private determineDocumentStatus(document: Document, context: DocumentEvaluationContext): stateList {
     const { currentTab } = context;
-
     if (currentTab === 'ANTEPROYECTOS') {
       return this.calculateAnteproyectoStatus(document, context);
     }
-
     return this.calculatePresentationStatus(document, context);
   }
 
   private calculateAnteproyectoStatus(document: Document, context: DocumentEvaluationContext): stateList {
     const { preliminaryDraft, totalEvaluatorsCount, latestAnteproyectoId } = context;
     const isLatestDoc = document.id === latestAnteproyectoId;
-
     const technicalStatus = this.preliminaryDraftService.calculateDocumentStatus(
       document.id, preliminaryDraft.evaluations || [], totalEvaluatorsCount
     );
-
     // Lógica para documentos antiguos
     if (!isLatestDoc) {
       return technicalStatus === stateList.APROBADO ? stateList.NO_APROBADO : technicalStatus;
     }
-
     // Lógica para el documento más reciente (Estados finales del anteproyecto)
     if (preliminaryDraft.state === stateList.APROBADO) return stateList.APROBADO;
     if (preliminaryDraft.state === stateList.NO_APROBADO) return stateList.NO_APROBADO;
-
     // Si está aprobado técnicamente pero el anteproyecto sigue en curso
     return technicalStatus === stateList.APROBADO ? stateList.EVALUADO : technicalStatus;
   }
@@ -183,155 +199,127 @@ export class LoadedDocumetsPreliminaryDraftPageComponent implements OnInit {
   private calculatePresentationStatus(document: Document, context: DocumentEvaluationContext): stateList {
     const { preliminaryDraft, latestPresentacionId } = context;
     const isLatestDoc = document.id === latestPresentacionId;
-
     const presentationStatus = this.preliminaryDraftService.calculateDocumentStatus(
       document.id, preliminaryDraft.evaluations || [], 1
     );
-
     // Si es el último formato y el anteproyecto general ya fue aprobado
     if (isLatestDoc && preliminaryDraft.state === stateList.APROBADO) {
       return stateList.APROBADO;
     }
-
     return presentationStatus;
   }
 
   private determineAllowedActions(document: Document, displayStatus: stateList, context: DocumentEvaluationContext): string[] {
     const { preliminaryDraft, currentUser, currentTab, isAdmin, isAssignedEvaluator, isConsejoMember, latestAnteproyectoId, latestPresentacionId } = context;
     const allowed = ['download'];
-
     const isLatestDoc = currentTab === 'ANTEPROYECTOS'
       ? document.id === latestAnteproyectoId
       : document.id === latestPresentacionId;
-
     if (!isLatestDoc) return allowed;
-
     if (currentTab === 'ANTEPROYECTOS') {
       const userFullName = `${currentUser.firstName} ${currentUser.lastName}`.trim();
       const userAlreadyEvaluated = preliminaryDraft.evaluations?.some(
-        (evalu: any) => evalu.documentId === document.id && evalu.evaluatorName.trim() === userFullName
+        (evaluation: any) => evaluation.documentId === document.id && evaluation.evaluatorName.trim() === userFullName
       );
-
       const draftHasFinalState = [stateList.APROBADO, stateList.NO_APROBADO].includes(preliminaryDraft.state as stateList);
       const canEvaluate = (isAssignedEvaluator || isAdmin) && !userAlreadyEvaluated && !draftHasFinalState;
-
       if (canEvaluate) allowed.push('evaluate');
-
     } else {
       // Pestaña PRESENTACIONES
       const canCouncil = (isConsejoMember || isAdmin) && displayStatus === stateList.EN_REVISION;
       if (canCouncil) allowed.push('evaluate-presentation');
     }
-
     return allowed;
   }
 
   currentHeaderButtons = computed<TableButton[]>(() => {
-  const draft = this.currentPreliminaryDraft();
-  const user = this.authService.currentUser();
-
-  if (!draft || !user) return [];
-
-  const roleContext = this.getUserRoleContext(draft, user);
-
-  return this.activeTab() === 'ANTEPROYECTOS'
-    ? this.getAnteproyectoHeaderActions(draft, roleContext)
-    : this.getPresentationHeaderActions(draft, roleContext);
-});
+    const preliminaryDraft = this.currentPreliminaryDraft();
+    const user = this.authService.currentUser();
+    if (!preliminaryDraft || !user) return [];
+    const roleContext = this.getUserRoleContext(preliminaryDraft, user);
+    return this.activeTab() === 'ANTEPROYECTOS'
+      ? this.getAnteproyectoHeaderActions(preliminaryDraft, roleContext)
+      : this.getPresentationHeaderActions(preliminaryDraft, roleContext);
+  });
 
 /**
  * Determina los roles del usuario actual respecto al borrador
  */
-private getUserRoleContext(draft: any, user: any) {
-  return {
-    isAdmin: this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]),
-    isJefe: this.authService.hasAnyRole([UserRoleType.JEFE_DEP]),
-    isDirector: draft.proposalData?.director?.id === user.id
-  };
-}
+  private getUserRoleContext(draft: any, user: any) {
+    return {
+      isAdmin: this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]),
+      isJefe: this.authService.hasAnyRole([UserRoleType.JEFE_DEP]),
+      isDirector: draft.proposalData?.director?.id === user.id
+    };
+  }
 
-/**
- * Lógica de botones para la pestaña de Anteproyectos
- */
-private getAnteproyectoHeaderActions(draft: any, roles: any): TableButton[] {
-  const actions: TableButton[] = [];
-  const reviewersReady = this.areEvaluatorsAssigned();
-
-  if (roles.isJefe) {
-    actions.push({
-      label: reviewersReady ? 'Evaluadores ya asignados' : 'Asignar evaluadores',
-      variant: 'primary',
-      disabled: reviewersReady
-    });
+  /**
+   * Lógica de botones para la pestaña de Anteproyectos
+   */
+  private getAnteproyectoHeaderActions(draft: any, roles: any): TableButton[] {
+    const actions: TableButton[] = [];
+    const reviewersReady = this.areEvaluatorsAssigned();
+    if (roles.isJefe) {
+      actions.push({
+        label: reviewersReady ? 'Evaluadores ya asignados' : 'Asignar evaluadores',
+        variant: 'primary',
+        disabled: reviewersReady
+      });
+      return actions;
+    }
+    if (roles.isDirector || roles.isAdmin) {
+      const technicalStatus = this.getLatestAnteproyectoStatus(draft);
+      const isGlobalApproved = draft.state === stateList.APROBADO;
+      actions.push({
+        label: 'Cargar anteproyecto corregido',
+        variant: 'primary',
+        disabled: technicalStatus === stateList.EN_REVISION || isGlobalApproved
+      });
+    }
     return actions;
   }
 
-  if (roles.isDirector || roles.isAdmin) {
-    const technicalStatus = this.getLatestAnteproyectoStatus(draft);
-    const isGlobalApproved = draft.state === stateList.APROBADO;
-
-    actions.push({
-      label: 'Cargar anteproyecto corregido',
+  /**
+   * Lógica de botones para la pestaña de Presentaciones
+   */
+  private getPresentationHeaderActions(draft: any, roles: any): TableButton[] {
+    if (!roles.isJefe && !roles.isAdmin) return [];
+    const isFlowReady = this.checkIfFlowIsReadyForPresentation(draft);
+    return [{
+      label: 'Cargar formato de presentación',
       variant: 'primary',
-      disabled: technicalStatus === stateList.EN_REVISION || isGlobalApproved
-    });
+      disabled: !isFlowReady
+    }];
   }
 
-  return actions;
-}
-
-/**
- * Lógica de botones para la pestaña de Presentaciones
- */
-private getPresentationHeaderActions(draft: any, roles: any): TableButton[] {
-  if (!roles.isJefe && !roles.isAdmin) return [];
-
-  const isFlowReady = this.checkIfFlowIsReadyForPresentation(draft);
-
-  return [{
-    label: 'Cargar formato de presentación',
-    variant: 'primary',
-    disabled: !isFlowReady
-  }];
-}
-
-/**
- * Verifica si el estado técnico del último anteproyecto/corrección permite pasar a presentación
- */
-private checkIfFlowIsReadyForPresentation(draft: any): boolean {
-  const documents = draft.documents || [];
-  const latestDoc = documents.length > 0 ? documents[0] : null;
-
-  if (!latestDoc || (latestDoc.type !== 'Anteproyecto' && latestDoc.type !== 'Correccion')) {
-    return false;
+  /**
+   * Verifica si el estado técnico del último anteproyecto/corrección permite pasar a presentación
+   */
+  private checkIfFlowIsReadyForPresentation(preliminaryDraft: any): boolean {
+    const documents = preliminaryDraft.documents || [];
+    const latestDoc = documents.length > 0 ? documents[0] : null;
+    if (!latestDoc || (latestDoc.type !== 'Anteproyecto' && latestDoc.type !== 'Correccion')) {
+      return false;
+    }
+    const status = this.preliminaryDraftService.calculateDocumentStatus(
+      latestDoc.id,
+      preliminaryDraft.evaluations || [],
+      preliminaryDraft.evaluators?.length || 0
+    );
+    return status === stateList.APROBADO;
   }
 
-  const status = this.preliminaryDraftService.calculateDocumentStatus(
-    latestDoc.id,
-    draft.evaluations || [],
-    draft.evaluators?.length || 0
-  );
-
-  return status === stateList.APROBADO;
-}
-
-/**
- * Obtiene el estado técnico del último anteproyecto cargado
- */
-private getLatestAnteproyectoStatus(draft: any): stateList {
-  const latest = draft.documents?.find((d: any) => d.type === 'Anteproyecto' || d.type === 'Correccion');
-  if (!latest) return stateList.EN_REVISION;
-
-  return this.preliminaryDraftService.calculateDocumentStatus(
-    latest.id,
-    draft.evaluations || [],
-    draft.evaluators?.length || 0
-  );
-}
-
-  ngOnInit(): void {
-    const draftId = this.route.snapshot.paramMap.get('id') || this.route.parent?.snapshot.paramMap.get('id');
-    if (draftId) this.preliminaryDraftId.set(draftId);
+  /**
+   * Obtiene el estado técnico del último anteproyecto cargado
+   */
+  private getLatestAnteproyectoStatus(preliminaryDraft: any): stateList {
+    const latest = preliminaryDraft.documents?.find((document: any) => document.type === 'Anteproyecto' || document.type === 'Correccion');
+    if (!latest) return stateList.EN_REVISION;
+    return this.preliminaryDraftService.calculateDocumentStatus(
+      latest.id,
+      preliminaryDraft.evaluations || [],
+      preliminaryDraft.evaluators?.length || 0
+    );
   }
 
   handleHeaderButton(button: TableButton): void {

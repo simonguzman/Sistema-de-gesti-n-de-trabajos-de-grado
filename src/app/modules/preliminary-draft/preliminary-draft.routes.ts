@@ -7,10 +7,11 @@ import { PreliminaryDraftCreatePageComponent } from './pages/preliminary-draft-c
 import { PreliminaryDraftDetailsPageComponent } from './pages/preliminary-draft-details-page/preliminary-draft-details-page.component';
 import { PreliminaryDraftEditPageComponent } from './pages/preliminary-draft-edit-page/preliminary-draft-edit-page.component';
 import { EvaluationsPerformedPageComponent } from '../../shared/pages/evaluations-performed-page/evaluations-performed-page.component';
-import { LoadedDocumetsPreliminaryDraftPageComponent } from './pages/loaded-documets-preliminary-draft-page/loaded-documets-preliminary-draft-page.component';
+import { LoadedDocumentsPreliminaryDraftPageComponent } from './pages/loaded-documets-preliminary-draft-page/loaded-documents-preliminary-draft-page.component';
 import { AssingEvaluatorsPageComponent } from './pages/assing-evaluators-page/assing-evaluators-page.component';
 import { ReviewPreliminaryDraftPageComponent } from './pages/review-preliminary-draft-page/review-preliminary-draft-page.component';
 import { ReviewPresentationsFacultyCouncilPageComponent } from './pages/review-presentations-faculty-council-page/review-presentations-faculty-council-page.component';
+
 
 export const preliminaryDraftRoutes: Routes = [
   {
@@ -110,7 +111,7 @@ export const preliminaryDraftRoutes: Routes = [
             children: [
               {
                 path: '',
-                component: LoadedDocumetsPreliminaryDraftPageComponent,
+                component: LoadedDocumentsPreliminaryDraftPageComponent,
                 canActivate: [roleGuard],
                 title: 'Documentos cargados',
                 data: {

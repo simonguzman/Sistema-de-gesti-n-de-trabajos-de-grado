@@ -33,7 +33,7 @@
 
   <hr class="border-gray-200 mb-10">
 
-  <section [class.opacity-60]="isReadOnly()">
+  <section [class.opacity-60]="isReadOnly">
     <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Resultado de la evaluación</h3>
 
     <form [formGroup]="evaluationForm" (ngSubmit)="submit()" class="flex flex-col gap-6">
@@ -41,11 +41,11 @@
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-center gap-8">
           <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" formControlName="result" value="Aprobado" [attr.disabled]="isReadOnly() ? true : null">
+            <input type="radio" formControlName="result" value="Aprobado" [attr.disabled]="isReadOnly ? true : null">
             <span class="text-sm font-sans text-[#777680]">Aprobado</span>
           </label>
           <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" formControlName="result" value="No aprobado" [attr.disabled]="isReadOnly() ? true : null">
+            <input type="radio" formControlName="result" value="No aprobado" [attr.disabled]="isReadOnly ? true : null">
             <span class="text-sm font-sans text-[#777680]">No aprobado</span>
           </label>
         </div>
@@ -56,7 +56,7 @@
 
       <div class="flex flex-col gap-1">
         <label for="comments" class="font-display font-semibold text-primary text-size-section">Observaciones del consejo <span class="text-orange-500">*</span></label>
-        <textarea id="comments" formControlName="comments" rows="4" [attr.disabled]="isReadOnly() ? true : null"
+        <textarea id="comments" formControlName="comments" rows="4" [attr.disabled]="isReadOnly ? true : null"
           class="p-3 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-primary font-sans"
           [class.border-orange-500]="isFieldInvalid('comments')"
           [class.input-success]="evaluationForm.get('comments')?.valid && evaluationForm.get('comments')?.touched"
@@ -125,7 +125,7 @@
                   <span class="text-xs text-[#777680]">Resolución del consejo de facultad</span>
                 </div>
               </div>
-              @if (!isReadOnly()) {
+              @if (!isReadOnly) {
                 <button type="button" (click)="uploadedSignedFile.set(null)" class="text-gray-400 hover:text-red-500 transition-colors">
                   <span class="material-symbols-outlined">close</span>
                 </button>
@@ -144,14 +144,12 @@
           [label]="uploadedSignedFile() ? 'Actualizar resolución' : 'Cargar resolución'"
           variant="secondary"
           (onClick)="isUploadModalOpen.set(true)"
-          [disabled]="isReadOnly()">
-        </app-button-component>
+          [disabled]="isReadOnly"> </app-button-component>
         <app-button-component
           label="Guardar decisión"
           variant="primary"
           type="submit"
-          [disabled]="isReadOnly()">
-        </app-button-component>
+          [disabled]="isReadOnly"> </app-button-component>
       </div>
     </form>
   </section>

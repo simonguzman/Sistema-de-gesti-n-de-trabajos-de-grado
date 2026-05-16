@@ -1,19 +1,13 @@
 <div class="pt-2 max-w-4xl mx-auto pb-10">
-
-  <!-- SECCIÓN 1: Información del Anteproyecto (Lectura) -->
   <section class="mb-10">
     <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Información del anteproyecto</h3>
-
     <div class="flex flex-col gap-4">
-
-      <!-- Título -->
       <div class="flex flex-col gap-1">
         <span class="font-display font-semibold text-primary text-size-section">Título</span>
         <input type="text" [value]="preliminaryDraft.proposalData.title" disabled
                class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
       </div>
 
-      <!-- Fecha de carga y Modalidad -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1">
           <span class="font-display font-semibold text-primary text-size-section">Fecha de carga</span>
@@ -21,151 +15,124 @@
                  class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
         </div>
         <div class="flex flex-col gap-1">
-          <span class="font-display font-semibold text-primary text-size-section">Modalidad</span>
-          <input type="text" [value]="preliminaryDraft.proposalData.modality" disabled
+          <span class="font-display font-semibold text-primary text-size-section">Estudiante(s)</span>
+          <input type="text" [value]="getStudentNames()" disabled
                  class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
         </div>
-      </div>
-
-      <!-- Estudiantes -->
-      <div class="flex flex-col gap-1">
-        <span class="font-display font-semibold text-primary text-size-section">Estudiante(s)</span>
-        <input type="text" [value]="getStudentNames()" disabled
-               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
-      </div>
-
-      <!-- Director -->
-      <div class="flex flex-col gap-1">
-        <span class="font-display font-semibold text-primary text-size-section">Director</span>
-        <input type="text" [value]="getDirectorName()" disabled
-               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
-      </div>
-
-      <!-- Codirector (Opcional) -->
-      @if (preliminaryDraft.proposalData.codirector) {
-        <div class="flex flex-col gap-1">
-          <span class="font-display font-semibold text-primary text-size-section">Codirector</span>
-          <input type="text" [value]="getCodirectorName()" disabled
-                 class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
-        </div>
-      }
-
-      <!-- Asesor (Opcional) -->
-      @if (preliminaryDraft.proposalData.advisor) {
-        <div class="flex flex-col gap-1">
-          <span class="font-display font-semibold text-primary text-size-section">Asesor</span>
-          <input type="text" [value]="getAdvisorName()" disabled
-                 class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
-        </div>
-      }
-
-      <!-- Estado Actual -->
-      <div class="flex flex-col gap-1">
-        <span class="font-display font-semibold text-primary text-size-section">Estado Actual</span>
-        <input type="text" [value]="preliminaryDraft.state" disabled
-               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
       </div>
     </div>
   </section>
 
   <hr class="border-gray-200 mb-10">
 
-  <!-- SECCIÓN 2: Formulario de Evaluación -->
-  <section [class.opacity-60]="isReadOnly()">
+  <section [class.opacity-60]="isReadOnly">
     <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Resultado de la evaluación</h3>
-
     <form [formGroup]="evaluationForm" (ngSubmit)="submit()" class="flex flex-col gap-6">
 
-      <!-- Radios de Veredicto -->
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-center gap-8">
           <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" formControlName="result" value="Aprobado" [attr.disabled]="isReadOnly() ? true : null">
+            <input type="radio" formControlName="result" value="Aprobado" [attr.disabled]="isReadOnly ? true : null">
             <span class="text-sm font-sans text-[#777680]">Aprobado</span>
           </label>
           <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" formControlName="result" value="No aprobado" [attr.disabled]="isReadOnly() ? true : null">
+            <input type="radio" formControlName="result" value="No aprobado" [attr.disabled]="isReadOnly ? true : null">
             <span class="text-sm font-sans text-[#777680]">No aprobado</span>
           </label>
         </div>
         @if (isFieldInvalid('result')) {
-          <span class="text-textbox-alert text-center">Seleccione un resultado para la evaluación</span>
+          <span class="text-textbox-alert text-center">Seleccione un veredicto</span>
         }
       </div>
 
-      <!-- Comentarios -->
       <div class="flex flex-col gap-1">
-        <label for="comments" class="font-display font-semibold text-primary text-size-section">
-          Comentarios <span class="text-orange-500">*</span>
-        </label>
-        <textarea id="comments" formControlName="comments" rows="4"
-          [attr.disabled]="isReadOnly() ? true : null"
-          class="p-3 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-primary font-sans"
-          [class.border-orange-500]="isFieldInvalid('comments')"
-          [class.bg-gray-50]="isReadOnly()"
-          [class.input-success]="evaluationForm.get('comments')?.valid && evaluationForm.get('comments')?.touched"
-          placeholder="Ingrese sus observaciones detalladas aquí..."></textarea>
-
+        <span class="font-display font-semibold text-primary text-size-section">Observaciones <span class="text-orange-500">*</span></span>
+        <textarea formControlName="comments" rows="4"
+                  class="p-3 border rounded-md w-full focus:outline-none font-sans"
+                  [class.bg-gray-50]="isReadOnly"
+                  [attr.disabled]="isReadOnly ? true : null"
+                  placeholder="Escriba aquí sus comentarios..."></textarea>
         @if (isFieldInvalid('comments')) {
           <span class="text-textbox-alert">Las observaciones son obligatorias</span>
         }
       </div>
 
-      <!-- Archivos adjuntos -->
       <div class="flex flex-col gap-4">
-        <span class="font-display font-semibold text-primary text-size-section">
-          Archivos adjuntos <span class="text-orange-500">*</span>
-        </span>
+        <span class="font-display font-semibold text-primary text-size-section">Archivos de evaluación</span>
 
         <div class="flex flex-col gap-3">
-          <!-- Descarga del anteproyecto -->
+
           <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
             <div class="flex items-center gap-3">
               <span class="material-symbols-outlined text-[#DB141C] text-4xl">picture_as_pdf</span>
               <div class="flex flex-col">
                 <span class="text-sm font-bold text-primary">{{ currentDocument?.name }}</span>
-                <span class="text-xs text-[#777680]">Anteproyecto para evaluar</span>
+                <span class="text-xs text-[#777680]">Documento a evaluar</span>
               </div>
             </div>
             <app-button-component label="Descargar" variant="primary" (onClick)="onDownloadPreliminaryDraft.emit()"></app-button-component>
           </div>
 
-          <!-- Formato B cargado -->
           @if (uploadedSignedFile(); as signed) {
-            <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm border-l-4 border-l-green-500">
+            <div class="flex items-center justify-between p-4 bg-white border border-gray-200 border-l-4 border-l-green-500 rounded-xl shadow-sm">
               <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-[#DB141C] text-4xl">picture_as_pdf</span>
+                <span class="material-symbols-outlined text-green-600 text-4xl">task</span>
                 <div class="flex flex-col">
                   <span class="text-sm font-bold text-primary">{{ signed.fileName }}</span>
-                  <span class="text-xs text-[#777680]">Formato de evaluación cargado</span>
+                  <span class="text-xs text-[#777680]">Formato B diligenciado y firmado</span>
                 </div>
               </div>
-              @if (!isReadOnly()) {
+              @if (!isReadOnly) {
                 <button type="button" (click)="uploadedSignedFile.set(null)" class="text-gray-400 hover:text-red-500 transition-colors">
                   <span class="material-symbols-outlined">close</span>
                 </button>
               }
             </div>
-          } @else {
-            @if (evaluationForm.touched && !uploadedSignedFile()) {
-              <span class="text-textbox-alert">Debe adjuntar el formato B de evaluación firmado</span>
-            }
           }
+
+          <div class="flex flex-col gap-3">
+            @if (uploadedAnnotatedFile(); as annotated) {
+              <div class="flex items-center justify-between p-4 bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-xl shadow-sm">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-blue-600 text-4xl">edit_note</span>
+                  <div class="flex flex-col">
+                    <span class="text-sm font-bold text-primary">{{ annotated.fileName }}</span>
+                    <span class="text-xs text-[#777680]">Anteproyecto con anotaciones (Opcional)</span>
+                  </div>
+                </div>
+                @if (!isReadOnly) {
+                  <button type="button" (click)="uploadedAnnotatedFile.set(null)" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                }
+              </div>
+            } @else {
+              <div class="flex justify-start">
+                <app-button-component
+                  label="Cargar anteproyecto con anotaciones"
+                  variant="secondary"
+                  (onClick)="isAnnotatedUploadModalOpen.set(true)"
+                  [disabled]="isReadOnly">
+                </app-button-component>
+              </div>
+            }
+          </div>
         </div>
       </div>
 
       <div class="flex gap-4 justify-end mt-10">
         <app-button-component
-          [label]="uploadedSignedFile() ? 'Actualizar formato' : 'Cargar formato B'"
+          [label]="uploadedSignedFile() ? 'Cambiar Formato B' : 'Cargar Formato B'"
           variant="secondary"
           (onClick)="isUploadModalOpen.set(true)"
-          [disabled]="isReadOnly()">
+          [disabled]="isReadOnly">
         </app-button-component>
+
         <app-button-component
           label="Guardar evaluación"
           variant="primary"
           type="submit"
-          [disabled]="isReadOnly()">
+          [disabled]="isReadOnly">
         </app-button-component>
       </div>
     </form>
@@ -174,7 +141,14 @@
 
 <app-file-upload-modal
   [isOpen]="isUploadModalOpen()"
-  description="Subir formato de evaluación (Formato B) firmado"
+  description="Subir Formato B firmado (Obligatorio)"
   (onFileUploaded)="handleFileUploaded($event)"
   (onClose)="isUploadModalOpen.set(false)">
+</app-file-upload-modal>
+
+<app-file-upload-modal
+  [isOpen]="isAnnotatedUploadModalOpen()"
+  description="Subir anteproyecto con anotaciones (Opcional)"
+  (onFileUploaded)="handleAnnotatedFileUploaded($event)"
+  (onClose)="isAnnotatedUploadModalOpen.set(false)">
 </app-file-upload-modal>

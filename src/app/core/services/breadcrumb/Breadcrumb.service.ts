@@ -2,43 +2,74 @@ import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, filter } from 'rxjs';
 
+export interface BreadcrumbItem {
+  label: string;
+  url: string;
+}
+
 @Injectable({
-  providedIn: 'root' // Esto asegura que sea un singleton en toda la app
+  providedIn: 'root'
 })
 export class BreadcrumbService {
-  // Usamos BehaviorSubject para que cualquier componente pueda suscribirse al estado actual
-  private readonly _breadcrumbs$ = new BehaviorSubject<Array<{ label: string, url: string }>>([]);
+  private readonly _breadcrumbs$ = new BehaviorSubject<BreadcrumbItem[]>([]);
   readonly breadcrumbs$ = this._breadcrumbs$.asObservable();
+  private readonly _dynamicTitle$ = new BehaviorSubject<string | null>(null);
+  dynamicTitle$ = this._dynamicTitle$.asObservable();
+  private dynamicLabel: string | null = null;
 
-  constructor(private router: Router) {
-    // Nos suscribimos a cada final de navegación exitosa
+  constructor(private readonly router: Router) {
     this.router.events.pipe(
-      filter((event) => event instanceof NavigationEnd)
+      filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
-      const root = this.router.routerState.snapshot.root;
-      const breadcrumbs: Array<{ label: string, url: string }> = [{ label: 'Inicio', url: '/' }];
-      this.addBreadcrumb(root, [], breadcrumbs);
-      this._breadcrumbs$.next(breadcrumbs);
+      this.refreshBreadcrumbs();
     });
   }
 
-  private addBreadcrumb(route: ActivatedRouteSnapshot, parentUrl: string[], breadcrumbs: any[]) {
-    if (route) {
-      // Construimos la URL acumulada
-      const routeUrl = parentUrl.concat(route.url.map(url => url.path));
+  setDynamicBreadcrumb(label: string | null): void {
+    this.dynamicLabel = label;
+    this.refreshBreadcrumbs();
+  }
 
-      // Si la ruta tiene la propiedad breadcrumb, la agregamos al array
-      if (route.data['breadcrumb']) {
-        breadcrumbs.push({
-          label: route.data['breadcrumb'],
-          url: '/' + routeUrl.join('/')
-        });
-      }
+  setDynamicTitle(title: string | null) {
+    this._dynamicTitle$.next(title);
+  }
 
-      // Seguimos bajando recursivamente por el árbol de rutas hijas
-      if (route.firstChild) {
-        this.addBreadcrumb(route.firstChild, routeUrl, breadcrumbs);
-      }
+  private buildBreadcrumb( route: ActivatedRouteSnapshot, parentUrl: string[] = [], breadcrumbs: BreadcrumbItem[] = [] ): BreadcrumbItem[] {
+    if (!route) return breadcrumbs;
+    const routeUrl = parentUrl.concat(
+      route.url.map(segment => segment.path)
+    );
+    const breadcrumbLabel = route.data?.['breadcrumb'];
+    if (breadcrumbLabel) {
+      breadcrumbs.push({
+        label: breadcrumbLabel,
+        url: '/' + routeUrl.join('/')
+      });
     }
+    if (route.firstChild) {
+      return this.buildBreadcrumb(route.firstChild, routeUrl, breadcrumbs);
+    }
+    return breadcrumbs;
+  }
+
+  private refreshBreadcrumbs(): void {
+    const root = this.router.routerState.snapshot.root;
+    const breadcrumbs: BreadcrumbItem[] = [
+      { label: 'Inicio', url: '/' }
+    ];
+    const generated = this.buildBreadcrumb(root);
+    breadcrumbs.push(...generated);
+    if (this.dynamicLabel) {
+      breadcrumbs.push({
+        label: this.dynamicLabel,
+        url: this.router.url
+      });
+    }
+    this._breadcrumbs$.next(breadcrumbs);
+  }
+
+  clearDynamicBreadcrumb(): void {
+    this.dynamicLabel = null;
+    this.refreshBreadcrumbs();
   }
 }

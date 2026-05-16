@@ -79,7 +79,6 @@ export class EvaluationsPerformedPageComponent implements OnInit {
 
     const MAIN_DOC_TYPES = new Set(['Anteproyecto', 'Propuesta', 'Correccion', 'Formato']);
 
-    // CORRECCIÓN: Ordenamos explícitamente por fecha de más reciente a más antiguo
     const sortedEvaluations = [...rawEvaluations].sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();

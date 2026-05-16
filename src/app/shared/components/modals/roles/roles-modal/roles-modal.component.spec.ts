@@ -13,7 +13,7 @@ describe('RolesModalComponent', () => {
   let fixture: ComponentFixture<RolesModalComponent>;
 
   beforeEach(async() => {
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [ RolesModalComponent, RolesSelectionModalComponent, RolesViewModalComponent ],
       providers: [ provideNoopAnimations() ]
     })
@@ -36,39 +36,42 @@ describe('RolesModalComponent', () => {
   });
 
   it('debería cambiar a modo edición cuando el hijo emite onManage', () => {
-    // 1. Aseguramos que estamos en vista
     component.isEditing = false;
     fixture.detectChanges();
 
-    // 2. Obtenemos el componente hijo de vista
     const viewModal = fixture.debugElement.query(By.directive(RolesViewModalComponent));
-
-    // 3. Simulamos que el usuario dio clic en "Gestionar" dentro del hijo
     viewModal.componentInstance.onManage.emit();
     fixture.detectChanges();
 
     expect(component.isEditing).toBe(true);
 
-    // 4. Verificamos que ahora se renderice el selector
     const selectionModal = fixture.debugElement.query(By.directive(RolesSelectionModalComponent));
     expect(selectionModal).toBeTruthy();
   });
 
   it('debería emitir onSave y cerrar todo al guardar en el hijo de selección', () => {
-    const spySave = jest.spyOn(component.onSave, 'emit');
+    const spySave = jest.spyOn(component.onSaved, 'emit');
     const spyOpen = jest.spyOn(component.isOpenChange, 'emit');
 
+    // Forzamos el estado de edición y detectamos cambios
     component.isEditing = true;
     fixture.detectChanges();
 
-    const selectionModal = fixture.debugElement.query(By.directive(RolesSelectionModalComponent));
+    // Buscamos el componente de selección
+    const selectionDebugEl = fixture.debugElement.query(By.directive(RolesSelectionModalComponent));
 
-    // El hijo emite los roles actualizados
-    selectionModal.componentInstance.onSave.emit(mockRoles);
+    // Verificación de seguridad para el test
+    expect(selectionDebugEl).toBeTruthy();
 
-    expect(spySave).toHaveBeenCalledWith(mockRoles);
-    expect(component.isEditing).toBe(false);
-    expect(spyOpen).toHaveBeenCalledWith(false);
+    if (selectionDebugEl) {
+      // El hijo emite los roles actualizados
+      selectionDebugEl.componentInstance.onSaved.emit(mockRoles);
+      fixture.detectChanges();
+
+      expect(spySave).toHaveBeenCalledWith(mockRoles);
+      expect(component.isEditing).toBe(false);
+      expect(spyOpen).toHaveBeenCalledWith(false);
+    }
   });
 
   it('debería cerrar y resetear estado al llamar a closeAll', () => {

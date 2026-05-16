@@ -10,15 +10,14 @@ import { UserRoleType } from '../../../core/models/user-role';
 import { UserService } from '../../users/services/user.service';
 import { User } from '../../users/interfaces/user.interface';
 
-
 @Injectable({
   providedIn: 'root'
 })
 export class ProposalService {
-private http = inject(HttpClient);
-  private authService = inject(AuthService);
-  private userService = inject(UserService);
-  private apiUrl = 'https://api-sgtg-placeholder.com/api/proposals';
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly userService = inject(UserService);
+  private readonly apiUrl = 'https://api-sgtg-placeholder.com/api/proposals';
 
   // Helper para obtener el objeto de usuario completo desde los datos de UserService
   private getMockUser(id: string): User {
@@ -30,7 +29,7 @@ private http = inject(HttpClient);
   }
 
   // Datos iniciales refactorizados a Objetos Completos
-  private initialData: Proposal[] = [
+  private readonly initialData: Proposal[] = [
     {
       id: 'prop-001',
       title: 'Frontend de las funcionalidades asociadas a la aplicación web para la Facultad de Ingeniería Electrónica...',
@@ -85,7 +84,7 @@ private http = inject(HttpClient);
     }
   ];
 
-  private _proposalsList = signal<Proposal[]>(this.getStoredProposals());
+  private readonly _proposalsList = signal<Proposal[]>(this.getStoredProposals());
 
   public proposals = computed(() => {
     const currentUser = this.authService.currentUser();

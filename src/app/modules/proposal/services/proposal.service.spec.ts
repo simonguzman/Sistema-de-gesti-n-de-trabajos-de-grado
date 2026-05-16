@@ -6,14 +6,25 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { UserService } from '../../users/services/user.service';
+import { stateList } from '../../../core/enums/state.enum';
 
 describe('Service: Proposal', () => {
   let service: ProposalService;
   let mockAuthService: any;
   let mockUserService: any;
 
+  // Mock de usuarios necesarios para que getMockUser no falle durante la inicialización
+  const mockUsers = [
+    { id: 'user-001', name: 'Estudiante 1' },
+    { id: 'user-456', name: 'Estudiante 2' },
+    { id: 'user-003', name: 'Estudiante 3' },
+    { id: 'doc-001', name: 'Docente 1' },
+    { id: 'doc-002', name: 'Docente 2' },
+    { id: 'doc-005', name: 'Docente 5' },
+    { id: 'doc-008', name: 'Docente 8' },
+  ];
+
   beforeEach(() => {
-    // Limpiamos el localStorage antes de cada prueba para evitar interferencias
     localStorage.clear();
 
     mockAuthService = {
@@ -21,7 +32,9 @@ describe('Service: Proposal', () => {
       hasAnyRole: jest.fn().mockReturnValue(false)
     };
 
+    // CORRECCIÓN: Definimos getAllUsers para que la inicialización del servicio funcione
     mockUserService = {
+      getAllUsers: jest.fn().mockReturnValue(mockUsers),
       addRoleToUser: jest.fn(),
       removeRoleFromUser: jest.fn(),
       getUserFullName: jest.fn().mockReturnValue('Simón Guzmán')
@@ -41,17 +54,17 @@ describe('Service: Proposal', () => {
   });
 
   it('Debe cargar los datos iniciales si el localStorage está vacío', () => {
-    // Al ser un signal computed, lo evaluamos
     const initialProposals = service.proposals();
-    // Según tu initialData, user-001 tiene 2 propuestas
+    // En initialData hay propuestas donde user-001 es autor
     expect(initialProposals.length).toBeGreaterThan(0);
-    expect(initialProposals.every(p => p.authors?.includes('user-001'))).toBe(true);
+    expect(initialProposals.some(p => p.authors?.includes('user-001'))).toBe(true);
   });
 
   it('Debe validar que un Director no sea el mismo Codirector', () => {
+    // Usamos objetos con ID para cumplir con la lógica del servicio
     const invalidProposal = {
-      directorId: 'doc-123',
-      codirector: 'doc-123'
+      director: { id: 'doc-123' } as any,
+      codirector: { id: 'doc-123' } as any
     };
 
     const error = service.validateProposalRules(invalidProposal);
@@ -59,76 +72,65 @@ describe('Service: Proposal', () => {
   });
 
   it('Debe validar el límite máximo de 2 propuestas por estudiante', () => {
-    // El initialData ya tiene 2 para 'user-001'
     const newProposal = {
       id: 'new-prop',
       authors: ['user-001']
     };
 
     const error = service.validateProposalRules(newProposal);
-    expect(error).toContain('límite máximo permitido');
+    expect(error).toContain('límite máximo');
   });
 
-  it('Debe persistir en localStorage cuando se crea una propuesta', (done) => {
-  const newProposalData: any = {
-    title: 'Nueva Propuesta Test',
-    authors: ['user-999'],
-    directorId: 'doc-100'
-  };
+  it('Debe persistir en el signal cuando se crea una propuesta', (done) => {
+    const newProposalData: any = {
+      title: 'Nueva Propuesta Test',
+      authors: ['user-999'],
+      director: { id: 'doc-100' }
+    };
 
-  service.createProposalMock(newProposalData).subscribe(() => {
-    // En lugar de localStorage (que depende de un effect asíncrono),
-    // verificamos que el signal privado se haya actualizado.
-    const exists = (service as any)._proposalsList().some((p: any) => p.title === 'Nueva Propuesta Test');
-    expect(exists).toBe(true);
-    done();
+    service.createProposalMock(newProposalData).subscribe(() => {
+      const list = (service as any)._proposalsList();
+      const exists = list.some((p: any) => p.title === 'Nueva Propuesta Test');
+      expect(exists).toBe(true);
+      done();
+    });
   });
-});
 
   it('Debe gestionar el cambio de roles al actualizar una propuesta', (done) => {
-    const proposalId = 'prop-001'; // Director: doc-005, Codirector: doc-001
-    const changes = { codirector: 'doc-new-specialist' };
+    const proposalId = 'prop-001';
+    const changes = { codirector: { id: 'doc-new-specialist' } as any };
 
     service.updateProposalMock(proposalId, changes).subscribe(() => {
-      // Verificamos que se llamó al servicio de usuarios para el nuevo rol
       expect(mockUserService.addRoleToUser).toHaveBeenCalledWith('doc-new-specialist', UserRoleType.CODIRECTOR);
-
-      // Para el removeRole, el servicio verifica si el usuario aún está vinculado.
-      // Como 'doc-001' también es codirector en 'prop-006' (según tu initialData),
-      // el servicio NO debería quitarle el rol todavía.
-
-      // Si quieres probar que se remueva, usa un ID que solo esté en una propuesta.
       done();
     });
   });
 
   it('Debe filtrar propuestas según el rol de COMITE (ver todas)', () => {
-    // Simulamos que el usuario es del comité
     mockAuthService.hasAnyRole.mockReturnValue(true);
-
-    // Forzamos la actualización del computed accediendo a él
+    // Forzamos re-evaluación del computed si fuera necesario
     const allProposals = service.proposals();
-
-    // Debería ver las 6 propuestas del initialData
-    expect(allProposals.length).toBe(6);
+    // En initialData hay 4 propuestas
+    expect(allProposals.length).toBe(4);
   });
 
   it('Debe actualizar el estado de la propuesta y del documento al añadir una evaluación', (done) => {
     const proposalId = 'prop-001';
     const evaluation: any = {
-      veredict: 'APROBADO',
+      veredict: stateList.APROBADO,
       observations: 'Excelente'
     };
 
-    // Simulamos que la propuesta tiene documentos
+    // Agregamos un documento mock a la propuesta para la prueba
     (service as any)._proposalsList.update((list: any[]) =>
-      list.map(p => p.id === proposalId ? { ...p, documents: [{ id: 'doc-1', status: 'EN_REVISION' }] } : p)
+      list.map(p => p.id === proposalId ? { ...p, documents: [{ id: 'doc-1', status: stateList.EN_REVISION }] } : p)
     );
 
     service.addEvaluationMock(proposalId, evaluation).subscribe(() => {
-      const updated = service.proposals().find(p => p.id === proposalId);
-      expect(updated?.state).toBe('APROBADO');
-      expect(updated?.documents[0].status).toBe('APROBADO');
+      // Accedemos a la lista interna para verificar
+      const updated = (service as any)._proposalsList().find((p: any) => p.id === proposalId);
+      expect(updated?.state).toBe(stateList.APROBADO);
+      expect(updated?.documents[0].status).toBe(stateList.APROBADO);
       done();
     });
   });

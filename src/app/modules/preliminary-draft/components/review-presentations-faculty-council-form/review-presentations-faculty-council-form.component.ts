@@ -39,7 +39,9 @@ export class ReviewPresentationsFacultyCouncilFormComponent {
   });
 
   // Evaluación de estado de solo lectura mediante computed
-  readonly isReadOnly = computed(() => this.preliminaryDraft.state === stateList.APROBADO);
+  get isReadOnly(): boolean {
+    return this.preliminaryDraft.state === stateList.APROBADO;
+  }
 
   /**
    * Obtiene el documento de propuesta firmado más reciente
@@ -95,9 +97,38 @@ export class ReviewPresentationsFacultyCouncilFormComponent {
 
   get documentUploadDate(): string {
     const firstDocument = this.preliminaryDraft.documents[0];
-    return firstDocument?.uploadDate
-      ? new Date(firstDocument.uploadDate).toLocaleDateString('es-ES')
-      : 'No disponible';
+    const rawDate = firstDocument?.uploadDate;
+
+    if (!rawDate) return 'No disponible';
+
+    // 1. Si ya es un objeto Date, lo formateamos directamente
+    if (rawDate instanceof Date) {
+      return rawDate.toLocaleDateString('es-ES');
+    }
+
+    // 2. Limpiamos espacios en blanco ("15 - 05 - 2026" -> "15-05-2026")
+    const cleanDateStr = rawDate.replace(/\s+/g, '');
+
+    // 3. Intentamos un parseo estándar (por si es ISO o compatible)
+    const standardDate = new Date(cleanDateStr);
+    if (!isNaN(standardDate.getTime())) {
+      return standardDate.toLocaleDateString('es-ES');
+    }
+
+    // 4. Fallback manual: Si el formato es DD-MM-YYYY (común en tu LocalStorage)
+    const parts = cleanDateStr.split('-');
+    if (parts.length === 3) {
+      const day = +parts[0];
+      const month = +parts[1] - 1; // Los meses en JS van de 0 a 11
+      const year = +parts[2];
+
+      const manualDate = new Date(year, month, day);
+      if (!isNaN(manualDate.getTime())) {
+        return manualDate.toLocaleDateString('es-ES');
+      }
+    }
+
+    return 'Fecha inválida';
   }
 
   /**

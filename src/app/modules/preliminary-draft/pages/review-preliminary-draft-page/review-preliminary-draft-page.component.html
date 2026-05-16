@@ -8,7 +8,7 @@
 
 <app-confirmation-action-modal
   [isOpen]="isConfirmModalOpen()"
-  description="¿Está seguro de registrar esta evaluación? Esta acción es irreversible."
+  description="¿Desea finalizar la evaluación? El resultado será enviado al sistema."
   (onClose)="isConfirmModalOpen.set(false)"
   (confirm)="processEvaluation()">
 </app-confirmation-action-modal>

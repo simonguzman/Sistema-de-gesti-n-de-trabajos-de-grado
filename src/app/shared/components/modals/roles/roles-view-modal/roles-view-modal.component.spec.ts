@@ -38,7 +38,7 @@ describe('RolesViewModalComponent', () => {
   });
 
   it('debería disparar manage al presionar el botón de Gestionar', () => {
-    const spy = jest.spyOn(component.manage, 'emit');
+    const spy = jest.spyOn(component.onManage, 'emit');
     component.isOpen = true;
     fixture.detectChanges();
     const button = fixture.debugElement.query(By.directive(ButtonComponent));

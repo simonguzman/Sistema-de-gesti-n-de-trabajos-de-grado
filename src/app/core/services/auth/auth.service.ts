@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { BehaviorSubject, delay, map, Observable, of, tap, throwError } from 'rxjs';
+import { delay, map, Observable, of, throwError } from 'rxjs';
 import { UserService } from '../../../modules/users/services/user.service';
 import { Router } from '@angular/router';
 import { User, UserState } from '../../../modules/users/interfaces/user.interface';
@@ -14,9 +14,9 @@ export interface ChangePasswordResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private userService = inject(UserService);
-  private router      = inject(Router);
-  private http        = inject(HttpClient);
+  private readonly userService = inject(UserService);
+  private readonly router      = inject(Router);
+  private readonly http        = inject(HttpClient);
 
   private readonly AUTH_KEY = 'sgtg_session';
 
@@ -24,7 +24,7 @@ export class AuthService {
    * ESTADO DE AUTENTICACIÓN
    * Usamos Signals para una reactividad eficiente en toda la app.
    */
-  private _currentUser = signal<User | null>(this.getStoredSession());
+  private readonly _currentUser = signal<User | null>(this.getStoredSession());
 
   // Exponemos el usuario como readonly para proteger el estado
   public currentUser = this._currentUser.asReadonly();

@@ -19,19 +19,23 @@ import { NotificationType } from '../../../../shared/components/notifications/mo
   styleUrls: ['./review-preliminary-draft-form.component.css']
 })
 export class ReviewPreliminaryDraftFormComponent {
-  private readonly fb = inject(FormBuilder);
+ private readonly fb = inject(FormBuilder);
   private readonly notificationService = inject(NotificationService);
   public readonly userService = inject(UserService);
 
   @Input({ required: true }) preliminaryDraft!: PreliminaryDraft;
   @Input() isSubmitting = false;
 
-  @Output() onSaveEvaluation = new EventEmitter<{ formValues: any, file: File }>();
+  @Output() onSaveEvaluation = new EventEmitter<{ formValues: any, file: File, annotatedFile?: File }>();
   @Output() onDownloadPreliminaryDraft = new EventEmitter<void>();
 
-  // Manejo de estado con Signals para mayor claridad
+  // Manejo de archivos (Obligatorio y Opcional)
   uploadedSignedFile = signal<{ fileName: string; file: File } | null>(null);
+  uploadedAnnotatedFile = signal<{ fileName: string; file: File } | null>(null);
+
+  // Estados de modales
   isUploadModalOpen = signal(false);
+  isAnnotatedUploadModalOpen = signal(false);
 
   readonly evaluationForm = this.fb.group({
     result: ['', Validators.required],
@@ -39,18 +43,15 @@ export class ReviewPreliminaryDraftFormComponent {
     document: [null]
   });
 
-  // Estado de solo lectura derivado del estado del anteproyecto
-  readonly isReadOnly = computed(() => this.preliminaryDraft.state === stateList.APROBADO);
+  get isReadOnly(): boolean {
+    return this.preliminaryDraft.state === stateList.APROBADO;
+  }
 
-  // --- Lógica de Datos y Getters Semánticos ---
+  // --- Getters de Información ---
 
-  /**
-   * Identifica el documento más reciente cargado para evaluación
-   */
   get currentDocument() {
     const documents = this.preliminaryDraft.documents || [];
     if (documents.length === 0) return null;
-    // Retorna el documento con la fecha de carga más reciente
     return [...documents].sort((a, b) =>
       new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
     )[0];
@@ -58,11 +59,10 @@ export class ReviewPreliminaryDraftFormComponent {
 
   get documentUploadDate(): string {
     const uploadDate = this.currentDocument?.uploadDate;
-    if (!uploadDate) return 'No disponible';
-    return new Date(uploadDate).toLocaleDateString('es-ES');
+    return uploadDate ? new Date(uploadDate).toLocaleDateString('es-ES') : 'No disponible';
   }
 
-  // --- Métodos de resolución de nombres ---
+  // --- Resolución de Nombres ---
 
   getStudentNames(): string {
     return this.userService.getAuthorsNames(this.preliminaryDraft.proposalData.authors);
@@ -72,41 +72,37 @@ export class ReviewPreliminaryDraftFormComponent {
     return this.userService.getUserFullName(this.preliminaryDraft.proposalData.director.id);
   }
 
-  getCodirectorName(): string {
-    const id = this.preliminaryDraft.proposalData.codirector?.id;
-    return id ? this.userService.getUserFullName(id) : '';
-  }
-
-  getAdvisorName(): string {
-    const id = this.preliminaryDraft.proposalData.advisor?.id;
-    return id ? this.userService.getUserFullName(id) : '';
-  }
-
-  // --- Acciones de Interfaz ---
+  // --- Handlers de Archivos ---
 
   handleFileUploaded(event: { fileName: string; file: File }): void {
     this.uploadedSignedFile.set(event);
     this.isUploadModalOpen.set(false);
+  }
+
+  handleAnnotatedFileUploaded(event: { fileName: string; file: File }): void {
+    this.uploadedAnnotatedFile.set(event);
+    this.isAnnotatedUploadModalOpen.set(false);
     this.notificationService.show({
-      title: 'Archivo cargado',
-      message: 'El documento firmado se ha adjuntado correctamente al formulario.',
+      title: 'Feedback adjunto',
+      message: 'El documento con anotaciones se ha cargado correctamente.',
       type: NotificationType.INFO
     });
   }
 
-  /**
-   * Ejecuta la validación y emisión del formulario de evaluación
-   */
   submit(): void {
     const fileData = this.uploadedSignedFile();
+    const annotatedData = this.uploadedAnnotatedFile();
+
     if (this.evaluationForm.invalid || !fileData) {
       this.evaluationForm.markAllAsTouched();
       this.showValidationErrorNotification(!fileData);
       return;
     }
+
     this.onSaveEvaluation.emit({
       formValues: this.evaluationForm.value,
-      file: fileData.file
+      file: fileData.file,
+      annotatedFile: annotatedData?.file
     });
   }
 
@@ -115,14 +111,12 @@ export class ReviewPreliminaryDraftFormComponent {
     return !!(control?.invalid && control?.touched);
   }
 
-  // --- Notificaciones de Feedback ---
-
   private showValidationErrorNotification(missingFile: boolean): void {
     this.notificationService.show({
       title: 'Formulario incompleto',
       message: missingFile
-        ? 'Debe adjuntar el archivo de evaluación firmado para proceder.'
-        : 'Por favor, diligencie el veredicto y los comentarios de la evaluación.',
+        ? 'Debe adjuntar el Formato B firmado para guardar la evaluación.'
+        : 'Por favor, complete el veredicto y las observaciones.',
       type: NotificationType.ERROR
     });
   }

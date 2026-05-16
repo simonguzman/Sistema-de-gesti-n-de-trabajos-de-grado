@@ -63,7 +63,7 @@ describe('RolesSelectionModalComponent', () => {
   });
 
   it('debería emitir onSave con los cambios y cerrar el modal al guardar', () => {
-    const onSaveSpy = jest.spyOn(component.onSave, 'emit');
+    const onSaveSpy = jest.spyOn(component.onSaved, 'emit');
     const isOpenChangeSpy = jest.spyOn(component.isOpenChange, 'emit');
 
     component.editableRoles = [
