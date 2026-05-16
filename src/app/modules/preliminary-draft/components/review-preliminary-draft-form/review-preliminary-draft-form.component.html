@@ -1,11 +1,12 @@
 <div class="pt-2 max-w-4xl mx-auto pb-10">
   <section class="mb-10">
     <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Información del anteproyecto</h3>
+
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-1">
         <span class="font-display font-semibold text-primary text-size-section">Título</span>
-        <input type="text" [value]="preliminaryDraft.proposalData.title" disabled
-               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+        <input type="text" [value]="preliminaryDraft.proposalData.title || ''" disabled
+              class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -15,10 +16,46 @@
                  class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
         </div>
         <div class="flex flex-col gap-1">
-          <span class="font-display font-semibold text-primary text-size-section">Estudiante(s)</span>
-          <input type="text" [value]="getStudentNames()" disabled
+          <span class="font-display font-semibold text-primary text-size-section">Modalidad</span>
+          <input type="text" [value]="preliminaryDraft.proposalData.modality" disabled
                  class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
         </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Estado</span>
+        <input type="text" [value]="preliminaryDraft.state" disabled
+              class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full font-medium capitalize">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Estudiante(s)</span>
+        <input type="text" [value]="getStudentNames()" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <span class="font-display font-semibold text-primary text-size-section">Director</span>
+          <input type="text" [value]="getDirectorName()" disabled
+                 class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+        </div>
+
+        @if (preliminaryDraft.proposalData.codirector) {
+          <div class="flex flex-col gap-1">
+            <span class="font-display font-semibold text-primary text-size-section">Codirector</span>
+            <input type="text" [value]="getCodirectorName()" disabled
+                   class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+          </div>
+        }
+
+        @if (preliminaryDraft.proposalData.advisor) {
+          <div class="flex flex-col gap-1">
+            <span class="font-display font-semibold text-primary text-size-section">Asesor</span>
+            <input type="text" [value]="getAdvisorName()" disabled
+                   class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+          </div>
+        }
       </div>
     </div>
   </section>
@@ -27,6 +64,7 @@
 
   <section [class.opacity-60]="isReadOnly">
     <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Resultado de la evaluación</h3>
+
     <form [formGroup]="evaluationForm" (ngSubmit)="submit()" class="flex flex-col gap-6">
 
       <div class="flex flex-col gap-2">
@@ -61,12 +99,11 @@
         <span class="font-display font-semibold text-primary text-size-section">Archivos de evaluación</span>
 
         <div class="flex flex-col gap-3">
-
           <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
             <div class="flex items-center gap-3">
               <span class="material-symbols-outlined text-[#DB141C] text-4xl">picture_as_pdf</span>
               <div class="flex flex-col">
-                <span class="text-sm font-bold text-primary">{{ currentDocument?.name }}</span>
+                <span class="text-sm font-bold text-primary">{{ currentDocument?.name || 'Documento' }}</span>
                 <span class="text-xs text-[#777680]">Documento a evaluar</span>
               </div>
             </div>

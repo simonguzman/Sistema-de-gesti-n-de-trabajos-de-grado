@@ -142,6 +142,16 @@ export class ReviewPresentationsFacultyCouncilFormComponent {
     return this.userService.getUserFullName(this.preliminaryDraft.proposalData.director.id);
   }
 
+  getCodirectorName(): string {
+    const codirector = this.preliminaryDraft.proposalData.codirector;
+    return codirector && codirector.id ? this.userService.getUserFullName(codirector.id) : '';
+  }
+
+  getAdvisorName(): string {
+    const advisor = this.preliminaryDraft.proposalData.advisor;
+    return advisor && advisor.id ? this.userService.getUserFullName(advisor.id) : '';
+  }
+
   isFieldInvalid(fieldName: string): boolean {
     const control = this.evaluationForm.get(fieldName);
     return !!(control?.invalid && control?.touched);

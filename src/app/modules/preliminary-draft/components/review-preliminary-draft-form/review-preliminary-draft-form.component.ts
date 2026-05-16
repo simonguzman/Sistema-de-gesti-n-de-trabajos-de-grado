@@ -49,17 +49,65 @@ export class ReviewPreliminaryDraftFormComponent {
 
   // --- Getters de Información ---
 
+  private parseDate(dateValue: any): Date | null {
+    if (!dateValue) return null;
+
+    // Si ya es Date
+    if (dateValue instanceof Date) {
+      return isNaN(dateValue.getTime()) ? null : dateValue;
+    }
+
+    // Si es string
+    if (typeof dateValue === 'string') {
+      const cleanDateStr = dateValue.replace(/\s+/g, '');
+
+      // Intento estándar
+      const standardDate = new Date(cleanDateStr);
+
+      if (!isNaN(standardDate.getTime())) {
+        return standardDate;
+      }
+
+      // Fallback DD-MM-YYYY
+      const parts = cleanDateStr.split('-');
+
+      if (parts.length === 3) {
+        const day = +parts[0];
+        const month = +parts[1] - 1;
+        const year = +parts[2];
+
+        const manualDate = new Date(year, month, day);
+
+        if (!isNaN(manualDate.getTime())) {
+          return manualDate;
+        }
+      }
+    }
+
+    return null;
+  }
+
   get currentDocument() {
     const documents = this.preliminaryDraft.documents || [];
+
     if (documents.length === 0) return null;
-    return [...documents].sort((a, b) =>
-      new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
-    )[0];
+
+    return [...documents].sort((a, b) => {
+      const dateA = this.parseDate(a.uploadDate);
+      const dateB = this.parseDate(b.uploadDate);
+
+      return (dateB?.getTime() || 0) - (dateA?.getTime() || 0);
+    })[0];
   }
 
   get documentUploadDate(): string {
     const uploadDate = this.currentDocument?.uploadDate;
-    return uploadDate ? new Date(uploadDate).toLocaleDateString('es-ES') : 'No disponible';
+
+    const parsedDate = this.parseDate(uploadDate);
+
+    return parsedDate
+      ? parsedDate.toLocaleDateString('es-ES')
+      : 'No disponible';
   }
 
   // --- Resolución de Nombres ---
@@ -70,6 +118,16 @@ export class ReviewPreliminaryDraftFormComponent {
 
   getDirectorName(): string {
     return this.userService.getUserFullName(this.preliminaryDraft.proposalData.director.id);
+  }
+
+  getCodirectorName(): string {
+    const codirector = this.preliminaryDraft.proposalData.codirector;
+    return codirector && codirector.id ? this.userService.getUserFullName(codirector.id) : '';
+  }
+
+  getAdvisorName(): string {
+    const advisor = this.preliminaryDraft.proposalData.advisor;
+    return advisor && advisor.id ? this.userService.getUserFullName(advisor.id) : '';
   }
 
   // --- Handlers de Archivos ---
