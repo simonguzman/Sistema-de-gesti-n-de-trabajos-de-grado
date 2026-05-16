@@ -6,7 +6,7 @@ import { NotificationType } from '../../../../shared/components/notifications/mo
 import { stateList } from '../../../../core/enums/state.enum';
 import { ButtonComponent } from "../../../../shared/components/button-component/button-component.component";
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
-import { Document } from '../../../../core/interfaces/Document.interface';
+import { Document, DocumentType } from '../../../../core/interfaces/Document.interface';
 import { UserService } from '../../../users/services/user.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserRoleType } from '../../../../core/models/user-role';
@@ -215,7 +215,7 @@ export class ProposalFormComponent implements OnInit {
       name: this.attachedFile.name!,
       url: '',
       uploadDate: new Date().toLocaleDateString('es-ES').replaceAll('/', ' - '),
-      type: 'Propuesta',
+      type: DocumentType.PROPUESTA,
       status: stateList.EN_REVISION
     }];
   }

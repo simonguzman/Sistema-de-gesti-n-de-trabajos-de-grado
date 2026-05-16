@@ -13,7 +13,7 @@ import { ButtonComponent } from "../../../../shared/components/button-component/
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
 
 import { PreliminaryDraft } from '../../interfaces/preliminary-draft.interface';
-import { Document } from '../../../../core/interfaces/Document.interface';
+import { Document, DocumentType } from '../../../../core/interfaces/Document.interface';
 import { User } from '../../../users/interfaces/user.interface';
 import { stateList } from '../../../../core/enums/state.enum';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
@@ -212,7 +212,7 @@ export class PreliminaryDraftFormComponent implements OnInit {
         name: currentAttachment.name!,
         url: '',
         uploadDate: new Date().toLocaleDateString('es-ES').replaceAll('/', ' - '),
-        type: 'Anteproyecto',
+        type: DocumentType.ANTEPROYECTO,
         status: stateList.EN_REVISION
       };
     }

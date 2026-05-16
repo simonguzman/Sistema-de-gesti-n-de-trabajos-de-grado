@@ -8,7 +8,7 @@ import { ButtonComponent } from "../../../../shared/components/button-component/
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
 
 import { PreliminaryDraft } from '../../interfaces/preliminary-draft.interface';
-import { Document } from '../../../../core/interfaces/Document.interface';
+import { Document, DocumentType } from '../../../../core/interfaces/Document.interface';
 import { stateList } from '../../../../core/enums/state.enum';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 @Component({
@@ -65,7 +65,7 @@ export class ReviewPresentationsFacultyCouncilFormComponent {
       name: fileName,
       url: '',
       uploadDate: new Date().toLocaleDateString(),
-      type: 'Formato',
+      type: DocumentType.FORMATO,
       status: stateList.APROBADO
     };
   }

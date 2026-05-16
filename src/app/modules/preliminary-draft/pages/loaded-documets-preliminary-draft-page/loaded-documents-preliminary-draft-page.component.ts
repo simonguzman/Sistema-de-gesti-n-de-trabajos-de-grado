@@ -11,7 +11,7 @@ import { Column, TableButton, TableComponent } from '../../../../shared/componen
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
 
-import { Document } from '../../../../core/interfaces/Document.interface';
+import { Document, DocumentType } from '../../../../core/interfaces/Document.interface';
 import { stateList } from '../../../../core/enums/state.enum';
 import { UserRoleType } from '../../../../core/models/user-role';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
@@ -366,7 +366,7 @@ export class LoadedDocumentsPreliminaryDraftPageComponent implements OnInit, OnD
       name: selectedFileData.fileName.replace('.pdf', ''),
       url: '',
       uploadDate: this.formatDate(new Date()),
-      type: this.activeTab() === 'ANTEPROYECTOS' ? 'Correccion' : 'Formato',
+      type: this.activeTab() === DocumentType.ANTEPROYECTO ? DocumentType.CORRECCION : DocumentType.FORMATO,
       status: stateList.EN_REVISION
     };
     this.preliminaryDraftService.uploadDocumentMock(preliminaryDraft.preliminaryDraftId, newDocumentRecord).subscribe({

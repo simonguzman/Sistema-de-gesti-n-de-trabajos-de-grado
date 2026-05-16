@@ -7,7 +7,7 @@ import { NotificationService } from '../../../../shared/components/notifications
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { UserRoleType } from '../../../../core/models/user-role';
-import { Document } from '../../../../core/interfaces/Document.interface';
+import { Document, DocumentType } from '../../../../core/interfaces/Document.interface';
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
 import { ConfirmationActionModalComponent } from "../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component";
 import { stateList } from '../../../../core/enums/state.enum';
@@ -152,7 +152,7 @@ export class LoadedProposalsPageComponent implements OnInit {
       name: fileData.fileName.replace('.pdf', ''),
       url: '',
       uploadDate: this.formatDate(new Date()),
-      type: 'Correccion',
+      type: DocumentType.CORRECCION,
       status: stateList.EN_REVISION
     };
 

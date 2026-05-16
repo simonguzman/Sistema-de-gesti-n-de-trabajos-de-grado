@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { stateList } from '../../../../core/enums/state.enum';
-import { Document } from '../../../../core/interfaces/Document.interface';
+import { Document, DocumentType } from '../../../../core/interfaces/Document.interface';
 import { Evaluation } from '../../../../core/interfaces/evaluation.interface';
 
 import { PreliminaryDraft } from '../../interfaces/preliminary-draft.interface';
@@ -105,7 +105,7 @@ export class ReviewPresentationsFacultyCouncilPageComponent implements OnInit {
       name: data.file.name,
       url: '', // En un entorno real, aquí iría la URL tras subir el archivo
       uploadDate: new Date().toLocaleDateString(),
-      type: 'Resolucion',
+      type: DocumentType.RESOLUCION,
       status: finalState
     };
     const currentUser = this.authService.currentUser();
