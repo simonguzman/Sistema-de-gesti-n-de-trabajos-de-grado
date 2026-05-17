@@ -1,148 +1,138 @@
-import { Component, inject } from '@angular/core';
-import { Column, TableComponent } from '../../../../shared/components/table-component/table-component.component';
-import { EvaluationModalComponent } from '../../../../shared/components/modals/evaluation-modal/evaluation-modal.component';
-import { ButtonComponent } from '../../../../shared/components/button-component/button-component.component';
-import { RegisterInformationModalComponent } from '../../../../shared/components/modals/register-information-modal/register-information-modal.component';
-import { ConfirmationActionModalComponent } from '../../../../shared/components/modals/confirmation-action-modal/confirmation-action-modal.component';
-import { NotificationContainerComponent } from '../../../../shared/components/notifications/components/notification-container/notification-container.component';
+import { Component, computed, inject, signal } from '@angular/core';
+import { Column, TableButton, TableComponent } from '../../../../shared/components/table-component/table-component.component';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
-import { stateList } from '../../../../core/enums/state.enum';
+import { Router } from '@angular/router';
+import { ThesisWorkService } from '../../services/thesis-work.service';
+import { AuthService } from '../../../../core/services/auth/auth.service';
+import { UserRoleType } from '../../../../core/models/user-role';
+import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { DescriptionModalComponent } from "../../../../shared/components/modals/description-modal/description-modal.component";
+
+const THESIS_WORK_COLUMNS: Column[] = [
+  { field: 'title', header: 'Título', type: 'text', width: '30%' },
+  { field: 'modality', header: 'Modalidad', type: 'text', width: '15%' },
+  {
+    field: 'description',
+    header: 'Descripción',
+    type: 'actions',
+    actions: [{ action: 'ver descripción', label: 'Ver descripción', variant: 'primary', disabled: false }],
+    width: '20%'
+  },
+  { field: 'state', header: 'Estado', type: 'state', width: '15%' },
+  {
+    field: 'actions',
+    header: 'Acciones',
+    type: 'actions',
+    actions: [
+      { action: 'ver', icon: 'visibility', variant: 'primary', disabled: false },
+    ],
+    width: '20%'
+  },
+];
+
+const HEADER_BUTTONS: TableButton[] = [
+  { label: 'Formatos descargables', variant: 'primary' }
+];
 
 @Component({
   selector: 'app-thesis-work-page',
-  imports: [TableComponent, EvaluationModalComponent, ButtonComponent, RegisterInformationModalComponent, ConfirmationActionModalComponent, NotificationContainerComponent],
+  imports: [TableComponent, DescriptionModalComponent],
   templateUrl: './thesis-work-page.component.html',
   styleUrl: './thesis-work-page.component.css',
 })
 export class ThesisWorkPageComponent {
+  private readonly router = inject(Router);
+  private readonly thesisWorkService = inject(ThesisWorkService);
+  private readonly authService = inject(AuthService);
+  private readonly notificationService = inject(NotificationService);
 
-  protected notifService = inject(NotificationService);
-  protected stateList = stateList;
+  protected columns: Column[] = THESIS_WORK_COLUMNS;
+  protected headerButtons: TableButton[] = HEADER_BUTTONS;
 
-      testColumns: Column[] = [
-        { field: 'titulo', header: 'Titulo', type: 'text', width: '30%' },
-        { field: 'modalidad', header: 'Modalidad', type: 'text', width: '15%'},
-        {
-          field: 'descripción',
-          header: 'Descripción',
-          type: 'actions',
-          actions: [
-            {action:'ver descripción', label: 'Ver descripción', variant: 'primary', disabled: true}
-          ],
-          width: '20%'
-        },
-        { field: 'estado', header: 'Estado', type: 'state', width: '15%' },
-        {
-        field: 'acciones',
-        header: 'Acciones',
-        type: 'actions',
-        actions: [
-          { action: 'ver',     icon: 'visibility', variant:'primary', disabled: true },
-          { action: 'editar',  icon: 'edit', variant:'primary', disabled: true },
-          { action: 'eliminar',icon: 'delete', variant: 'primary', disabled: true }
-        ],
-        width: '20%'
-        },
-      ];
+  // Manejo de estado idéntico mediante Signals
+  descriptionModal = signal({ isOpen: false, title: '', content: '' });
 
-      testValue: any[] = [{
-        titulo: 'Prueba',
-        modalidad: 'Presencial',
-        estado: 'Aprobado',
-      }];
+  protected tableData = computed(() => {
+    const currentUser = this.authService.currentUser();
+    const currentUserId = currentUser?.id ? String(currentUser.id) : null;
 
-  // 1. Variable para controlar la visibilidad del modal
-  mostrarModalEvaluacion: boolean = false;
+    const hasFullAccessRole = this.authService.hasAnyRole([
+      UserRoleType.ADMINISTRADOR,
+      UserRoleType.DECANATURA,
+      UserRoleType.CONSEJO
+    ]);
 
-  // 2. Datos de prueba (Mock data idéntica a tu diseño)
-  mockName: string = 'Joe Doe';
-  mockRole: string = 'Jefe de departamento';
-  mockDate: Date = new Date(2025, 7, 22); // 22 de Agosto de 2025
-  // En tu ThesisWorkPageComponent
-  mockState: stateList = 'Aprobado' as stateList;  // Tu estado válido
-  mockComments: string = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
-  mockDocs: string[] = [
-  'Monografia_trabajo_de_grado_Simon_Guzman_Anaya.pdf',
-  'Formato-E_trabajo_de_grado_Simon_Guzman_Anaya.pdf',
-  'Anexo_Metodologia_Joe_Doe.pdf'
-]; // Array vacío para ver el mensaje "No han sido cargados archivos..."
+    const thesisWorkList = this.thesisWorkService.thesisWorks();
 
-  // 3. Métodos para abrir y cerrar
-  abrirModal() {
-    this.mostrarModalEvaluacion = true;
+    return thesisWorkList.map(work => {
+      const proposal = work.preliminaryDraftData?.proposalData;
+
+      // Validación estricta de participantes involucrados en el Trabajo de Grado
+      const isDirector = proposal?.director?.id != null && String(proposal.director.id) === currentUserId;
+      const isCodirector = proposal?.codirector?.id != null && String(proposal.codirector.id) === currentUserId;
+      const isAdvisor = proposal?.advisor?.id != null && String(proposal.advisor.id) === currentUserId;
+
+      const isStudentAuthor = (currentUserId != null && Array.isArray(proposal?.authors))
+        ? proposal.authors.some((author: any) =>
+            typeof author === 'string' ? author === currentUserId : String(author?.id) === currentUserId
+          )
+        : false;
+
+      const isJuror = work.sustentation?.assignedJurors?.some(juror => String(juror.id) === currentUserId) ?? false;
+
+      const hasViewPermission = hasFullAccessRole || isDirector || isCodirector || isAdvisor || isStudentAuthor || isJuror;
+      const isOwnerOrAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]) || isDirector;
+
+      let allowed: string[] = ['ver descripción'];
+      if (hasViewPermission) allowed.push('ver');
+      if (isOwnerOrAdmin) allowed.push('editar');
+
+      return {
+        id: work.thesisWorkId,
+        title: proposal?.title || 'Sin título',
+        description: proposal?.description || 'Sin descripción disponible.',
+        modality: proposal?.modality || 'No definida',
+        state: work.state,
+        allowedActions: allowed
+      };
+    });
+  });
+
+  ngOnInit(): void {
+    // Listo para inicializaciones adicionales en caso de ser necesario
   }
 
-  cerrarModal() {
-    this.mostrarModalEvaluacion = false;
-    // Ejemplo: confirmación al cerrar una evaluación
-    this.notifService.success(
-      'Evaluación registrada',
-      'La evaluación fue guardada correctamente.'
-    );
-  }
-  // En ThesisWorkPageComponent
+  handleTableAction(event: { action: string, row: any }): void {
+    if (event.row.allowedActions && !event.row.allowedActions.includes(event.action)) {
+      this.showRestrictedNotification();
+      return;
+    }
 
-// 1. Control del nuevo modal
-mostrarModalRegistro: boolean = false;
-
-// 2. Mock Data para Registro (con más campos)
-mockRegistro = {
-  header: 'Detalles de la entrega final',
-  sub: 'Información del trabajo de grado',
-  titulo: 'Frontend de las funcionalidades asociadas a la plataforma de gestión...',
-  modalidad: 'Práctica profesional',
-  estudiante: 'Simón Guzmán Anaya',
-  director: 'Vanessa Agredo Solano',
-  codirector: 'Pablo Augusto Mage Imbachi', // Para probar el @if
-  asesor: 'Alejandro Toledo Tovar',        // Para probar el @if
-  fecha: new Date(2025, 8, 30),
-  estado: 'En revision' as stateList,
-  docs: [
-    'Monografia_trabajo_de_grado_Simon_Guzman_Anaya.pdf',
-    'Formato-E_trabajo_de_grado_Simon_Guzman_Anaya.pdf'
-  ]
-};
-
-// 3. Métodos
-abrirRegistro() { this.mostrarModalRegistro = true; }
-cerrarRegistro() { this.mostrarModalRegistro = false; }
-
-descargarDesdeRegistro(file: string) {
-    console.log('Descargando:', file);
-    this.notifService.info(
-      'Descarga iniciada',
-      `El archivo "${file}" se está descargando.`
-    );
+    switch (event.action) {
+      case 'ver descripción':
+        this.descriptionModal.set({
+          isOpen: true,
+          title: 'Descripción del trabajo de grado',
+          content: event.row.description
+        });
+        break;
+      case 'ver':
+        this.router.navigate(['/thesis-work/details', event.row.id]);
+        break;
+    }
   }
 
-  mostrarConfirmacion: boolean = false;
-
-  miFuncionDeGuardado() { this.mostrarConfirmacion = true}
-
-  // Simular confirmación aceptada desde el modal de confirmación
-  confirmacionAceptada() {
-    this.mostrarConfirmacion = false;
-    this.notifService.success(
-      'Acción confirmada',
-      'El registro fue procesado con éxito.'
-    );
+  handleHeaderButton(button: TableButton): void {
+    if (button.label === 'Formatos descargables') {
+      this.router.navigate(['/thesis-work/downloadable_formats']);
+    }
   }
 
-  // Simular error (por ejemplo, fallo en una llamada HTTP)
-  confirmacionRechazada() {
-    this.mostrarConfirmacion = false;
-    this.notifService.error(
-      'Solicitud no guardada',
-      'Error en el Sistema. Por favor, intente más tarde.'
-    );
-  }
-
-  // Simular alerta de seguridad
-  onAlertaSeguridad() {
-    this.notifService.security(
-      'Alerta de seguridad',
-      'Por su seguridad, cambie la contraseña de su cuenta.'
-    );
+  private showRestrictedNotification(): void {
+    this.notificationService.show({
+      title: 'Acceso denegado',
+      message: 'No tienes permisos para realizar esta acción o interactuar con este registro.',
+      type: NotificationType.ERROR
+    });
   }
 }
-

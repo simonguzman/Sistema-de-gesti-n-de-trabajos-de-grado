@@ -1,0 +1,92 @@
+<div class="pt-2 max-w-4xl mx-auto pb-10">
+
+  <div class="mb-4">
+    <button
+      type="button"
+      (click)="onGoBack.emit()"
+      class="flex items-center gap-2 text-navy-900 hover:text-[#000066] transition-colors font-bold group"
+    >
+      <span class="material-symbols-outlined text-[#000066] text-lg group-hover:-translate-x-1 transition-transform">
+        arrow_back
+      </span>
+      <span class="return-arrow-option">Regresar</span>
+    </button>
+  </div>
+
+  <section>
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Información de los avances</h3>
+
+    <form [formGroup]="advanceForm" (ngSubmit)="submit()" class="flex flex-col gap-6">
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Título <span class="text-orange-500">*</span></span>
+        <input type="text" formControlName="title"
+               class="p-3 border rounded-md text-[#777680] w-full focus:outline-none font-sans"
+               placeholder="Ej: Avance(3)_Simon_Guzman_Anaya"
+               [class.border-red-500]="isFieldInvalid('title')">
+        @if (isFieldInvalid('title')) {
+          <span class="text-textbox-alert">El título es obligatorio</span>
+        }
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Comentarios <span class="text-orange-500">*</span></span>
+        <textarea formControlName="comments" rows="5"
+                  class="p-3 border rounded-md w-full focus:outline-none font-sans text-[#777680]"
+                  placeholder="Escriba aquí sus comentarios u observaciones sobre este avance..."
+                  [class.border-red-500]="isFieldInvalid('comments')"></textarea>
+        @if (isFieldInvalid('comments')) {
+          <span class="text-textbox-alert">Los comentarios son obligatorios</span>
+        }
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <span class="font-display font-semibold text-primary text-size-section">Archivos adjuntos</span>
+
+        <div class="flex flex-col gap-3">
+          @for (item of uploadedFiles(); track $index) {
+            <div class="flex items-center justify-between p-4 bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-xl shadow-sm transition-all">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-blue-600 text-4xl">attach_file</span>
+                <div class="flex flex-col">
+                  <span class="text-sm font-bold text-primary">{{ item.fileName }}</span>
+                  <span class="text-xs text-[#777680]">Documento de avance adjunto</span>
+                </div>
+              </div>
+              <button type="button" (click)="removeFile($index)" class="text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          } @empty {
+            <div class="p-6 border border-dashed border-gray-300 rounded-xl text-center bg-gray-50/50">
+              <span class="text-sm text-gray-500 italic">No hay archivos adjuntos. Haz clic en "Cargar archivos" para añadir evidencias.</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="flex gap-4 justify-end mt-10">
+        <app-button-component
+          label="Cargar archivos"
+          variant="secondary"
+          type="button"
+          (onClick)="isUploadModalOpen.set(true)">
+        </app-button-component>
+
+        <app-button-component
+          label="Guardar avance"
+          variant="primary"
+          type="submit"
+          [disabled]="isSubmitting">
+        </app-button-component>
+      </div>
+    </form>
+  </section>
+</div>
+
+<app-file-upload-modal
+  [isOpen]="isUploadModalOpen()"
+  description="Subir archivo de avance (Puede repetir este paso para agregar más archivos)"
+  (onFileUploaded)="handleFileUploaded($event)"
+  (onClose)="isUploadModalOpen.set(false)">
+</app-file-upload-modal>

@@ -1,0 +1,47 @@
+<div class="w-full">
+  <div class="bg-white rounded-lg shadow-sm p-6">
+
+    <div class="mb-6">
+      <button (click)="goBack()" class="flex items-center gap-2 text-navy-900 font-bold group w-fit">
+        <span class="material-symbols-outlined text-[#000066] text-lg group-hover:-translate-x-1 transition-transform">
+          arrow_back
+        </span>
+        <span class="return-arrow-option">Regresar</span>
+      </button>
+    </div>
+
+    <app-tabs
+      [tabs]="tabsConfig"
+      [activeTab]="activeTab()"
+      (tabChange)="activeTab.set($event)"
+    ></app-tabs>
+
+    <div class="mt-6">
+      <app-table-component
+        [value]="currentTableData()"
+        [columns]="currentColumns()"
+        [paginator]="true"
+        [headerButtons]="currentHeaderButtons()"
+        (headerButtonClick)="handleHeaderButton($event)"
+        (actionClick)="handleTableAction($event)"
+        [emptyMessage]="'No se han encontrado registros ni documentos cargados para la sección seleccionada.'"
+      ></app-table-component>
+    </div>
+
+  </div>
+</div>
+
+<app-file-upload-modal
+  [isOpen]="isUploadModalOpen()"
+  [description]="currentStrategy().modalConfig.uploadDescription"
+  [uploadedBy]="currentStrategy().modalConfig.uploadedByText"
+  (onFileUploaded)="onFileSelected($event)"
+  (onClose)="isUploadModalOpen.set(false)"
+></app-file-upload-modal>
+
+<app-confirmation-action-modal
+  [isOpen]="isConfirmModalOpen()"
+  [description]="currentStrategy().modalConfig.confirmDescription"
+  (confirm)="confirmUpload()"
+  (onClose)="cancelUpload()"
+></app-confirmation-action-modal>

@@ -10,6 +10,7 @@ import { UserRoleType } from '../../../../core/models/user-role';
 import { UserService } from '../../../users/services/user.service';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { DocumentType } from '../../../../core/interfaces/Document.interface';
 
 describe('ReviewPreliminaryDraftFormComponent', () => {
   let component: ReviewPreliminaryDraftFormComponent;
@@ -31,7 +32,7 @@ describe('ReviewPreliminaryDraftFormComponent', () => {
         name: 'archivo.pdf',
         url: '',
         uploadDate: '2026-05-14T10:00:00',
-        type: 'Anteproyecto'
+        type: DocumentType.ANTEPROYECTO
       }
     ],
     proposalData: {

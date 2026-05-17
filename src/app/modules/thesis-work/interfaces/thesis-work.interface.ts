@@ -4,6 +4,27 @@ import { Evaluation } from "../../../core/interfaces/evaluation.interface";
 import { PreliminaryDraft } from "../../preliminary-draft/interfaces/preliminary-draft.interface";
 import { User } from "../../users/interfaces/user.interface";
 
+// --- NUEVA INTERFAZ PARA AVANCES ---
+export interface Advance {
+  id: string;
+  title: string;
+  comments: string;
+  uploadDate: Date;
+  studentId: string;
+  status: stateList;
+  documents: Document[]; // Aprovechamos la interfaz genérica de Document
+}
+
+export interface PazYSalvoRegistry {
+  id: string;
+  academicApproved: boolean;
+  academicComments?: string;
+  financialApproved: boolean;
+  financialComments?: string;
+  documentId: string;
+  registrationDate: Date;
+}
+
 export interface JurorVerdict {
   jurorId: string;
   evaluationDate: Date;
@@ -16,7 +37,7 @@ export interface SustentationRegistry {
   sustentationDate?: Date;
   sustentationTime?: string;
   assignedJurors: User[];
-  verdicts: JurorVerdict[]; // Soporta múltiples votos/actas de jurados de forma dinámica
+  verdicts: JurorVerdict[];
 }
 
 export interface SpecialRequest {
@@ -31,20 +52,18 @@ export interface SpecialRequest {
 export interface ThesisWork {
   thesisWorkId: string;
   preliminaryDraftId: string;
-  preliminaryDraftData: PreliminaryDraft; // Mantiene la trazabilidad inicial
+  preliminaryDraftData: PreliminaryDraft;
 
-  // CENTRALIZACIÓN: Todos los archivos (avances, Formato E, F, G, H) viven aquí
+  // CENTRALIZACIÓN DE DOCUMENTOS GLOBALES
   documents: Document[];
 
-  // TRAZABILIDAD: Evaluaciones de avances, dictámenes de asesores (Formato D) o paz y salvos (Formato F)
+  // --- NUEVO: COLECCIÓN DE AVANCES ---
+  advances?: Advance[];
+  pazYSalvo?: PazYSalvoRegistry;
+
   evaluations: Evaluation[];
-
-  // PROCESO OPERATIVO: Estructura activa para coordinar la defensa final
   sustentation?: SustentationRegistry;
-
-  // SOLICITUDES: Peticiones excepcionales del estudiante/director
   specialRequests: SpecialRequest[];
-
   state: stateList;
   createdDate: Date;
 }

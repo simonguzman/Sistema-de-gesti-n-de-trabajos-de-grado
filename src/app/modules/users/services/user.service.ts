@@ -190,6 +190,19 @@ export class UserService {
     password: 'password123',
     state: UserState.active
   },
+  {
+    id: 'user-456',
+    idType: IdentificationType.CC,
+    idNumber: 1061700002,
+    firstName: 'Usuario',
+    lastName: 'De',
+    secondLastName: 'Decanatura',
+    codeNumber: 202602,
+    roles: [UserRoleType.DECANATURA],
+    email: 'deca@unicauca.edu.co',
+    password: 'password123',
+    state: UserState.active
+  },
 
   // 4. ESTUDIANTES ADICIONALES (5 EN TOTAL)
   {

@@ -1,0 +1,124 @@
+<div class="pt-2 max-w-4xl mx-auto pb-10">
+
+  <div class="mb-6">
+    <button (click)="onBack.emit()" class="flex items-center gap-2 text-primary hover:text-opacity-80 transition-all font-display font-semibold text-size-section">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Regresar
+    </button>
+  </div>
+
+  <section class="mb-10">
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Información de los avances</h3>
+
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Título</span>
+        <input type="text" [value]="advanceData.title || ''" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Comentarios</span>
+        <textarea rows="4" [value]="advanceData.comments || ''" disabled
+                  class="p-3 border rounded-md w-full bg-gray-50 text-[#777680] cursor-not-allowed font-sans resize-none"></textarea>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <span class="font-display font-semibold text-primary text-size-section">Archivos</span>
+        <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-[#DB141C] text-4xl">picture_as_pdf</span>
+            <div class="flex flex-col">
+              <span class="text-sm font-bold text-primary">{{ currentDocument?.name || 'Documento de Avance' }}</span>
+              <span class="text-xs text-[#777680]">Cargado por el estudiante</span>
+            </div>
+          </div>
+          <app-button-component label="Descargar" variant="primary" (onClick)="onDownloadAdvance.emit()"></app-button-component>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="border-gray-200 mb-10">
+
+  <section [class.opacity-60]="isReadOnly">
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Resultado de la evaluación</h3>
+
+    <form [formGroup]="evaluationForm" (ngSubmit)="submit()" class="flex flex-col gap-6">
+
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-center gap-8">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" formControlName="result" value="Evaluado" [attr.disabled]="isReadOnly ? true : null">
+            <span class="text-sm font-sans text-[#777680]">Aprobado / Evaluado</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" formControlName="result" value="En revisión" [attr.disabled]="isReadOnly ? true : null">
+            <span class="text-sm font-sans text-[#777680]">Requiere Correcciones</span>
+          </label>
+        </div>
+        @if (isFieldInvalid('result')) {
+          <span class="text-textbox-alert text-center">Seleccione un veredicto válido</span>
+        }
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Comentarios <span class="text-orange-500">*</span></span>
+        <textarea formControlName="comments" rows="4"
+                  class="p-3 border rounded-md w-full focus:outline-none font-sans"
+                  [class.bg-gray-50]="isReadOnly"
+                  [attr.disabled]="isReadOnly ? true : null"
+                  placeholder="Incluya los aspectos a mejorar o razones de su evaluación"></textarea>
+        @if (isFieldInvalid('comments')) {
+          <span class="text-textbox-alert">Las observaciones son obligatorias</span>
+        }
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <span class="font-display font-semibold text-primary text-size-section">Documento de retroalimentación (Opcional)</span>
+
+        @if (uploadedFeedbackFile(); as feedback) {
+          <div class="flex items-center justify-between p-4 bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-xl shadow-sm">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-blue-600 text-4xl">edit_note</span>
+              <div class="flex flex-col">
+                <span class="text-sm font-bold text-primary">{{ feedback.fileName }}</span>
+                <span class="text-xs text-[#777680]">Documento con correcciones adjunto</span>
+              </div>
+            </div>
+            @if (!isReadOnly) {
+              <button type="button" (click)="uploadedFeedbackFile.set(null)" class="text-gray-400 hover:text-red-500 transition-colors">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            }
+          </div>
+        } @else {
+          <div class="flex justify-start">
+            <app-button-component
+              label="Cargar archivos"
+              variant="secondary"
+              (onClick)="isFeedbackModalOpen.set(true)"
+              [disabled]="isReadOnly">
+            </app-button-component>
+          </div>
+        }
+      </div>
+
+      <div class="flex gap-4 justify-end mt-10">
+        <app-button-component
+          label="Guardar"
+          variant="primary"
+          type="submit"
+          [disabled]="isReadOnly">
+        </app-button-component>
+      </div>
+    </form>
+  </section>
+</div>
+
+<app-file-upload-modal
+  [isOpen]="isFeedbackModalOpen()"
+  description="Subir documento de retroalimentación u observaciones (Opcional)"
+  (onFileUploaded)="handleFeedbackUploaded($event)"
+  (onClose)="isFeedbackModalOpen.set(false)">
+</app-file-upload-modal>

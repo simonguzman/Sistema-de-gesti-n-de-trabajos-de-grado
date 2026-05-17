@@ -1,0 +1,15 @@
+@if (thesisWorkState()) {
+  <app-upload-advance-form
+    [thesisWork]="thesisWorkState()!"
+    [isSubmitting]="isSaving()"
+    (onSaveAdvance)="handleSaveRequest($event)"
+    (onGoBack)="navigateBack()">
+  </app-upload-advance-form>
+}
+
+<app-confirmation-action-modal
+  [isOpen]="isConfirmModalOpen()"
+  description="¿Está seguro que desea subir este avance? Quedará registrado en el historial del trabajo de grado."
+  (onClose)="isConfirmModalOpen.set(false)"
+  (confirm)="processAdvance()">
+</app-confirmation-action-modal>

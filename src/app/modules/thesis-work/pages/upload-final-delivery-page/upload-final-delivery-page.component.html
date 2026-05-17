@@ -1,0 +1,15 @@
+@if (thesisWorkState()) {
+  <app-upload-final-delivery-form
+    [thesisWork]="thesisWorkState()!"
+    [isSubmitting]="isSubmitting()"
+    (onSaveDelivery)="handleRequestConfirmation($event)"
+    (onGoBack)="goBack()">
+  </app-upload-final-delivery-form>
+}
+
+<app-confirmation-action-modal
+  [isOpen]="isConfirmModalOpen()"
+  description="¿Está seguro de enviar los documentos? Esta acción registrará oficialmente la entrega final del trabajo de grado."
+  (onClose)="isConfirmModalOpen.set(false)"
+  (confirm)="processFinalDelivery()">
+</app-confirmation-action-modal>

@@ -1,0 +1,79 @@
+import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
+import { ThesisWork } from '../../interfaces/thesis-work.interface';
+import { ButtonComponent } from "../../../../shared/components/button-component/button-component.component";
+import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
+
+@Component({
+  selector: 'app-upload-advance-form',
+  imports: [ReactiveFormsModule, ButtonComponent, FileUploadModalComponent],
+  templateUrl: './upload-advance-form.component.html',
+  styleUrls: ['./upload-advance-form.component.css'],
+})
+export class UploadAdvanceFormComponent {
+  private readonly fb = inject(FormBuilder);
+  private readonly notificationService = inject(NotificationService);
+
+  @Input({ required: true }) thesisWork!: ThesisWork;
+  @Input() isSubmitting = false;
+
+  @Output() onSaveAdvance = new EventEmitter<{ formValues: { title: string, comments: string }, files: File[] }>();
+  @Output() onGoBack = new EventEmitter<void>();
+
+  // Signal para manejar múltiples archivos
+  uploadedFiles = signal<{ fileName: string; file: File }[]>([]);
+  isUploadModalOpen = signal(false);
+
+  readonly advanceForm = this.fb.group({
+    title: ['', Validators.required],
+    comments: ['', Validators.required],
+    documents: [null]
+  });
+
+  handleFileUploaded(event: { fileName: string; file: File }): void {
+    // Agregamos el nuevo archivo al arreglo existente
+    this.uploadedFiles.update(files => [...files, event]);
+    this.isUploadModalOpen.set(false);
+  }
+
+  removeFile(indexToRemove: number): void {
+    this.uploadedFiles.update(files => files.filter((_, index) => index !== indexToRemove));
+  }
+
+  submit(): void {
+    if (this.advanceForm.invalid) {
+      this.advanceForm.markAllAsTouched();
+      this.notificationService.show({
+        title: 'Formulario incompleto',
+        message: 'Por favor, complete el título y los comentarios del avance.',
+        type: NotificationType.ERROR
+      });
+      return;
+    }
+
+    if (this.uploadedFiles().length === 0) {
+      this.notificationService.show({
+        title: 'Archivos requeridos',
+        message: 'Debe adjuntar al menos un archivo como evidencia de su avance.',
+        type: NotificationType.ERROR
+      });
+      return;
+    }
+
+    this.onSaveAdvance.emit({
+      formValues: {
+        title: this.advanceForm.value.title!,
+        comments: this.advanceForm.value.comments!,
+      },
+      files: this.uploadedFiles().map(item => item.file)
+    });
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const control = this.advanceForm.get(fieldName);
+    return !!(control?.invalid && control?.touched);
+  }
+
+}

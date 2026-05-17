@@ -1,0 +1,16 @@
+@if (thesisWorkState() && currentAdvance()) {
+  <app-evaluate-advance-form
+    [advanceData]="currentAdvance()!"
+    [thesisWorkTitle]="thesisWorkState()!.preliminaryDraftData.proposalData.title"
+    (onBack)="navigateBack()"
+    (onSaveEvaluation)="handleRequestConfirmation($event)"
+    (onDownloadAdvance)="downloadCurrentAdvance()">
+  </app-evaluate-advance-form>
+}
+
+<app-confirmation-action-modal
+  [isOpen]="isConfirmModalOpen()"
+  description="¿Desea guardar la evaluación del avance? La retroalimentación se notificará de inmediato."
+  (onClose)="isConfirmModalOpen.set(false)"
+  (confirm)="processAdvanceEvaluation()">
+</app-confirmation-action-modal>
