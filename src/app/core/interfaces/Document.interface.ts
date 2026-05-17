@@ -7,6 +7,7 @@ export enum DocumentType{
   'ANEXO' = 'Anexo',
   'CORRECCION' = 'Correccion',
   'FORMATO' = 'Formato',
+  'FORMATO E' = 'Formato E',
   'PAZ Y SALVO' = 'Paz y salvo',
   'RESOLUCION' = 'Resolucion'
 }

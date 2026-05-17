@@ -19,6 +19,7 @@ import { ConfirmationActionModalComponent } from "../../../../shared/components/
 import { stateList } from '../../../../core/enums/state.enum';
 import { FinalDeliveryTabConfig } from './tabs-logic/final-delivery.tab';
 import { PazYSalvoTabConfig } from './tabs-logic/paz_y_salvo.tab';
+import { SustentationTabConfig } from './tabs-logic/sustentation.tab';
 
 @Component({
   selector: 'app-loaded-documents-thesis-work-page',
@@ -50,6 +51,7 @@ export class LoadedDocumentsThesisWorkPageComponent implements OnInit, OnDestroy
     'AVANCES': AdvancesTabConfig,
     'ENTREGA FINAL': FinalDeliveryTabConfig,
     'PAZ Y SALVO': PazYSalvoTabConfig,
+    'SUSTENTACION': SustentationTabConfig,
     // 📌 Las futuras pestañas se conectarán aquí limpiamente sin alterar este archivo.
   };
 
@@ -99,12 +101,14 @@ export class LoadedDocumentsThesisWorkPageComponent implements OnInit, OnDestroy
     const user = this.authService.currentUser();
     const isAdmin = this.authService.hasAnyRole([UserRoleType.ADMINISTRADOR]);
     const isDecanatura = this.authService.hasAnyRole([UserRoleType.DECANATURA]);
+    const isConsejo = this.authService.hasAnyRole([UserRoleType.CONSEJO]);
 
     const baseContext: ThesisEvaluationContext = {
       thesisWork: thesis,
       currentUser: user,
       isAdmin,
       isDecanatura,
+      isConsejo,
       isStudent: thesis?.preliminaryDraftData?.proposalData?.authors?.some((a: any) => (typeof a === 'string' ? a : a.id) === user?.id) ?? false,
       isDirector: thesis?.preliminaryDraftData?.proposalData?.director?.id === user?.id,
       isCodirector: thesis?.preliminaryDraftData?.proposalData?.codirector?.id === user?.id,
@@ -138,8 +142,10 @@ export class LoadedDocumentsThesisWorkPageComponent implements OnInit, OnDestroy
       } else if (this.activeTab() === 'ENTREGA FINAL') {
         this.router.navigate(['upload_final_delivery'], { relativeTo: this.route });
       } else if (this.activeTab() === 'PAZ Y SALVO') {
-        // 🚀 Agregamos la ruta para el Paz y Salvo (asegúrate de registrarla en tu routing module)
         this.router.navigate(['register_paz_y_salvo'], { relativeTo: this.route });
+      } else if (this.activeTab() === 'SUSTENTACION') {
+        // 🚀 Redirección exclusiva a la página de registro de sustentación
+        this.router.navigate(['register_sustentation'], { relativeTo: this.route });
       } else {
         this.isUploadModalOpen.set(true);
       }

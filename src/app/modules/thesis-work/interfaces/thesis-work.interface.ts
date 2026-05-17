@@ -36,6 +36,7 @@ export interface SustentationRegistry {
   id: string;
   sustentationDate?: Date;
   sustentationTime?: string;
+  location?: string;
   assignedJurors: User[];
   verdicts: JurorVerdict[];
 }

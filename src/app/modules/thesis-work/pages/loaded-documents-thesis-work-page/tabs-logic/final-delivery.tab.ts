@@ -24,7 +24,7 @@ export const FinalDeliveryTabConfig: TabConfiguration = {
 
     // 🔍 REGLA DE NEGOCIO: Validamos si ya existe el Formato E cargado en los documentos globales
     const hasFinalDelivery = thesis.documents?.some(
-      (doc: any) => doc.type === DocumentType.FORMATO && doc.status !== stateList.NO_APROBADO
+      (doc: any) => doc.type === DocumentType['FORMATO E'] && doc.status !== stateList.NO_APROBADO
     ) ?? false;
 
     return {
@@ -35,7 +35,7 @@ export const FinalDeliveryTabConfig: TabConfiguration = {
 
   getTableData: (documents: Document[], context: ThesisEvaluationContext) => {
     // 🔍 Filtramos los documentos usando estrictamente tu enum de dominio
-    const finalDocs = documents.filter(doc => doc.type === DocumentType.FORMATO);
+    const finalDocs = documents.filter(doc => doc.type === DocumentType['FORMATO E']);
 
     return finalDocs.map((doc: Document) => {
       const formattedDate = typeof doc.uploadDate === 'string'
@@ -82,6 +82,6 @@ export const FinalDeliveryTabConfig: TabConfiguration = {
     uploadDescription: 'Seleccione el archivo PDF oficial de la entrega final (Formato E)',
     uploadedByText: 'Director de Trabajo de Grado',
     confirmDescription: '¿Está seguro de registrar este documento como la entrega final? Se actualizará el flujo del proyecto.',
-    uploadDocumentType: DocumentType.FORMATO
+    uploadDocumentType: DocumentType['FORMATO E']
   }
 };

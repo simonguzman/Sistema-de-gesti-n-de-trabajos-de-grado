@@ -23,7 +23,7 @@ export const PazYSalvoTabConfig: TabConfiguration = {
 
     // 🔍 1. ¿Hay una Entrega Final ACTIVA? (Usa el tipo de la Entrega Final)
     const hasActiveFinalDelivery = thesis.documents?.some(
-      (doc: any) => doc.type === DocumentType.FORMATO && doc.status !== stateList.NO_APROBADO
+      (doc: any) => doc.type === DocumentType['FORMATO E'] && doc.status !== stateList.NO_APROBADO
     ) ?? false;
 
     // 🔍 2. ¿Ya se registró un Paz y Salvo (aprobado)?

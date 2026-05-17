@@ -136,13 +136,50 @@ export class ThesisWorkService {
     );
   }
 
-  saveSustentationRegistryMock(thesisWorkId: string, sustentationData: SustentationRegistry): Observable<void> {
+  saveSustentationRegistryMock(thesisWorkId: string, formData: any): Observable<void> {
     return of(undefined).pipe(
       delay(1000),
       tap(() => {
         this._thesisWorksList.update(list => list.map(work => {
           if (work.thesisWorkId !== thesisWorkId) return work;
-          return { ...work, sustentation: sustentationData };
+
+          const allUsers = this.userService.users();
+          const juror1User = allUsers.find(u => u.id === formData.juror1);
+          const juror2User = allUsers.find(u => u.id === formData.juror2);
+
+          const dateStr = new Date().toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          }).replaceAll('/', ' - ');
+
+          const sustentationDoc: Document = {
+            id: formData.formatEDocument?.id || crypto.randomUUID(),
+            name: formData.formatEDocument?.fileName || 'Formato E - Sustentación',
+            url: formData.formatEDocument?.url || 'uploads/sustentation/formato_e_registro.pdf',
+            uploadDate: dateStr,
+            type: DocumentType['FORMATO E'] || ('Formato E' as any),
+            status: stateList.EN_REVISION
+          };
+
+          // ✅ CONCORDANCIA TOTAL CON TU INTERFAZ
+          const sustentationRegistry: SustentationRegistry = {
+            id: crypto.randomUUID(),
+            sustentationDate: formData.sustentationDate ? new Date(formData.sustentationDate) : undefined,
+            sustentationTime: formData.sustentationTime || undefined, // Mapeado por si lo capturas en el formulario
+            assignedJurors: [
+              ...(juror1User ? [juror1User] : []),
+              ...(juror2User ? [juror2User] : [])
+            ],
+            verdicts: [] // Inicializa como un arreglo vacío según exige 'JurorVerdict[]'
+          };
+
+          return {
+            ...work,
+            sustentation: sustentationRegistry,
+            documents: [sustentationDoc, ...(work.documents || [])],
+            state: work.state
+          };
         }));
       })
     );
@@ -173,7 +210,7 @@ export class ThesisWorkService {
             name: formatE.name.replace('.pdf', ''),
             url: 'uploads/final-delivery/formato_e_' + formatE.name,
             uploadDate: dateStr,
-            type: DocumentType.FORMATO,
+            type: DocumentType['FORMATO E'],
             status: stateList.EN_REVISION
           };
 
@@ -254,4 +291,8 @@ export class ThesisWorkService {
       })
     );
   }
+
+
+
+
 }

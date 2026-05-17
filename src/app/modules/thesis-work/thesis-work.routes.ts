@@ -9,6 +9,7 @@ import { UploadAdvancePageComponent } from './pages/upload-advance-page/upload-a
 import { EvaluateAdvancePageComponent } from './pages/evaluate-advance-page/evaluate-advance-page.component';
 import { UploadFinalDeliveryPageComponent } from './pages/upload-final-delivery-page/upload-final-delivery-page.component';
 import { RegisterPazYSalvoPageComponent } from './pages/register-paz-y-salvo-page/register-paz-y-salvo-page.component';
+import { RegisterSustentationPageComponent } from './pages/register-sustentation-page/register-sustentation-page.component';
 
 
 export const thesisWorkRoutes: Routes = [
@@ -128,6 +129,16 @@ export const thesisWorkRoutes: Routes = [
                 data: {
                   breadcrumb: 'Registrar paz y salvo',
                   roles: [UserRoleType.ADMINISTRADOR, UserRoleType.DECANATURA]
+                }
+              },
+              {
+                path: 'register_sustentation',
+                component: RegisterSustentationPageComponent,
+                canActivate: [roleGuard],
+                title: 'Registrar sustentacion',
+                data: {
+                  breadcrumb: 'Registrar sustentacion',
+                  roles: [UserRoleType.ADMINISTRADOR, UserRoleType.CONSEJO]
                 }
               },
             ]

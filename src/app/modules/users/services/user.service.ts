@@ -452,4 +452,9 @@ export class UserService {
     );
   }
 
+  getUsersByRole(role: UserRoleType): Observable<User[]> {
+    const filteredUsers = this._usersList().filter(user => user.roles.includes(role));
+    return of(filteredUsers).pipe(delay(400)); // Simula un retraso de red de 400ms
+  }
+
 }

@@ -1,0 +1,15 @@
+@if (thesisWorkState()) {
+  <app-register-sustentation-form
+    [thesisWork]="thesisWorkState()!"
+    [isSubmitting]="isSubmitting()"
+    (onSave)="handleRequestConfirmation($event)"
+    (onBack)="goBack()">
+  </app-register-sustentation-form>
+}
+
+<app-confirmation-action-modal
+  [isOpen]="isConfirmModalOpen()"
+  description="¿Está seguro de registrar la programación de sustentación? Se notificará formalmente a los 2 jurados asignados."
+  (onClose)="isConfirmModalOpen.set(false)"
+  (confirm)="processSustentacion()">
+</app-confirmation-action-modal>

@@ -6,6 +6,7 @@ import { StateComponent } from '../state/state.component';
 import { ButtonComponent } from '../button-component/button-component.component';
 import { EmptyStateComponent } from '../empty-state/empty-state.component';
 export interface TableButton{
+  action?: string;
   label?: string;
   icon?: string;
   variant: 'primary' | 'secondary';

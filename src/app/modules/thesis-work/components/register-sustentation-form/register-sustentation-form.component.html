@@ -1,0 +1,188 @@
+<div class="pt-2 max-w-4xl mx-auto pb-10">
+
+  <div class="mb-6">
+    <button type="button" (click)="onBack.emit()" class="flex items-center gap-2 text-primary hover:text-opacity-80 transition-all font-display font-semibold text-size-section">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Regresar
+    </button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-8">
+
+    <section>
+      <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2">
+        Información del trabajo de grado
+      </h3>
+
+      <div class="flex flex-col gap-4">
+        <ng-template #readOnlyField let-label="label" let-value="value">
+          <div class="flex flex-col gap-1">
+            <span class="font-display font-semibold text-primary text-size-section">
+              {{ label }}
+            </span>
+            <input type="text" [value]="value || ''" disabled
+                   class="information-block p-2 border border-gray-200 rounded-md text-[#777680] bg-gray-50 w-full cursor-not-allowed font-sans text-size-body">
+          </div>
+        </ng-template>
+
+        <ng-container *ngTemplateOutlet="readOnlyField; context: { label: 'Título', value: thesisWork().preliminaryDraftData.proposalData.title }"></ng-container>
+        <ng-container *ngTemplateOutlet="readOnlyField; context: { label: 'Modalidad del trabajo de grado', value: thesisWork().preliminaryDraftData.proposalData.modality }"></ng-container>
+        <ng-container *ngTemplateOutlet="readOnlyField; context: { label: 'Estudiante', value: getAuthorsNames(thesisWork().preliminaryDraftData.proposalData.authors) }"></ng-container>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ng-container *ngTemplateOutlet="readOnlyField; context: { label: 'Director', value: getMemberFullName(thesisWork().preliminaryDraftData.proposalData.director) }"></ng-container>
+          @if (thesisWork().preliminaryDraftData.proposalData.codirector) {
+            <ng-container *ngTemplateOutlet="readOnlyField; context: { label: 'Codirector', value: getMemberFullName(thesisWork().preliminaryDraftData.proposalData.codirector) }"></ng-container>
+          }
+        </div>
+
+        @if (thesisWork().preliminaryDraftData.proposalData.advisor) {
+          <ng-container *ngTemplateOutlet="readOnlyField; context: { label: 'Asesor', value: getMemberFullName(thesisWork().preliminaryDraftData.proposalData.advisor) }"></ng-container>
+        }
+      </div>
+    </section>
+
+    <section>
+      <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2">
+        Programación de Sustentación
+      </h3>
+
+      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+
+          <div class="flex flex-col gap-1">
+            <span class="font-display font-semibold text-size-section text-primary">
+              Fecha y Hora de la Sustentación <span class="text-[#ED7D31]">*</span>
+            </span>
+
+            <p-datepicker
+              formControlName="sustentationDate"
+              [showTime]="true"
+              hourFormat="12"
+              placeholder="Seleccione fecha y hora"
+              styleClass="w-full"
+              [inputStyleClass]="'font-sans font-normal text-size-body p-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-primary ' + (isFieldInvalid('sustentationDate') ? 'border-orange-500' : 'border-gray-200')">
+            </p-datepicker>
+
+            @if (isFieldInvalid('sustentationDate')) {
+              <span class="text-textbox-alert text-xs mt-1">La fecha y hora son obligatorias</span>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <span class="font-display font-semibold text-size-section text-primary">
+              Lugar / Aula / Enlace <span class="text-[#ED7D31]">*</span>
+            </span>
+            <input type="text" formControlName="location" placeholder="Ej. Auditorio Principal o Enlace de Teams"
+                   class="font-sans font-normal text-size-body p-2 border rounded-md w-full focus:outline-none focus:ring-1 focus:ring-primary"
+                   [class.border-orange-500]="isFieldInvalid('location')">
+            @if (isFieldInvalid('location')) {
+              <span class="text-textbox-alert text-xs mt-1">El lugar o aula es obligatorio</span>
+            }
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+
+          <div class="flex flex-col gap-1">
+            <span class="font-display font-semibold text-size-section text-primary">
+              Primer Jurado (Docente) <span class="text-[#ED7D31]">*</span>
+            </span>
+            <div class="relative flex items-center">
+              <select formControlName="juror1"
+                      class="font-sans font-normal text-size-body custom-select p-2 border rounded-md bg-gray-50 w-full focus:outline-none focus:ring-1 focus:ring-primary pr-10 appearance-none"
+                      [class.border-orange-500]="isFieldInvalid('juror1')"
+                      [class.text-gray-400]="!form.get('juror1')?.value"
+                      [class.text-textbox]="form.get('juror1')?.value">
+                <option value="" disabled selected>Buscar docente apto</option>
+                @for (user of availableJurors(); track user.id) {
+                  <option [value]="user.id">{{ getMemberFullName(user) }}</option>
+                }
+              </select>
+              <span class="material-symbols-outlined absolute right-3 pointer-events-none text-gray-400">expand_more</span>
+            </div>
+            @if (isFieldInvalid('juror1')) {
+              <span class="text-textbox-alert text-xs mt-1">Debe asignar el primer jurado</span>
+            }
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <span class="font-display font-semibold text-size-section text-primary">
+              Segundo Jurado (Docente) <span class="text-[#ED7D31]">*</span>
+            </span>
+            <div class="relative flex items-center">
+              <select formControlName="juror2"
+                      class="font-sans font-normal text-size-body custom-select p-2 border rounded-md bg-gray-50 w-full focus:outline-none focus:ring-1 focus:ring-primary pr-10 appearance-none"
+                      [class.border-orange-500]="isFieldInvalid('juror2')"
+                      [class.text-gray-400]="!form.get('juror2')?.value"
+                      [class.text-textbox]="form.get('juror2')?.value">
+                <option value="" disabled selected>Buscar docente apto</option>
+                @for (user of filteredJurorsForJ2(); track user.id) {
+                  <option [value]="user.id">{{ getMemberFullName(user) }}</option>
+                }
+              </select>
+              <span class="material-symbols-outlined absolute right-3 pointer-events-none text-gray-400">expand_more</span>
+            </div>
+            @if (isFieldInvalid('juror2')) {
+              <span class="text-textbox-alert text-xs mt-1">Debe asignar el segundo jurado de forma obligatoria</span>
+            }
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section>
+      <h3 class="text-primary font-display font-semibold text-size-header-title mb-4 border-b pb-2">
+        Carga del Formato E Actualizado
+      </h3>
+
+      <div class="flex items-center justify-between p-6 bg-white border border-gray-200 rounded-xl shadow-sm"
+           [class.border-red-500]="isSubmitAttempted() && !uploadedFormatE()">
+
+        <div class="flex items-center gap-4">
+          <span class="material-symbols-outlined text-4xl"
+                [class.text-red-500]="isSubmitAttempted() && !uploadedFormatE()"
+                [class.text-green-600]="uploadedFormatE()"
+                [class.text-gray-400]="!uploadedFormatE() && !isSubmitAttempted()">
+            {{ uploadedFormatE() ? 'task' : 'picture_as_pdf' }}
+          </span>
+          <div class="flex flex-col">
+            <span class="text-sm font-bold"
+                  [class.text-primary]="uploadedFormatE() || !isSubmitAttempted()"
+                  [class.text-red-500]="isSubmitAttempted() && !uploadedFormatE()">
+              {{ uploadedFormatE() ? uploadedFormatE().fileName : 'Formato E - Sustentación' }}
+            </span>
+            <span class="text-xs text-[#777680] max-w-md mt-1">
+              {{ uploadedFormatE() ? 'Documento cargado con éxito' : 'Suba el Formato E con los espacios de programación de sustentación totalmente diligenciados.' }}
+            </span>
+            @if (isSubmitAttempted() && !uploadedFormatE()) {
+              <span class="text-xs text-orange-500 mt-1 font-semibold">Este archivo es requerido para completar el proceso</span>
+            }
+          </div>
+        </div>
+
+        @if (uploadedFormatE()) {
+          <button type="button" (click)="uploadedFormatE.set(null)" class="text-gray-400 hover:text-red-500 transition-colors">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        } @else {
+          <app-button-component label="Cargar Formato E" variant="secondary" (onClick)="isModalOpen.set(true)"></app-button-component>
+        }
+      </div>
+    </section>
+
+    <div class="flex gap-4 justify-end mt-4">
+      <app-button-component label="Confirmar y Agendar" variant="primary" type="submit"></app-button-component>
+    </div>
+
+  </form>
+</div>
+
+<app-file-upload-modal
+  [isOpen]="isModalOpen()"
+  description="Subir Formato E - Sustentación (PDF)"
+  (onFileUploaded)="handleFileUploaded($event)"
+  (onClose)="isModalOpen.set(false)">
+</app-file-upload-modal>
