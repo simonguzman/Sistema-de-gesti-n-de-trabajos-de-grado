@@ -57,7 +57,7 @@ export const AdvancesTabConfig: TabConfiguration = {
   getTableData: (documents: Document[], context: ThesisEvaluationContext) => {
     const activeAdvances = context.thesisWork?.advances || [];
     const requiredCount = context['requiredEvaluatorsCount'] || 1;
-    const hasFinalDelivery = context['hasFinalDelivery'] || false; // Evaluamos el estado del proyecto
+    const hasFinalDelivery = context['hasFinalDelivery'] || false;
 
     return activeAdvances.map((adv: any) => {
       const allowedActions = ['download'];
@@ -72,8 +72,6 @@ export const AdvancesTabConfig: TabConfiguration = {
 
       const isAssignedEvaluator = context.isDirector || context.isCodirector || context.isAdvisor || context.isAdmin;
 
-      // 🧠 4. Ajuste de seguridad: Se permite evaluar SOLO SI el docente está asignado,
-      // no ha evaluado, no han terminado todos, Y ADEMÁS no se ha congelado el flujo por una Entrega Final.
       if (isAssignedEvaluator && !alreadyEvaluated && !isFullyEvaluated && !hasFinalDelivery) {
         allowedActions.push('evaluate-advance');
       }
@@ -83,6 +81,9 @@ export const AdvancesTabConfig: TabConfiguration = {
         name: adv.title,
         uploadDate: new Date(adv.uploadDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).replaceAll('/', ' - '),
         status: displayStatus,
+        // 📌 IMPORTANTE: Enviamos los metadatos de todos los archivos asociados a este avance
+        documents: adv.documents || [],
+        // Callback de respaldo por si tu componente de tabla lee estrictamente la propiedad string 'url'
         url: adv.documents?.[0]?.url || '',
         allowedActions
       };

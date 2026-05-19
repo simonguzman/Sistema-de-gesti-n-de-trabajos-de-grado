@@ -1,0 +1,185 @@
+<div class="pt-2 max-w-4xl mx-auto pb-10">
+
+  <div class="mb-6">
+    <button (click)="onBack.emit()" class="flex items-center gap-2 text-primary hover:text-opacity-80 transition-all font-display font-semibold text-size-section">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Regresar
+    </button>
+  </div>
+
+  <section class="mb-10">
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Información del trabajo de grado</h3>
+
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Título</span>
+        <input type="text" [value]="thesisWork?.preliminaryDraftData?.proposalData?.title || ''" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Modalidad del trabajo de grado</span>
+        <input type="text" [value]="thesisWork?.preliminaryDraftData?.proposalData?.modality || ''" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Estudiante</span>
+        <input type="text" [value]="getStudentNames()" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <span class="font-display font-semibold text-primary text-size-section">Director</span>
+          <input type="text" [value]="getDirectorName()" disabled
+                 class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+        </div>
+
+        @if (getCodirectorName()) {
+          <div class="flex flex-col gap-1">
+            <span class="font-display font-semibold text-primary text-size-section">Codirector</span>
+            <input type="text" [value]="getCodirectorName()" disabled
+                   class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+          </div>
+        }
+      </div>
+
+      @if (getAdvisorName()) {
+        <div class="flex flex-col gap-1">
+          <span class="font-display font-semibold text-primary text-size-section">Asesor</span>
+          <input type="text" [value]="getAdvisorName()" disabled
+                 class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+        </div>
+      }
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Jurados Asignados</span>
+        <input type="text" [value]="getAssignedJurors()" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+    </div>
+  </section>
+
+  <hr class="border-gray-200 mb-8">
+
+  <section class="mb-10">
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Programación de la sustentación</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Fecha</span>
+        <input type="text" [value]="(thesisWork?.sustentation?.sustentationDate | date:'dd/MM/yyyy') || 'No programada'" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Hora</span>
+        <input type="text" [value]="(thesisWork?.sustentation?.sustentationDate | date:'shortTime') || 'No programada'" disabled
+              class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Lugar / Aula / Enlace</span>
+        <input type="text" [value]="thesisWork?.sustentation?.location || 'No definido'" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+    </div>
+  </section>
+
+  <hr class="border-gray-200 mb-8">
+
+  <section class="mb-10">
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-4">Evaluación del jurado</h3>
+
+    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm" [class.border-red-500]="isSubmitAttempted() && verdictSelected() === null">
+
+      <div class="p-4 bg-[#F2F6FC] border border-[#E5E7EB] rounded-lg text-sm text-[#777680] mb-4">
+        Seleccione el resultado definitivo de la sustentación del trabajo de grado acordado por el cuerpo de jurados. Adicionalmente, registre los comentarios u observaciones obligatorias/recomendadas según corresponda.
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-6 mb-6">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="verdict" class="w-4 h-4 text-primary focus:ring-primary"
+                 [checked]="verdictSelected() === states.APROBADO" (change)="verdictSelected.set(states.APROBADO)">
+          <span class="text-sm font-medium text-gray-700">Aprobado</span>
+        </label>
+
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="verdict" class="w-4 h-4 text-amber-500 focus:ring-amber-500"
+                 [checked]="verdictSelected() === states.APROBADO_CON_OBSERVACIONES" (change)="verdictSelected.set(states.APROBADO_CON_OBSERVACIONES)">
+          <span class="text-sm font-medium text-gray-700">Aprobado con observaciones</span>
+        </label>
+
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="verdict" class="w-4 h-4 text-red-500 focus:ring-red-500"
+                 [checked]="verdictSelected() === states.NO_APROBADO" (change)="verdictSelected.set(states.NO_APROBADO)">
+          <span class="text-sm font-medium text-gray-700">No aprobado</span>
+        </label>
+      </div>
+
+      @if(isSubmitAttempted() && verdictSelected() === null) {
+        <p class="text-xs text-red-500 mb-4">Debe seleccionar una calificación para proceder</p>
+      }
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-semibold text-primary">Observaciones y comentarios descriptivos</label>
+        <textarea rows="4" class="p-3 border rounded-md w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm"
+                  placeholder="Ingrese el desglose detallado de las razones del veredicto o los ajustes exigidos al estudiante..."
+                  (input)="observations.set($any($event.target).value)"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <hr class="border-gray-200 mb-8">
+
+  <section>
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Archivos adjuntos requeridos</h3>
+
+    <div class="flex flex-col gap-4 mb-6">
+
+      <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm"
+           [class.border-l-4]="uploadedFormat()" [class.border-l-green-500]="uploadedFormat()"
+           [class.border-red-500]="isSubmitAttempted() && !uploadedFormat()">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-4xl"
+                [class.text-green-600]="uploadedFormat()"
+                [class.text-red-500]="isSubmitAttempted() && !uploadedFormat()"
+                [class.text-gray-400]="!uploadedFormat() && !isSubmitAttempted()">
+            {{ uploadedFormat() ? 'task' : 'picture_as_pdf' }}
+          </span>
+          <div class="flex flex-col">
+            <span class="text-sm font-bold" [class.text-primary]="uploadedFormat()" [class.text-red-500]="isSubmitAttempted() && !uploadedFormat()">
+              {{ uploadedFormat()?.fileName || 'Formato de Sustentación Terminado' }}
+            </span>
+            <span class="text-xs text-[#777680]">
+              {{ uploadedFormat() ? 'Formato de acta cargado con éxito.' : 'No ha sido cargado ningún archivo. Debe adjuntar el acta con firmas de evaluación final.' }}
+            </span>
+            @if (isSubmitAttempted() && !uploadedFormat()) {
+              <span class="text-xs text-textbox-alert mt-1 font-semibold">Este documento es estrictamente obligatorio</span>
+            }
+          </div>
+        </div>
+
+        @if (uploadedFormat()) {
+          <button type="button" (click)="removeFile()" class="text-gray-400 hover:text-red-500 transition-colors">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        } @else {
+          <app-button-component label="Cargar formato de sustentación" variant="secondary" (onClick)="isModalOpen.set(true)"></app-button-component>
+        }
+      </div>
+    </div>
+
+    <div class="flex gap-4 justify-end mt-10">
+      <app-button-component label="Registrar Evaluación" variant="primary" (onClick)="submit()" [disabled]="isSubmitting"></app-button-component>
+    </div>
+  </section>
+</div>
+
+<app-file-upload-modal
+  [isOpen]="isModalOpen()"
+  description="Subir Acta de Calificación de Sustentación diligenciada (PDF)"
+  (onFileUploaded)="handleFileUploaded($event)"
+  (onClose)="isModalOpen.set(false)">
+</app-file-upload-modal>

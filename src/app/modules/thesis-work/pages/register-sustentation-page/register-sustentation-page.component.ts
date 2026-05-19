@@ -77,8 +77,14 @@ export class RegisterSustentationPageComponent implements OnInit {
     this.isSubmitting.set(true);
     this.isConfirmModalOpen.set(false);
 
-    // Guardar mediante el servicio mock unificado
-    this.thesisWorkService.saveSustentationRegistryMock(thesisId, data.payload).subscribe({
+    // 1. Construimos el objeto combinando los datos del form y el archivo subido
+    const requestData = {
+      ...data.payload,
+      formatEDocument: data.file // Empatamos el nombre con lo que lee tu servicio mock
+    };
+
+    // 2. Enviamos el requestData completo
+    this.thesisWorkService.saveSustentationRegistryMock(thesisId, requestData).subscribe({
       next: () => {
         this.notification.show({
           title: 'Sustentación Agendada',

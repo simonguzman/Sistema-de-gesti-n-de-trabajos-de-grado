@@ -1,0 +1,15 @@
+@if (thesisWorkState()) {
+  <app-evaluate-sustentation-form
+    [thesisWork]="thesisWorkState()!"
+    [isSubmitting]="isSubmitting()"
+    (onSave)="handleSaveTriggered($event)"
+    (onBack)="goBack()">
+  </app-evaluate-sustentation-form>
+}
+
+<app-confirmation-action-modal
+  [isOpen]="isConfirmModalOpen()"
+  description="¿Está completamente seguro de registrar esta evaluación de sustentación? Esta acción es irreversible, asentará el acta de calificación definitiva en la hoja de vida académica del proyecto."
+  (onClose)="isConfirmModalOpen.set(false)"
+  (confirm)="processSustentationEvaluation()">
+</app-confirmation-action-modal>

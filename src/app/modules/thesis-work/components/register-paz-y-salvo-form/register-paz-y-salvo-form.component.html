@@ -13,13 +13,13 @@
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-1">
         <span class="font-display font-semibold text-primary text-size-section">Título</span>
-        <input type="text" [value]="thesisWork?.preliminaryDraftData?.proposalData?.title || ''" disabled
+        <input type="text" [value]="thesisWork.preliminaryDraftData.proposalData.title || ''" disabled
                class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
       </div>
 
       <div class="flex flex-col gap-1">
         <span class="font-display font-semibold text-primary text-size-section">Modalidad del trabajo de grado</span>
-        <input type="text" [value]="thesisWork?.preliminaryDraftData?.proposalData?.modality || ''" disabled
+        <input type="text" [value]="thesisWork.preliminaryDraftData.proposalData.modality || ''" disabled
                class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
       </div>
 
@@ -53,7 +53,7 @@
 
       <div class="flex flex-col gap-1">
         <span class="font-display font-semibold text-primary text-size-section">Estado</span>
-        <input type="text" [value]="thesisWork?.status || 'En desarrollo'" disabled
+        <input type="text" [value]="thesisWork.state || 'En desarrollo'" disabled
                class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full font-medium capitalize">
       </div>
     </div>
@@ -76,15 +76,15 @@
           <span class="text-sm font-medium text-gray-700">Cumple con los requisitos</span>
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
-          <input type="radio" name="academic" class="w-4 h-4 text-red-500 focus:ring-red-500"
+          <input type="radio" name="academic" class="w-4 h-4 text-[#DB141C] focus:ring-[#DB141C]"
                  [checked]="academicApproved() === false" (change)="academicApproved.set(false)">
           <span class="text-sm font-medium text-gray-700">No cumple con los requisitos</span>
         </label>
       </div>
-      @if(isSubmitAttempted() && academicApproved() === null) { <p class="text-xs text-red-500 mb-2">Seleccione una opción</p> }
+      @if(isSubmitAttempted() && academicApproved() === null) { <p class="text-xs text-[#DB141C] mb-2">Seleccione una opción</p> }
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-semibold text-primary">Comentarios</label>
+        <span class="text-sm font-semibold text-primary">Comentarios</span>
         <textarea rows="3" class="p-3 border rounded-md w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm"
                   placeholder="Ingrese los comentarios y observaciones sobre la evaluación del paz y salvo si lo considera necesario"
                   (input)="academicComments.set($any($event.target).value)"></textarea>
@@ -104,18 +104,18 @@
         <label class="flex items-center gap-2 cursor-pointer">
           <input type="radio" name="financial" class="w-4 h-4 text-primary focus:ring-primary"
                  [checked]="financialApproved() === true" (change)="financialApproved.set(true)">
-          <span class="text-sm font-medium text-gray-700">Cumple con los requisitos</span>
+          <span class="text-sm font-medium text-[#777680]">Cumple con los requisitos</span>
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
-          <input type="radio" name="financial" class="w-4 h-4 text-red-500 focus:ring-red-500"
+          <input type="radio" name="financial" class="w-4 h-4 text-[#DB141C] focus:ring-[#DB141C]"
                  [checked]="financialApproved() === false" (change)="financialApproved.set(false)">
-          <span class="text-sm font-medium text-gray-700">No cumple con los requisitos</span>
+          <span class="text-sm font-medium text-[#777680]">No cumple con los requisitos</span>
         </label>
       </div>
-      @if(isSubmitAttempted() && financialApproved() === null) { <p class="text-xs text-red-500 mb-2">Seleccione una opción</p> }
+      @if(isSubmitAttempted() && financialApproved() === null) { <p class="text-xs text-[#DB141C] mb-2">Seleccione una opción</p> }
 
       <div class="flex flex-col gap-1">
-        <label class="text-sm font-semibold text-primary">Comentarios</label>
+        <span class="text-sm font-semibold text-primary">Comentarios</span>
         <textarea rows="3" class="p-3 border rounded-md w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm"
                   placeholder="Ingrese los comentarios y observaciones sobre la evaluación del paz y salvo si lo considera necesario"
                   (input)="financialComments.set($any($event.target).value)"></textarea>
@@ -129,12 +129,15 @@
     <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Archivos adjuntos</h3>
 
     <div class="flex flex-col gap-4 mb-6">
+
       <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
         <div class="flex items-center gap-3">
           <span class="material-symbols-outlined text-[#DB141C] text-4xl">picture_as_pdf</span>
           <div class="flex flex-col">
-            <span class="text-sm font-bold text-primary">Monografía</span>
-            <span class="text-xs text-[#777680]">Cargado por el director</span>
+            <span class="text-sm font-bold text-primary">
+              {{ getExistingDocument('MONOGRAFIA')?.name || 'Monografía' }}
+            </span>
+            <span class="text-xs text-[#777680]">Monografía • Cargado por el director</span>
           </div>
         </div>
         <app-button-component label="Descargar" variant="secondary" (onClick)="downloadDocument(getExistingDocument('MONOGRAFIA'))"></app-button-component>
@@ -144,8 +147,10 @@
         <div class="flex items-center gap-3">
           <span class="material-symbols-outlined text-[#DB141C] text-4xl">picture_as_pdf</span>
           <div class="flex flex-col">
-            <span class="text-sm font-bold text-primary">Formato de presentación (Formato E)</span>
-            <span class="text-xs text-[#777680]">Cargado por el director</span>
+            <span class="text-sm font-bold text-primary">
+              {{ getExistingDocument('FORMATO')?.name || 'Formato de presentación (Formato E)' }}
+            </span>
+            <span class="text-xs text-[#777680]">Formato de presentación (Formato E) • Cargado por el director</span>
           </div>
         </div>
         <app-button-component label="Descargar" variant="secondary" (onClick)="downloadDocument(getExistingDocument('FORMATO'))"></app-button-component>
@@ -155,8 +160,10 @@
         <div class="flex items-center gap-3">
           <span class="material-symbols-outlined text-[#DB141C] text-4xl">folder_open</span>
           <div class="flex flex-col">
-            <span class="text-sm font-bold text-primary">Anexos</span>
-            <span class="text-xs text-[#777680]">Cargado por el director</span>
+            <span class="text-sm font-bold text-primary">
+              {{ getExistingDocument('ANEXOS')?.name || 'Anexos' }}
+            </span>
+            <span class="text-xs text-[#777680]">Anexos • Cargado por el director</span>
           </div>
         </div>
         <app-button-component label="Descargar" variant="secondary" (onClick)="downloadDocument(getExistingDocument('ANEXOS'))"></app-button-component>
@@ -166,7 +173,7 @@
            [class.border-l-4]="uploadedFormat()" [class.border-l-green-500]="uploadedFormat()"
            [class.border-red-500]="isSubmitAttempted() && !uploadedFormat()">
         <div class="flex items-center gap-3">
-          <span class="material-symbols-outlined text-4xl" [class.text-green-600]="uploadedFormat()" [class.text-red-500]="isSubmitAttempted() && !uploadedFormat()" [class.text-gray-400]="!uploadedFormat() && !isSubmitAttempted()">
+          <span class="material-symbols-outlined text-4xl" [class.text-green-600]="uploadedFormat()" [class.text-[#DB141C]]="isSubmitAttempted() && !uploadedFormat()" [class.text-gray-400]="!uploadedFormat() && !isSubmitAttempted()">
             {{ uploadedFormat() ? 'task' : 'picture_as_pdf' }}
           </span>
           <div class="flex flex-col">
@@ -178,7 +185,7 @@
           </div>
         </div>
         @if (uploadedFormat()) {
-          <button type="button" (click)="removeFile()" class="text-gray-400 hover:text-red-500"><span class="material-symbols-outlined">delete</span></button>
+          <button type="button" (click)="removeFile()" class="text-gray-400 hover:text-[#db141c]"><span class="material-symbols-outlined">delete</span></button>
         } @else {
           <app-button-component label="Cargar formato de paz y salvo" variant="secondary" (onClick)="isModalOpen.set(true)"></app-button-component>
         }

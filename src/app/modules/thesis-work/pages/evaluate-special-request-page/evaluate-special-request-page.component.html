@@ -1,0 +1,16 @@
+@if (thesisWorkState() && specialRequestState()) {
+  <app-evaluate-special-request-form
+    [thesisWork]="thesisWorkState()!"
+    [specialRequest]="specialRequestState()!"
+    [isSubmitting]="isSubmitting()"
+    (onSave)="handleSaveTriggered($event)"
+    (onBack)="goBack()">
+  </app-evaluate-special-request-form>
+}
+
+<app-confirmation-action-modal
+  [isOpen]="isConfirmModalOpen()"
+  description="¿Está seguro de registrar esta evaluación para la solicitud especial? Esta acción notificará al estudiante y actualizará el estado del proceso."
+  (onClose)="isConfirmModalOpen.set(false)"
+  (confirm)="processSpecialRequestEvaluation()">
+</app-confirmation-action-modal>

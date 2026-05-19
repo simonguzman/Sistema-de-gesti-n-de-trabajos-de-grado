@@ -8,6 +8,8 @@ export enum DocumentType{
   'CORRECCION' = 'Correccion',
   'FORMATO' = 'Formato',
   'FORMATO E' = 'Formato E',
+  'FORMATO G' = 'Formato G',
+  'FORMATO H' = 'Formato H',
   'PAZ Y SALVO' = 'Paz y salvo',
   'RESOLUCION' = 'Resolucion'
 }

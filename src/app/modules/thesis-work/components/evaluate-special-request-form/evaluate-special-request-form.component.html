@@ -1,0 +1,120 @@
+<div class="pt-2 max-w-4xl mx-auto pb-10">
+
+  <div class="mb-6">
+    <button (click)="onBack.emit()" class="flex items-center gap-2 text-primary hover:text-opacity-80 transition-all font-display font-semibold text-size-section">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Regresar
+    </button>
+  </div>
+
+  <section class="mb-10">
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Información del trabajo de grado</h3>
+
+    <div class="flex flex-col gap-4 pl-4">
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Título</span>
+        <input type="text" [value]="thesisWork.preliminaryDraftData.proposalData.title || ''" disabled
+               class="information-block p-2 border border-gray-200 rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Modalidad del trabajo de grado</span>
+        <input type="text" [value]="thesisWork.preliminaryDraftData.proposalData.modality || ''" disabled
+               class="information-block p-2 border border-gray-200 rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Estudiante</span>
+        <input type="text" [value]="getStudentNames()" disabled
+               class="information-block p-2 border border-gray-200 rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Director</span>
+        <input type="text" [value]="getDirectorName()" disabled
+               class="information-block p-2 border border-gray-200 rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      @if (getCodirectorName()) {
+        <div class="flex flex-col gap-1">
+          <span class="font-display font-semibold text-primary text-size-section">Codirector</span>
+          <input type="text" [value]="getCodirectorName()" disabled
+                 class="information-block p-2 border border-gray-200 rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+        </div>
+      }
+
+      @if (getAdvisorName()) {
+        <div class="flex flex-col gap-1">
+          <span class="font-display font-semibold text-primary text-size-section">Asesor</span>
+          <input type="text" [value]="getAdvisorName()" disabled
+                 class="information-block p-2 border border-gray-200 rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+        </div>
+      }
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Estado</span>
+        <input type="text" [value]="thesisWork.state" disabled
+               class="information-block p-2 border border-gray-200 rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full font-medium capitalize">
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-10">
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Solicitudes especiales</h3>
+
+    <div class="flex flex-col gap-6 pl-4">
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Solicitud especial</span>
+        <input type="text" [value]="getRequestType()" disabled
+               class="information-block p-3 border border-gray-200 rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full font-sans text-sm">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Comentarios</span>
+        <textarea rows="4" disabled
+          class="p-3 border border-gray-200 rounded-md w-full bg-gray-50 cursor-not-allowed font-sans text-sm text-[#777680] resize-none">{{ specialRequest.description }}</textarea>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-4">Resultado de la evaluación</h3>
+
+    <div class="pl-4">
+      <div class="flex flex-col sm:flex-row gap-8 mb-6 justify-center">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="verdict" class="w-4 h-4 text-primary focus:ring-primary"
+                 [checked]="verdictSelected() === states.APROBADO" (change)="verdictSelected.set(states.APROBADO)">
+          <span class="text-sm font-medium text-[#777680]">Cumple con los requisitos</span>
+        </label>
+
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="verdict" class="w-4 h-4 text-primary focus:ring-primary"
+                 [checked]="verdictSelected() === states.NO_APROBADO" (change)="verdictSelected.set(states.NO_APROBADO)">
+          <span class="text-sm font-medium text-[#777680]">No cumple con los requisitos</span>
+        </label>
+      </div>
+
+      @if(isSubmitAttempted() && verdictSelected() === null) {
+        <p class="text-xs text-red-500 mb-4 text-center">Debe seleccionar un resultado para proceder</p>
+      }
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Comentarios</span>
+        <textarea rows="4" class="p-3 border border-gray-300 rounded-md w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm font-sans resize-none"
+                  placeholder="Ingrese los comentarios y observaciones sobre la evaluación si lo considera necesario"
+                  (input)="observations.set($any($event.target).value)"></textarea>
+      </div>
+
+      <div class="flex justify-end mt-6">
+        <app-button-component
+          label="Guardar"
+          variant="primary"
+          (onClick)="submit()"
+          [disabled]="isSubmitting">
+        </app-button-component>
+      </div>
+    </div>
+  </section>
+
+</div>

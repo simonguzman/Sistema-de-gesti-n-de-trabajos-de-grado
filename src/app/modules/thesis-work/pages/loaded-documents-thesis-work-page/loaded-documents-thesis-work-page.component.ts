@@ -1,4 +1,3 @@
-// loaded-documents-thesis-work-page.component.ts
 import { Component, computed, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { TabConfiguration, ThesisEvaluationContext } from './tabs-logic/tab-config.interface';
 import { AdvancesTabConfig } from './tabs-logic/advaces.tab';
@@ -20,6 +19,8 @@ import { stateList } from '../../../../core/enums/state.enum';
 import { FinalDeliveryTabConfig } from './tabs-logic/final-delivery.tab';
 import { PazYSalvoTabConfig } from './tabs-logic/paz_y_salvo.tab';
 import { SustentationTabConfig } from './tabs-logic/sustentation.tab';
+import { CorrespondenceTabConfig } from './tabs-logic/correspondence.tab';
+import { SpecialRequestTabConfig } from './tabs-logic/special-request.tab';
 
 @Component({
   selector: 'app-loaded-documents-thesis-work-page',
@@ -42,9 +43,8 @@ export class LoadedDocumentsThesisWorkPageComponent implements OnInit, OnDestroy
     { label: 'Entrega final', value: 'ENTREGA FINAL' },
     { label: 'Paz y salvo', value: 'PAZ Y SALVO' },
     { label: 'Sustentación', value: 'SUSTENTACION' },
-    { label: 'Correspondencia', value: 'RESOLUCION' },
+    { label: 'Correspondencia', value: 'CORRESPONDENCIA' },
     { label: 'Solicitudes especiales', value: 'SOLICITUDES' },
-    { label: 'Acta Final', value: 'DOC_FINAL' },
   ];
 
   private readonly tabStrategies: Record<string, TabConfiguration> = {
@@ -52,7 +52,8 @@ export class LoadedDocumentsThesisWorkPageComponent implements OnInit, OnDestroy
     'ENTREGA FINAL': FinalDeliveryTabConfig,
     'PAZ Y SALVO': PazYSalvoTabConfig,
     'SUSTENTACION': SustentationTabConfig,
-    // 📌 Las futuras pestañas se conectarán aquí limpiamente sin alterar este archivo.
+    'CORRESPONDENCIA': CorrespondenceTabConfig,
+    'SOLICITUDES': SpecialRequestTabConfig
   };
 
   activeTab = signal<string>('AVANCES');
@@ -93,9 +94,6 @@ export class LoadedDocumentsThesisWorkPageComponent implements OnInit, OnDestroy
     return this.tabStrategies[this.activeTab()] || AdvancesTabConfig;
   });
 
-  // =========================================================================
-  // ⚖️ CONTEXTO BASE GENÉRICO: Delegación absoluta de la lógica de negocio
-  // =========================================================================
   evaluationContext = computed<ThesisEvaluationContext>(() => {
     const thesis = this.currentThesisWork();
     const user = this.authService.currentUser();
@@ -117,7 +115,6 @@ export class LoadedDocumentsThesisWorkPageComponent implements OnInit, OnDestroy
       isLatestAdvancePending: false
     };
 
-    // 🔥 DELEGACIÓN: La estrategia activa inyecta sus propias reglas de negocio
     return this.currentStrategy().enrichEvaluationContext(baseContext);
   });
 
@@ -130,7 +127,6 @@ export class LoadedDocumentsThesisWorkPageComponent implements OnInit, OnDestroy
     const thesis = context.thesisWork;
     if (!thesis) return [];
 
-    // Si la pestaña es AVANCES, se le pasa un array vacío ya que lee directamente de 'advances' desde su estrategia
     const docs = this.activeTab() === 'AVANCES' ? [] : (thesis.documents || []);
     return this.currentStrategy().getTableData(docs, context);
   });
@@ -144,8 +140,11 @@ export class LoadedDocumentsThesisWorkPageComponent implements OnInit, OnDestroy
       } else if (this.activeTab() === 'PAZ Y SALVO') {
         this.router.navigate(['register_paz_y_salvo'], { relativeTo: this.route });
       } else if (this.activeTab() === 'SUSTENTACION') {
-        // 🚀 Redirección exclusiva a la página de registro de sustentación
         this.router.navigate(['register_sustentation'], { relativeTo: this.route });
+      } else if (this.activeTab() === 'CORRESPONDENCIA') {
+        this.router.navigate(['register_correspondence'], { relativeTo: this.route });
+      } else if (this.activeTab() === 'SOLICITUDES') {
+        this.router.navigate(['register_special_request'], { relativeTo: this.route });
       } else {
         this.isUploadModalOpen.set(true);
       }
@@ -153,18 +152,30 @@ export class LoadedDocumentsThesisWorkPageComponent implements OnInit, OnDestroy
   }
 
   handleTableAction(event: { action: string; row: any }): void {
+    // 🛡️ Si la fila tiene restricciones explícitas y la acción actual no está permitida, bloqueamos el flujo.
     if (event.row.allowedActions && !event.row.allowedActions.includes(event.action)) {
       this.showRestrictedActionNotification();
       return;
     }
 
-    if (event.action === 'download') {
-      this.handleDownload(event.row);
-    } else if (event.action === 'evaluate-advance') {
-      // 🚀 Apunta exactamente al segmento con guión bajo 'evaluate_advance' configurado en tus rutas
-      this.router.navigate(['evaluate_advance', event.row.id], { relativeTo: this.route });
-    } else {
-      this.router.navigate([event.action], { relativeTo: this.route });
+    // 🚀 Orquestación corregida de rutas planas vs dinámicas
+    switch (event.action) {
+      case 'download':
+        this.handleDownload(event.row);
+        break;
+
+      case 'evaluate-advance':
+        this.router.navigate(['evaluate_advance', event.row.id], { relativeTo: this.route });
+        break;
+
+      case 'evaluate_special_request':
+        // 🌟 Forzamos el array de segmentos en un único string o aseguramos que use el snapshot correcto
+        this.router.navigate([`./evaluate_special_request`, event.row.id], { relativeTo: this.route });
+        break;
+
+      default:
+        this.router.navigate([event.action], { relativeTo: this.route });
+        break;
     }
   }
 

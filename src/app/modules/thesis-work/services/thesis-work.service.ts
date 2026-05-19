@@ -1,3 +1,4 @@
+// thesis-work.service.ts
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { delay, Observable, of, tap } from 'rxjs';
 
@@ -10,7 +11,7 @@ import { Document, DocumentType } from '../../../core/interfaces/Document.interf
 import { Evaluation } from '../../../core/interfaces/evaluation.interface';
 import { UserRoleType } from '../../../core/models/user-role';
 
-import { ThesisWork, SustentationRegistry } from '../interfaces/thesis-work.interface';
+import { ThesisWork, SustentationRegistry, JurorVerdict, SpecialRequest } from '../interfaces/thesis-work.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -20,13 +21,13 @@ export class ThesisWorkService {
   private readonly userService = inject(UserService);
   private readonly preliminaryDraftService = inject(PreliminaryDraftService);
 
+  // 📌 Señal reactiva contenedora de los datos en memoria
   private readonly _thesisWorksList = signal<ThesisWork[]>(this.initializeThesisWorks());
 
   public thesisWorks = computed(() => {
     const currentUser = this.authService.currentUser();
     const allWorks = this._thesisWorksList();
     if (!currentUser) return [];
-
     if (this.authService.hasAnyRole([
       UserRoleType.ADMINISTRADOR,
       UserRoleType.DECANATURA,
@@ -34,7 +35,6 @@ export class ThesisWorkService {
     ])) {
       return allWorks;
     }
-
     return allWorks.filter(work => this.canUserAccessThesisWork(work, currentUser.id));
   });
 
@@ -47,14 +47,12 @@ export class ThesisWorkService {
   private initializeThesisWorks(): ThesisWork[] {
     const stored = localStorage.getItem('thesisWorks');
     if (stored) return JSON.parse(stored);
-
-    const approvedDrafts = this.preliminaryDraftService.preliminaryDrafts()
-      .filter(draft => draft.state === stateList.APROBADO);
-
-    return approvedDrafts.map(draft => ({
+    const approvedPreliminaryDrafts = this.preliminaryDraftService.preliminaryDrafts()
+      .filter(preliminaryDraft => preliminaryDraft.state === stateList.APROBADO);
+    return approvedPreliminaryDrafts.map(preliminaryDraft => ({
       thesisWorkId: crypto.randomUUID(),
-      preliminaryDraftId: draft.preliminaryDraftId!,
-      preliminaryDraftData: draft,
+      preliminaryDraftId: preliminaryDraft.preliminaryDraftId!,
+      preliminaryDraftData: preliminaryDraft,
       documents: [],
       advances: [],
       evaluations: [],
@@ -73,7 +71,6 @@ export class ThesisWorkService {
       typeof author === 'string' ? author === userId : (author as any)?.id === userId
     ) ?? false;
     const isJuror = work.sustentation?.assignedJurors?.some(juror => juror.id === userId) ?? false;
-
     return isDirector || isCodirector || isAdvisor || isAuthor || isJuror;
   }
 
@@ -88,7 +85,7 @@ export class ThesisWorkService {
         this._thesisWorksList.update(list => list.map(work => {
           if (work.thesisWorkId !== thesisWorkId) return work;
 
-          // Si no es tipo avance, se maneja en la bolsa de formatos tradicionales
+          // Si el documento no es de tipo 'Avance', mantenemos la lógica global
           if ((document.type as string) !== 'Avance') {
             const nextState = document.type === 'Formato' ? stateList.EN_REVISION : work.state;
             return {
@@ -98,26 +95,41 @@ export class ThesisWorkService {
             };
           }
 
-          // =========================================================================
-          // 🚀 CORRECCIÓN: CARGA DE AVANCES (DESACOPLADA DEL ESTADO MAESTRO)
-          // =========================================================================
+          // --- LOGICA DE AGRUPACIÓN PARA AVANCES ---
           const existingAdvances = work.advances || [];
+          // Verificamos si ya existe un bloque de avance creado por este lote de subida (mismo ID)
+          const advanceExists = existingAdvances.some(adv => adv.id === document.id);
 
-          const newAdvance = {
-            id: document.id,
-            title: advanceMeta?.title || document.name,
-            comments: advanceMeta?.comments || '',
-            uploadDate: new Date(document.uploadDate),
-            studentId: advanceMeta?.studentId || '',
-            status: stateList.EN_REVISION, // 📌 El estado "En revisión" se encapsula ÚNICAMENTE dentro del avance
-            documents: [document]
-          };
+          let updatedAdvances;
+
+          if (advanceExists) {
+            // Si ya existe, mapeamos los avances para añadir el documento al avance correspondiente
+            updatedAdvances = existingAdvances.map(adv => {
+              if (adv.id !== document.id) return adv;
+              return {
+                ...adv,
+                // Conservamos los documentos previos de este avance y adjuntamos el nuevo
+                documents: [...adv.documents, document]
+              };
+            });
+          } else {
+            // Si es el primer archivo del lote, creamos el registro base del Avance
+            const newAdvance = {
+              id: document.id,
+              title: advanceMeta?.title || document.name,
+              comments: advanceMeta?.comments || '',
+              uploadDate: new Date(document.uploadDate),
+              studentId: advanceMeta?.studentId || '',
+              status: stateList.EN_REVISION,
+              documents: [document] // Inicializa con el primer documento
+            };
+            updatedAdvances = [newAdvance, ...existingAdvances];
+          }
 
           return {
             ...work,
-            advances: [newAdvance, ...existingAdvances],
-            // state: stateList.EN_REVISION <-- ❌ ELIMINADO: Ya no altera el estado del Trabajo de Grado
-            state: work.state // ✅ PRESERVADO: Mantiene su estado actual (ej: "En desarrollo")
+            advances: updatedAdvances,
+            state: work.state
           };
         }));
       })
@@ -140,19 +152,22 @@ export class ThesisWorkService {
     return of(undefined).pipe(
       delay(1000),
       tap(() => {
+        if (formData.juror1) {
+          this.userService.addRoleToUser(formData.juror1, UserRoleType.JURADO);
+        }
+        if (formData.juror2) {
+          this.userService.addRoleToUser(formData.juror2, UserRoleType.JURADO);
+        }
         this._thesisWorksList.update(list => list.map(work => {
           if (work.thesisWorkId !== thesisWorkId) return work;
-
           const allUsers = this.userService.users();
-          const juror1User = allUsers.find(u => u.id === formData.juror1);
-          const juror2User = allUsers.find(u => u.id === formData.juror2);
-
+          const juror1User = allUsers.find(user => user.id === formData.juror1);
+          const juror2User = allUsers.find(user => user.id === formData.juror2);
           const dateStr = new Date().toLocaleDateString('es-ES', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
           }).replaceAll('/', ' - ');
-
           const sustentationDoc: Document = {
             id: formData.formatEDocument?.id || crypto.randomUUID(),
             name: formData.formatEDocument?.fileName || 'Formato E - Sustentación',
@@ -161,19 +176,17 @@ export class ThesisWorkService {
             type: DocumentType['FORMATO E'] || ('Formato E' as any),
             status: stateList.EN_REVISION
           };
-
-          // ✅ CONCORDANCIA TOTAL CON TU INTERFAZ
           const sustentationRegistry: SustentationRegistry = {
             id: crypto.randomUUID(),
             sustentationDate: formData.sustentationDate ? new Date(formData.sustentationDate) : undefined,
-            sustentationTime: formData.sustentationTime || undefined, // Mapeado por si lo capturas en el formulario
+            sustentationTime: formData.sustentationTime || undefined,
+            location: formData.location || undefined,
             assignedJurors: [
               ...(juror1User ? [juror1User] : []),
               ...(juror2User ? [juror2User] : [])
             ],
-            verdicts: [] // Inicializa como un arreglo vacío según exige 'JurorVerdict[]'
+            verdicts: []
           };
-
           return {
             ...work,
             sustentation: sustentationRegistry,
@@ -185,26 +198,21 @@ export class ThesisWorkService {
     );
   }
 
-  uploadFinalDeliveryMock( thesisWorkId: string,  monograph: File, formatE: File, annexes?: File): Observable<void> {
+  uploadFinalDeliveryMock(thesisWorkId: string, monograph: File, formatE: File, annexes?: File): Observable<void> {
     return of(undefined).pipe(
       delay(1000),
       tap(() => {
         this._thesisWorksList.update(list => list.map(work => {
           if (work.thesisWorkId !== thesisWorkId) return work;
-
           const dateStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).replaceAll('/', ' - ');
-
-          // 1. Registro de Monografía
           const docMonograph: Document = {
             id: crypto.randomUUID(),
             name: monograph.name.replace('.pdf', ''),
             url: 'uploads/final-delivery/monografia_' + monograph.name,
             uploadDate: dateStr,
-            type: DocumentType.MONONGRAFIA, // Ajustar al tipo string/enum de tu dominio
+            type: DocumentType.MONONGRAFIA,
             status: stateList.EN_REVISION
           };
-
-          // 2. Registro de Formato E (Usa tu DocumentType.FORMATO)
           const docFormatE: Document = {
             id: crypto.randomUUID(),
             name: formatE.name.replace('.pdf', ''),
@@ -213,10 +221,7 @@ export class ThesisWorkService {
             type: DocumentType['FORMATO E'],
             status: stateList.EN_REVISION
           };
-
           const newDocuments = [docMonograph, docFormatE];
-
-          // 3. Registro opcional de Anexos
           if (annexes) {
             newDocuments.push({
               id: crypto.randomUUID(),
@@ -227,16 +232,16 @@ export class ThesisWorkService {
               status: stateList.EN_REVISION
             });
           }
-
           return {
             ...work,
             documents: [...newDocuments, ...(work.documents || [])],
-            state: stateList.EN_REVISION // Cambia el estado global del proyecto a En Revisión
+            state: stateList.EN_REVISION
           };
         }));
       })
     );
   }
+
   registerPazYSalvoMock(
     thesisWorkId: string,
     payload: { academicApproved: boolean, academicComments?: string, financialApproved: boolean, financialComments?: string },
@@ -247,13 +252,9 @@ export class ThesisWorkService {
       tap(() => {
         this._thesisWorksList.update(list => list.map(work => {
           if (work.thesisWorkId !== thesisWorkId) return work;
-
-          // 🧠 1. Evaluamos si TODO fue aprobado
           const isFullyApproved = payload.academicApproved && payload.financialApproved;
           const dateStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).replaceAll('/', ' - ');
           const docId = crypto.randomUUID();
-
-          // 🧠 2. Creamos el documento del Paz y Salvo (Asegúrate de tener DocumentType.PAZ_Y_SALVO en tu Enum)
           const pazYSalvoDoc: Document = {
             id: docId,
             name: file.name.replace('.pdf', ''),
@@ -262,20 +263,15 @@ export class ThesisWorkService {
             type: DocumentType['PAZ Y SALVO'],
             status: isFullyApproved ? stateList.APROBADO : stateList.NO_APROBADO
           };
-
           let updatedDocuments = [pazYSalvoDoc, ...(work.documents || [])];
-
-          // 🛑 REGLA DE NEGOCIO CLAVE: Si NO aprueba, invalidamos la Entrega Final actual
           if (!isFullyApproved) {
             updatedDocuments = updatedDocuments.map(doc => {
-              // Si es el Formato E de la entrega final, lo marcamos como rechazado
-              if (doc.type === DocumentType.FORMATO) {
+              if (doc.type === DocumentType['FORMATO E']) {
                 return { ...doc, status: stateList.NO_APROBADO };
               }
               return doc;
             });
           }
-
           return {
             ...work,
             pazYSalvo: {
@@ -285,14 +281,269 @@ export class ThesisWorkService {
               registrationDate: new Date()
             },
             documents: updatedDocuments
-            // Aquí también podrías cambiar el 'state' global del trabajo si tu lógica lo requiere
           };
         }));
       })
     );
   }
 
+  registerSustentationVerdictMock(
+    thesisWorkId: string,
+    payload: { veredict: stateList; observations: string; evaluationDate: Date },
+    file: File
+  ): Observable<void> {
+    return of(undefined).pipe(
+      delay(1000),
+      tap(() => {
+        const activeUser = this.authService.currentUser();
+        const jurorId = activeUser ? activeUser.id : 'jurado-desconocido';
 
+        this._thesisWorksList.update(list => list.map(work => {
+          if (work.thesisWorkId !== thesisWorkId) return work;
 
+          const dateStr = new Date().toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          }).replaceAll('/', ' - ');
 
+          // 1. Construcción del nuevo documento de sustentación (Formato G)
+          const sustentationFileDoc: Document = {
+            id: crypto.randomUUID(),
+            name: file.name.replace('.pdf', ''),
+            url: `uploads/sustentaciones/resultado_${file.name}`,
+            uploadDate: dateStr,
+            type: DocumentType['FORMATO G'] || ('Formato G' as any),
+            status: payload.veredict
+          };
+
+          // 💡 2. Regla de Negocio: Actualizar "Formato E" de [EN_REVISION] a [EVALUADO]
+          const updatedExistingDocuments = (work.documents || []).map(doc => {
+            const isFormatoE = doc.type === (DocumentType['FORMATO E'] || 'Formato E');
+            const isEnRevision = doc.status === stateList.EN_REVISION;
+
+            if (isFormatoE && isEnRevision) {
+              return {
+                ...doc,
+                status: stateList.EVALUADO || ('Evaluado' as any)
+              };
+            }
+            return doc;
+          });
+
+          // 3. Estructuración del veredicto del jurado
+          const newVerdict: JurorVerdict = {
+            jurorId: jurorId,
+            evaluationDate: payload.evaluationDate,
+            veredict: payload.veredict as any,
+            observations: payload.observations
+          };
+
+          const currentSustentation = work.sustentation || {
+            id: crypto.randomUUID(),
+            assignedJurors: [],
+            verdicts: []
+          };
+
+          const updatedVerdicts = [...(currentSustentation.verdicts || [])];
+          const existingVerdictIndex = updatedVerdicts.findIndex(v => v.jurorId === jurorId);
+
+          if (existingVerdictIndex !== -1) {
+            updatedVerdicts[existingVerdictIndex] = newVerdict;
+          } else {
+            updatedVerdicts.push(newVerdict);
+          }
+
+          const updatedSustentation: SustentationRegistry = {
+            ...currentSustentation,
+            verdicts: updatedVerdicts
+          };
+
+          // 4. Retorno del nuevo estado inmutable del Trabajo de Grado
+          return {
+            ...work,
+            sustentation: updatedSustentation,
+            documents: [sustentationFileDoc, ...updatedExistingDocuments],
+            state: payload.veredict
+          };
+        }));
+      })
+    );
+  }
+
+  uploadCorrectedDocumentsMock(thesisWorkId: string, monograph: File, annexes?: File): Observable<void> {
+    return of(undefined).pipe(
+      delay(1000),
+      tap(() => {
+        this._thesisWorksList.update(list => list.map(work => {
+          if (work.thesisWorkId !== thesisWorkId) return work;
+          const dateStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).replaceAll('/', ' - ');
+          const docMonograph: Document = {
+            id: crypto.randomUUID(),
+            name: monograph.name.replace('.pdf', ''),
+            url: 'uploads/corrected-documents/' + monograph.name,
+            uploadDate: dateStr,
+            type: DocumentType.CORRECCION,
+            status: stateList.EN_REVISION
+          };
+          const newDocuments = [docMonograph];
+          if (annexes) {
+            newDocuments.push({
+              id: crypto.randomUUID(),
+              name: annexes.name,
+              url: 'uploads/corrected-documents/' + annexes.name,
+              uploadDate: dateStr,
+              type: DocumentType.CORRECCION,
+              status: stateList.EN_REVISION
+            });
+          }
+          return {
+            ...work,
+            documents: [...newDocuments, ...(work.documents || [])],
+            state: stateList.EN_REVISION
+          };
+        }));
+      })
+    );
+  }
+
+  evaluateCorrectedDocumentsMock(
+    thesisWorkId: string,
+    evaluationData: Omit<Evaluation, 'id' | 'date'>,
+    formatGFile: File
+  ): Observable<void> {
+    return of(undefined).pipe(
+      delay(1200),
+      tap(() => {
+        const activeUser = this.authService.currentUser();
+        const jurorId = activeUser ? activeUser.id : 'jurado-desconocido';
+        const dateStr = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).replaceAll('/', ' - ');
+        this._thesisWorksList.update(list => list.map(work => {
+          if (work.thesisWorkId !== thesisWorkId) return work;
+          const docFormatG: Document = {
+            id: crypto.randomUUID(),
+            name: `Formato G - Acta de Sustentación`,
+            url: 'uploads/evaluations/' + formatGFile.name,
+            uploadDate: dateStr,
+            type: DocumentType.CORRECCION,
+            status: evaluationData.veredict
+          };
+          const newEvaluation: Evaluation = {
+            ...evaluationData,
+            id: crypto.randomUUID(),
+            date: new Date(),
+            signedDocuments: [docFormatG.url]
+          };
+          const currentSustentation = work.sustentation || {
+            id: crypto.randomUUID(),
+            assignedJurors: [],
+            verdicts: []
+          };
+          const updatedVerdicts = [...(currentSustentation.verdicts || [])];
+          const updatedJurorVerdict = {
+            jurorId: jurorId,
+            evaluationDate: new Date(),
+            veredict: evaluationData.veredict as any,
+            observations: evaluationData.observations
+          };
+          const existingVerdictIndex = updatedVerdicts.findIndex(v => v.jurorId === jurorId);
+          if (existingVerdictIndex !== -1) {
+            updatedVerdicts[existingVerdictIndex] = updatedJurorVerdict;
+          } else {
+            updatedVerdicts.push(updatedJurorVerdict);
+          }
+          const updatedSustentation: SustentationRegistry = {
+            ...currentSustentation,
+            verdicts: updatedVerdicts
+          };
+          return {
+            ...work,
+            state: evaluationData.veredict,
+            sustentation: updatedSustentation,
+            documents: [docFormatG, ...(work.documents || [])],
+            evaluations: [newEvaluation, ...(work.evaluations || [])]
+          };
+        }));
+      })
+    );
+  }
+
+  registerCorrespondenceDocumentMock(thesisWorkId: string, document: Document): Observable<void> {
+    return of(undefined).pipe(
+      delay(800),
+      tap(() => {
+        this._thesisWorksList.update(list =>
+          list.map((work: ThesisWork) => {
+            if (work.thesisWorkId !== thesisWorkId) return work;
+            return {
+              ...work,
+              documents: [document, ...(work.documents || [])],
+              state: stateList.APROBADO
+            };
+          })
+        );
+      })
+    );
+  }
+
+  /**
+   * 🚀 REGISTRO REACTIVO DE SOLICITUDES ESPECIALES
+   * Inserta la solicitud en la colección interna del proyecto correspondiente.
+   */
+  createSpecialRequestMock(payload: { requestType: string, comments: string, thesisId: string }): Observable<void> {
+    return of(undefined).pipe(
+      delay(800),
+      tap(() => {
+        this._thesisWorksList.update(list =>
+          list.map((work: ThesisWork) => {
+            if (work.thesisWorkId !== payload.thesisId) return work;
+            const newRequest: SpecialRequest = {
+              id: crypto.randomUUID(),
+              directorId: work.preliminaryDraftData?.proposalData?.director?.id || '',
+              requestDate: new Date(),
+              description: `[${payload.requestType}] - ${payload.comments}`,
+              status: stateList.EN_REVISION
+            };
+            return {
+              ...work,
+              specialRequests: [newRequest, ...(work.specialRequests || [])]
+            };
+          })
+        );
+      })
+    );
+  }
+
+  evaluateSpecialRequestMock(
+    thesisWorkId: string,
+    requestId: string,
+    payload: { status: stateList.APROBADO | stateList.NO_APROBADO; resolutionDetails: string }
+  ): Observable<void> {
+    return of(undefined).pipe(
+      delay(900), // Simula latencia de red
+      tap(() => {
+        this._thesisWorksList.update(list =>
+          list.map((work: ThesisWork) => {
+            // Si no es el trabajo de grado objetivo, se mantiene intacto
+            if (work.thesisWorkId !== thesisWorkId) return work;
+
+            // Mapeamos las solicitudes para actualizar únicamente la que coincide con el requestId
+            const updatedRequests = (work.specialRequests || []).map(req => {
+              if (req.id !== requestId) return req;
+              return {
+                ...req,
+                status: payload.status,
+                resolutionDetails: payload.resolutionDetails
+              };
+            });
+
+            return {
+              ...work,
+              specialRequests: updatedRequests
+            };
+          })
+        );
+      })
+    );
+  }
 }

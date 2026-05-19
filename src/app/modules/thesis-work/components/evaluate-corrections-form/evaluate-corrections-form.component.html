@@ -1,0 +1,179 @@
+<div class="pt-2 max-w-4xl mx-auto pb-10">
+
+  <div class="mb-6">
+    <button (click)="onGoBack.emit()" class="flex items-center gap-2 text-primary hover:text-opacity-80 transition-all font-display font-semibold text-size-section">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Regresar
+    </button>
+  </div>
+
+  <section class="mb-10">
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Información del trabajo de grado</h3>
+
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Título</span>
+        <input type="text" [value]="thesisWork.preliminaryDraftData.proposalData.title || ''" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Modalidad del trabajo de grado</span>
+        <input type="text" [value]="thesisWork.preliminaryDraftData.proposalData.modality || ''" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Estudiante</span>
+        <input type="text" [value]="getStudentNames()" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <span class="font-display font-semibold text-primary text-size-section">Director</span>
+          <input type="text" [value]="getDirectorName()" disabled
+                 class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+        </div>
+
+        @if (getCodirectorName()) {
+          <div class="flex flex-col gap-1">
+            <span class="font-display font-semibold text-primary text-size-section">Codirector</span>
+            <input type="text" [value]="getCodirectorName()" disabled
+                   class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+          </div>
+        }
+      </div>
+
+      @if (getAdvisorName()) {
+        <div class="flex flex-col gap-1">
+          <span class="font-display font-semibold text-primary text-size-section">Asesor</span>
+          <input type="text" [value]="getAdvisorName()" disabled
+                 class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+        </div>
+      }
+
+      <div class="flex flex-col gap-1">
+        <span class="font-display font-semibold text-primary text-size-section">Jurados Asignados</span>
+        <input type="text" [value]="getAssignedJurors()" disabled
+               class="information-block p-2 border rounded-md text-[#777680] bg-gray-50 cursor-not-allowed w-full">
+      </div>
+    </div>
+  </section>
+
+  <hr class="border-gray-200 mb-8">
+
+  <section class="mb-10">
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-4">Documentos Corregidos Radicados</h3>
+    <p class="text-sm text-gray-600 mb-4">Haga clic sobre cualquiera de los archivos cargados por el equipo del proyecto para revisarlo antes de emitir el dictamen.</p>
+
+    @if (correctedDocuments().length > 0) {
+      <div class="flex flex-col gap-3">
+        @for (doc of correctedDocuments(); track doc.id) {
+          <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-[#DB141C] text-4xl">picture_as_pdf</span>
+              <div class="flex flex-col">
+                <span class="text-sm font-bold text-primary">{{ doc.name }}</span>
+                <span class="text-xs text-[#777680]">Cargado el: {{ doc.uploadDate || 'Sin fecha' }}</span>
+              </div>
+            </div>
+            <app-button-component label="Descargar" variant="primary" (onClick)="downloadDocument(doc)"></app-button-component>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 flex items-center gap-2">
+        <span class="material-symbols-outlined">warning</span>
+        No se registran documentos cargados en esta fase. El jurado puede proceder a pre-evaluar si lo considera pertinente.
+      </div>
+    }
+  </section>
+
+  <hr class="border-gray-200 mb-8">
+
+  <section class="mb-10">
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-4">Evaluación del jurado</h3>
+
+    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm" [class.border-red-500]="isSubmitAttempted() && selectedVerdict() === null">
+
+      <div class="p-4 bg-[#F2F6FC] border border-[#E5E7EB] rounded-lg text-sm text-[#777680] mb-4">
+        Seleccione el resultado definitivo de la sustentación del trabajo de grado acordado por el cuerpo de jurados. Adicionalmente, registre los comentarios u observaciones obligatorias/recomendadas según corresponda.
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-6 mb-6">
+        @for (option of verdictOptions; track option.value) {
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="verdict" class="w-4 h-4 text-primary focus:ring-primary"
+                   [checked]="selectedVerdict() === option.value" (change)="selectedVerdict.set(option.value)">
+            <span class="text-sm font-medium text-gray-700">{{ option.label }}</span>
+          </label>
+        }
+      </div>
+
+      @if(isSubmitAttempted() && selectedVerdict() === null) {
+        <p class="text-xs text-red-500 mb-4">Debe seleccionar una calificación para proceder</p>
+      }
+
+      <div class="flex flex-col gap-1">
+        <span class="text-sm font-semibold text-primary">Observaciones y comentarios descriptivos</span>
+        <textarea rows="4" class="p-3 border rounded-md w-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm font-sans"
+                  [class.border-red-500]="isSubmitAttempted() && observations().trim().length < 10"
+                  placeholder="Ingrese el desglose detallado de las razones del veredicto o los ajustes exigidos al estudiante..."
+                  [value]="observations()"
+                  (input)="observations.set($any($event.target).value)"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <hr class="border-gray-200 mb-8">
+
+  <section>
+    <h3 class="font-display font-semibold text-primary text-size-header-title mb-6">Archivos adjuntos requeridos</h3>
+
+    <div class="flex flex-col gap-4 mb-6">
+      <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm"
+           [class.border-l-4]="uploadedFormatG()" [class.border-l-green-500]="uploadedFormatG()"
+           [class.border-red-500]="isSubmitAttempted() && !uploadedFormatG()">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-4xl"
+                [class.text-green-600]="uploadedFormatG()"
+                [class.text-red-500]="isSubmitAttempted() && !uploadedFormatG()"
+                [class.text-gray-400]="!uploadedFormatG() && !isSubmitAttempted()">
+            {{ uploadedFormatG() ? 'task' : 'picture_as_pdf' }}
+          </span>
+          <div class="flex flex-col">
+            <span class="text-sm font-bold" [class.text-primary]="uploadedFormatG()" [class.text-red-500]="isSubmitAttempted() && !uploadedFormatG()">
+              {{ uploadedFormatG()?.fileName || 'Formato de Sustentación Terminado' }}
+            </span>
+            <span class="text-xs text-[#777680]">
+              {{ uploadedFormatG() ? 'Formato de acta cargado con éxito.' : 'No ha sido cargado ningún archivo. Debe adjuntar el acta con firmas de evaluación final.' }}
+            </span>
+            @if (isSubmitAttempted() && !uploadedFormatG()) {
+              <span class="text-xs text-textbox-alert mt-1 font-semibold">Este documento es estrictamente obligatorio</span>
+            }
+          </div>
+        </div>
+
+        @if (uploadedFormatG()) {
+          <button type="button" (click)="uploadedFormatG.set(null)" class="text-gray-400 hover:text-red-500 transition-colors">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        } @else {
+          <app-button-component label="Cargar formato de sustentación" variant="secondary" (onClick)="isModalOpen.set(true)"></app-button-component>
+        }
+      </div>
+    </div>
+
+    <div class="flex gap-4 justify-end mt-10">
+      <app-button-component label="Registrar Evaluación" variant="primary" (onClick)="submit()" [disabled]="isSubmitting"></app-button-component>
+    </div>
+  </section>
+</div>
+
+<app-file-upload-modal
+  [isOpen]="isModalOpen()"
+  description="Subir Acta de Calificación de Sustentación diligenciada (PDF)"
+  (onFileUploaded)="handleFormatGUploaded($event)"
+  (onClose)="isModalOpen.set(false)">
+</app-file-upload-modal>

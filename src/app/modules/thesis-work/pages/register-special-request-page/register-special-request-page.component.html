@@ -1,0 +1,18 @@
+<div class="page-container p-6">
+  <button (click)="goBack()" class="flex items-center gap-2 text-primary font-medium mb-4 hover:underline">
+    <span class="material-symbols-outlined text-sm">arrow_back</span>
+    Regresar
+  </button>
+
+  @if (isLoading()) {
+    <div class="flex justify-center items-center h-40">
+      <span class="text-gray-500">Cargando información del trabajo de grado...</span>
+    </div>
+  } @else if (thesisWorkData()) {
+    <app-register-special-request-form
+      [thesisWork]="thesisWorkData()!"
+      [isSubmitting]="isSubmitting()"
+      (onSaveRequest)="handleSaveRequest($event)">
+    </app-register-special-request-form>
+  }
+</div>

@@ -10,23 +10,37 @@ import { EvaluateAdvancePageComponent } from './pages/evaluate-advance-page/eval
 import { UploadFinalDeliveryPageComponent } from './pages/upload-final-delivery-page/upload-final-delivery-page.component';
 import { RegisterPazYSalvoPageComponent } from './pages/register-paz-y-salvo-page/register-paz-y-salvo-page.component';
 import { RegisterSustentationPageComponent } from './pages/register-sustentation-page/register-sustentation-page.component';
-
+import { EvaluateSustentationPageComponent } from './pages/evaluate-sustentation-page/evaluate-sustentation-page.component';
+import { SustentationDetailsPageComponent } from './pages/sustentation-details-page/sustentation-details-page.component';
+import { CorrectedDocumentsPageComponent } from './pages/corrected-documents-page/corrected-documents-page.component';
+import { RegisterCorrectedDocumentsPageComponent } from './pages/register-corrected-documents-page/register-corrected-documents-page.component';
+import { EvaluateCorrectionsPageComponent } from './pages/evaluate-corrections-page/evaluate-corrections-page.component';
+import { RegisterCorrespondencePageComponent } from './pages/register-correspondence-page/register-correspondence-page.component';
+import { RegisterSpecialRequestPageComponent } from './pages/register-special-request-page/register-special-request-page.component';
+import { EvaluateSpecialRequestPageComponent } from './pages/evaluate-special-request-page/evaluate-special-request-page.component';
+import { DownloadableFormatsPageComponent } from '../../shared/pages/downloadable-formats-page/downloadable-formats-page.component';
 
 export const thesisWorkRoutes: Routes = [
   {
     path: '',
-    data: { breadcrumb: 'Trabajos de grado'},
-    children:[
+    data: { breadcrumb: 'Trabajos de grado' },
+    children: [
       {
         path: '',
         component: ThesisWorkPageComponent,
         title: 'Trabajos de grado',
-        data: { breadcrumb: null},
+        data: { breadcrumb: null },
+      },
+      {
+        path: 'downloadable_formats',
+        component: DownloadableFormatsPageComponent,
+        title: 'Formatos descargables',
+        data: { breadcrumb: 'Formatos descargables' }
       },
       {
         path: 'details/:id',
         data: { breadcrumb: 'Información del trabajo de grado' },
-        children:[
+        children: [
           {
             path: '',
             component: ThesisWorkDetailsPageComponent,
@@ -141,10 +155,123 @@ export const thesisWorkRoutes: Routes = [
                   roles: [UserRoleType.ADMINISTRADOR, UserRoleType.CONSEJO]
                 }
               },
+              {
+                path: 'evaluate_sustentation',
+                component: EvaluateSustentationPageComponent,
+                canActivate: [roleGuard],
+                title: 'Evaluar sustentación',
+                data: {
+                  breadcrumb: 'Evaluar sustentación',
+                  roles: [UserRoleType.ADMINISTRADOR, UserRoleType.JURADO]
+                }
+              },
+              {
+                path: 'register_correspondence',
+                component: RegisterCorrespondencePageComponent,
+                canActivate: [roleGuard],
+                title: 'Registrar Correspondencia Final',
+                data: {
+                  breadcrumb: 'Registrar correspondencia',
+                  roles: [UserRoleType.ADMINISTRADOR, UserRoleType.DIRECTOR]
+                }
+              },
+              {
+                path: 'register_special_request',
+                component: RegisterSpecialRequestPageComponent,
+                canActivate: [roleGuard],
+                title: 'Registrar solicitud especial',
+                data: {
+                  breadcrumb: 'Registrar solicitud especial',
+                  roles: [UserRoleType.ADMINISTRADOR, UserRoleType.DIRECTOR]
+                }
+              },
+              {
+                path: 'evaluate_special_request/:requestId',
+                component: EvaluateSpecialRequestPageComponent,
+                canActivate: [roleGuard],
+                title: 'Evaluar solicitud especial',
+                data: {
+                  breadcrumb: 'Evaluar solicitud especial',
+                  roles: [UserRoleType.ADMINISTRADOR, UserRoleType.CONSEJO]
+                }
+              },
+              // 🚀 Agrupación de Sustentación limpia como hermanos directos bajo loaded_documents
+              {
+                path: 'view_sustentation_details',
+                component: SustentationDetailsPageComponent,
+                canActivate: [roleGuard],
+                title: 'Detalles de la sustentación',
+                data: {
+                  breadcrumb: 'Detalles de la sustentación',
+                  roles: [
+                    UserRoleType.ADMINISTRADOR,
+                    UserRoleType.DIRECTOR,
+                    UserRoleType.CODIRECTOR,
+                    UserRoleType.ASESOR,
+                    UserRoleType.ESTUDIANTE,
+                    UserRoleType.DECANATURA,
+                    UserRoleType.CONSEJO,
+                    UserRoleType.JURADO
+                  ]
+                }
+              },
+              {
+                path: 'corrected_documents',
+                data: { breadcrumb: 'Documentos corregidos' },
+                children: [
+                  {
+                    path: '',
+                    component: CorrectedDocumentsPageComponent,
+                    canActivate: [roleGuard],
+                    title: 'Documentos corregidos',
+                    data: {
+                      breadcrumb: null,
+                      roles: [
+                        UserRoleType.ADMINISTRADOR,
+                        UserRoleType.DIRECTOR,
+                        UserRoleType.CODIRECTOR,
+                        UserRoleType.ASESOR,
+                        UserRoleType.ESTUDIANTE,
+                        UserRoleType.DECANATURA,
+                        UserRoleType.CONSEJO,
+                        UserRoleType.JURADO
+                      ]
+                    }
+                  },
+                  {
+                    path: 'upload_corrections',
+                    // Aquí apuntas al nuevo componente de carga que creamos en el paso anterior
+                    component: RegisterCorrectedDocumentsPageComponent,
+                    canActivate: [roleGuard],
+                    title: 'Cargar documentos corregidos',
+                    data: {
+                      breadcrumb: 'Cargar correcciones',
+                      roles: [
+                        UserRoleType.ADMINISTRADOR,
+                        UserRoleType.DIRECTOR,
+                      ]
+                    }
+                  },
+                  {
+                    path: 'evaluate_corrections',
+                    // Aquí apuntas al nuevo componente de carga que creamos en el paso anterior
+                    component: EvaluateCorrectionsPageComponent,
+                    canActivate: [roleGuard],
+                    title: 'Evaluar documentos corregidos',
+                    data: {
+                      breadcrumb: 'Evaluar correcciones',
+                      roles: [
+                        UserRoleType.ADMINISTRADOR,
+                        UserRoleType.JURADO // Roles autorizados para subir la corrección
+                      ]
+                    }
+                  },
+                ]
+              }
             ]
           },
         ]
       }
     ]
   }
-]
+];

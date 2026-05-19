@@ -1,0 +1,15 @@
+@if (thesisWorkState()) {
+  <app-register-corrected-document-form
+    [thesisWork]="thesisWorkState()!"
+    [isSubmitting]="isSubmitting()"
+    (onSaveDocuments)="handleRequestConfirmation($event)"
+    (onGoBack)="goBack()">
+  </app-register-corrected-document-form>
+}
+
+<app-confirmation-action-modal
+  [isOpen]="isConfirmModalOpen()"
+  description="¿Está seguro de enviar los documentos corregidos? Una vez enviados, pasarán a revisión por parte de los jurados o el comité correspondiente."
+  (onClose)="isConfirmModalOpen.set(false)"
+  (confirm)="processCorrectedDocuments()">
+</app-confirmation-action-modal>

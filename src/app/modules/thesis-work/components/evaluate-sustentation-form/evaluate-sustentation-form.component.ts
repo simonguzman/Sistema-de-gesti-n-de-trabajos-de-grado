@@ -1,45 +1,46 @@
-import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output, signal } from '@angular/core';
 import { NotificationService } from '../../../../shared/components/notifications/services/notification.service';
 import { UserService } from '../../../users/services/user.service';
+import { stateList } from '../../../../core/enums/state.enum';
+import { Document } from '../../../../core/interfaces/Document.interface';
 import { NotificationType } from '../../../../shared/components/notifications/models/notification.model';
 import { FileUploadModalComponent } from "../../../../shared/components/modals/file-upload-modal/file-upload-modal.component";
 import { ButtonComponent } from "../../../../shared/components/button-component/button-component.component";
-import { Document } from '../../../../core/interfaces/Document.interface';
-import { ThesisWork } from '../../interfaces/thesis-work.interface'; // 📌 Ajusta la ruta según tu árbol de carpetas
+import { DatePipe } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-register-paz-y-salvo-form',
-  templateUrl: './register-paz-y-salvo-form.component.html',
-  styleUrls: ['./register-paz-y-salvo-form.component.css'],
-  imports: [FileUploadModalComponent, ButtonComponent]
+  selector: 'app-evaluate-sustentation-form',
+  templateUrl: './evaluate-sustentation-form.component.html',
+  styleUrls: ['./evaluate-sustentation-form.component.css'],
+  imports: [ReactiveFormsModule, FileUploadModalComponent, ButtonComponent, DatePipe]
 })
-export class RegisterPazYSalvoFormComponent {
+export class EvaluateSustentationFormComponent {
   private readonly notificationService = inject(NotificationService);
   public readonly userService = inject(UserService);
 
-  // 🚀 MEJORA: Tipado fuerte en lugar de 'any'
-  @Input({ required: true }) thesisWork!: ThesisWork;
+  @Input({ required: true }) thesisWork!: any;
   @Input() isSubmitting = false;
 
   @Output() onSave = new EventEmitter<{
-    payload: { academicApproved: boolean, academicComments: string, financialApproved: boolean, financialComments: string },
-    file: File
+    payload: { veredict: stateList; observations: string; evaluationDate: Date };
+    file: File;
   }>();
-
   @Output() onBack = new EventEmitter<void>();
   @Output() onDownloadFile = new EventEmitter<Document>();
 
-  // 📡 Señales de estado del formulario
-  academicApproved = signal<boolean | null>(null);
-  academicComments = signal<string>('');
-
-  financialApproved = signal<boolean | null>(null);
-  financialComments = signal<string>('');
-
+  // 📡 Signals de control de estado
+  verdictSelected = signal<stateList | null>(null);
+  observations = signal<string>('');
   uploadedFormat = signal<{ fileName: string; file: File } | null>(null);
 
   isModalOpen = signal(false);
   isSubmitAttempted = signal(false);
+
+  // Exponer el enum al template
+  public get states(): typeof stateList {
+    return stateList;
+  }
 
   // --- Getters de Información de Personal ---
   getStudentNames(): string {
@@ -62,28 +63,14 @@ export class RegisterPazYSalvoFormComponent {
     return advisorId ? this.userService.getUserFullName(advisorId) : '';
   }
 
-  // --- 🧠 CORREGIDO: Buscador flexible con tolerancia a Mayúsculas/Minúsculas y Nombres Compuestos ---
+  getAssignedJurors(): string {
+    const jurors = this.thesisWork?.sustentation?.assignedJurors || [];
+    if (jurors.length === 0) return 'No asignados';
+    return jurors.map((j: any) => this.userService.getUserFullName(j.id || j)).join(' y ');
+  }
+
   getExistingDocument(type: string): Document | null {
-    if (!this.thesisWork?.documents) return null;
-
-    return this.thesisWork.documents.find((doc: Document) => {
-      const currentDocType = doc.type.toUpperCase().trim();
-      const targetType = type.toUpperCase().trim();
-
-      // Mapeos inteligentes para los tipos de documentos de la base de datos simulada
-      if (targetType === 'MONOGRAFIA') {
-        return currentDocType === 'MONOGRAFIA';
-      }
-      if (targetType === 'FORMATO') {
-        // Soporta tanto si viene guardado como "Formato E" o "Formato"
-        return currentDocType === 'FORMATO E' || currentDocType === 'FORMATO';
-      }
-      if (targetType === 'ANEXOS') {
-        return currentDocType === 'ANEXOS';
-      }
-
-      return currentDocType === targetType;
-    }) || null;
+    return this.thesisWork?.documents?.find((doc: Document) => doc.type === type) || null;
   }
 
   // --- Handlers ---
@@ -92,7 +79,7 @@ export class RegisterPazYSalvoFormComponent {
     this.isModalOpen.set(false);
     this.notificationService.show({
       title: 'Archivo adjunto',
-      message: `El documento ${event.fileName} se ha adjuntado correctamente.`,
+      message: `El acta de sustentación ${event.fileName} se ha adjuntado correctamente.`,
       type: NotificationType.INFO
     });
   }
@@ -108,14 +95,13 @@ export class RegisterPazYSalvoFormComponent {
   submit(): void {
     this.isSubmitAttempted.set(true);
 
-    const acApp = this.academicApproved();
-    const finApp = this.financialApproved();
+    const currentVerdict = this.verdictSelected();
     const fileData = this.uploadedFormat();
 
-    if (acApp === null || finApp === null) {
+    if (!currentVerdict) {
       this.notificationService.show({
-        title: 'Faltan evaluaciones',
-        message: 'Debe marcar si cumple o no cumple en ambas revisiones (Académica y Financiera).',
+        title: 'Falta calificación',
+        message: 'Debe seleccionar obligatoriamente una calificación para la sustentación.',
         type: NotificationType.ERROR
       });
       return;
@@ -123,8 +109,8 @@ export class RegisterPazYSalvoFormComponent {
 
     if (!fileData) {
       this.notificationService.show({
-        title: 'Documento faltante',
-        message: 'Debe adjuntar obligatoriamente el Formato de Paz y Salvo firmado.',
+        title: 'Formato faltante',
+        message: 'Debe adjuntar obligatoriamente el Formato de Sustentación con los resultados firmados.',
         type: NotificationType.ERROR
       });
       return;
@@ -132,12 +118,13 @@ export class RegisterPazYSalvoFormComponent {
 
     this.onSave.emit({
       payload: {
-        academicApproved: acApp,
-        academicComments: this.academicComments(),
-        financialApproved: finApp,
-        financialComments: this.financialComments()
+        veredict: currentVerdict,
+        observations: this.observations(),
+        evaluationDate: new Date()
       },
       file: fileData.file
     });
   }
 }
+
+
